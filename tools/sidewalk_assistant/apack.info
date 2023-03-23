@@ -1,0 +1,26 @@
+# Sidewalk Assistant Adapter Pack Definition
+
+# Is used for SetupId
+id=sidewalkAssistant
+path=.,deploy
+label=Sidewalk Assistant
+
+# Trigger file extension. No period.
+uc.triggerExtension=runconf
+
+executable(generate_prototype:macosx.x86_64) {
+  exe=macos/generate_prototype
+}
+
+executable(generate_prototype:win32.x86_64) {
+  exe=win/generate_prototype.exe
+}
+
+executable(generate_prototype:linux.x86_64) {
+  exe=linux/generate_prototype
+}
+
+# Standard generation function
+function(uc_generate) {
+  cmd=$(generate_prototype) --input ${contentFolder} --output ${generationOutput}
+}

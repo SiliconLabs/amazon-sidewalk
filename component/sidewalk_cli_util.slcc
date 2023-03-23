@@ -1,0 +1,83 @@
+id: "sidewalk_cli_util"
+label: "CLI Util"
+package: "sidewalk"
+description: "Provides Sidewalk CLI utility functions"
+category: "Sidewalk|Utility"
+quality: production
+root_path: "component/sidewalk_cli_util"
+
+provides:
+  - name: sidewalk_cli_util
+requires:
+  - name: cli
+source:
+  - path: "sl_sidewalk_cli_util.c"
+  - path: "sl_sidewalk_cli_core.c"
+  - path: "sl_sidewalk_cli_settings.c"
+include:
+  - path: "."
+    file_list:
+    - "path": "sl_sidewalk_cli_util.h"
+    - "path": "sl_sidewalk_cli_core.h"
+    - "path": "sl_sidewalk_cli_settings.h"
+config_file:
+  - path: "config/sl_sidewalk_cli_util_config.h"
+
+ui_hints:
+  visibility: never
+#-------------- Template Contribution ----------------
+template_contribution:
+#---------------- Component Catalog ------------------
+  - name: "event_handler"
+    value:
+      event: "internal_app_init"
+      include: "sl_sidewalk_cli_core.h"
+      handler: "sl_app_sidewalk_cli_init"
+
+  - name: component_catalog
+    value: sidewalk_cli_util
+
+  - name: "cli_group"
+    value:
+      name: "attributes"
+      help: "Sidewalk commands"
+      shortcuts:
+        - name: "att"
+  - name: "cli_command"
+    value:
+      group: "attributes"
+      name: "set"
+      handler: "sl_app_set"
+      help: "Set a variable"
+      shortcuts:
+        - name: "s"
+      argument:
+        - type: wildcard
+          help: "empty | help | [string] Key [string] Value"
+  - name: "cli_command"
+    value:
+      group: "attributes"
+      name: "get"
+      handler: "sl_app_get"
+      help: "Get a variable"
+      shortcuts:
+        - name: "g"
+      argument:
+        - type: wildcard
+          help: "empty | help | [string] Key"
+  - name: "cli_command"
+    value:
+      group: "attributes"
+      name: "save"
+      handler: "sl_app_save"
+      help: "Save variables to non-volatile storage"
+      shortcuts:
+        - name: "a"
+  - name: "cli_command"
+    value:
+      group: "attributes"
+      name: "reset"
+      handler: "sl_app_reset"
+      help: "Reset variables to default settings"
+      shortcuts:
+        - name: "r"

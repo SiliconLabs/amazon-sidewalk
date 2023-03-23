@@ -1,0 +1,184 @@
+project_name: sidewalk_hello_neighbor_ble
+package: amazon_bluetooth
+quality: production
+label: Amazon Sidewalk - SoC Bluetooth Hello Neighbor
+description: "A simple application which does the AWS registration and the actual communication over bluetooth. The application can connect to AWS and send or receive messages on button push."
+category: Example|AWS IoT
+
+sdk_extension:
+  - id: sidewalk
+    version: 1.0.0
+
+source:
+  - path: main.c
+  - path: app_ble_config.c
+  - path: app_init.c
+  - path: app_process.c
+  - path: app_cli.c
+include:
+  - path: .
+    file_list:
+    - path: app_ble_config.h
+    - path: app_init.h
+    - path: app_process.h
+component:
+- id: iostream_rtt
+- id: app_log
+  from: sidewalk
+- id: sl_system
+- id: iostream_retarget_stdio
+- id: iostream_recommended_stream
+- id: simple_led
+  instance: [led0]
+- instance: [inst]
+  id: cli
+- id: device_init
+- id: iostream_stdlib_config
+- id: sleeptimer
+- id: udelay
+- id: psa_crypto
+- id: psa_its
+- id: psa_crypto_ecc
+- id: psa_crypto_ecdh
+- id: psa_crypto_ecdsa
+- id: psa_crypto_hmac
+- id: psa_crypto_cmac
+- id: psa_crypto_gcm
+- id: psa_crypto_ccm
+- id: psa_crypto_sha512
+- id: psa_crypto_ecc_curve25519
+- id: psa_crypto_ecc_secp256r1
+- id: psa_crypto_cipher_ctr
+- id: psa_crypto_sha256
+- id: psa_crypto_ecc_edwards25519
+- id: psa_crypto_eddsa
+- id: app_assert
+- id: freertos
+- id: freertos_heap_4
+- id: iot_ble
+- id: bluetooth_stack
+- id: bluetooth_on_demand_start
+- id: bluetooth_feature_dynamic_gattdb
+- id: bluetooth_feature_gatt_server
+- id: bluetooth_feature_gatt
+- id: bluetooth_feature_system
+- id: bluetooth_feature_advertiser
+- id: bluetooth_feature_connection
+- id: bluetooth_feature_sm
+- id: device_init_dpll
+- id: printf
+- id: sidewalk_ble
+  from: sidewalk
+- id: rail_lib_multiprotocol
+
+configuration:
+  - name: SL_BOARD_ENABLE_VCOM
+    value: 1
+  - name: SL_IOSTREAM_USART_VCOM_RESTRICT_ENERGY_MODE_TO_ALLOW_RECEPTION
+    value: 0
+    condition: [iostream_usart]
+  - name: SL_IOSTREAM_UART_VCOM_RESTRICT_ENERGY_MODE_TO_ALLOW_RECEPTION
+    value: 0
+    condition: [iostream_uart]
+  - name: configMINIMAL_STACK_SIZE
+    value: 1024
+  - name: configTOTAL_HEAP_SIZE
+    value: 20384
+  - name: SL_HEAP_SIZE
+    value: 13312
+  - name: NVM3_DEFAULT_NVM_SIZE
+    value: 24576
+  - name: SL_BT_RTOS_EVENT_HANDLER_STACK_SIZE
+    value: 2048
+  - name: APP_LOG_AUTO_NL
+    value: 1
+  - name: APP_LOG_LEVEL_DEBUG_PREFIX
+    value: '"<debug>"'
+  - name: APP_LOG_LEVEL_INFO_PREFIX
+    value: '"<info>"'
+  - name: APP_LOG_LEVEL_WARNING_PREFIX
+    value: '"<warning>"'
+  - name: APP_LOG_LEVEL_ERROR_PREFIX
+    value: '"<error>"'
+  - name: APP_LOG_LEVEL_CRITICAL_PREFIX
+    value: '"<critical>"'
+
+library:
+  - path: "../../../component/ble/lib/kg100s/sl_lib_kg100s_ble.a"
+
+define:
+  - name: REGION_US915
+  - name: DEBUG_EFM
+  - name: SIDEWALK_SKIP_TESTS
+  - name: MODULE_MAUI
+    value: 2
+  - name: EFR32BG21
+
+readme:
+  - path: ../../../documentation/example/amazon_sidewalk_soc_bt_hello_neighbor/readme.md
+
+ui_hints:
+  highlight:
+    - path: config/sidewalk/sidewalk.asconf
+    - path: readme.md
+      focus: true
+
+config_file:
+  - path: ../../../tools/cloudformation/public/CF_minimal_sidewalk.json
+    directory: sidewalk
+  - path: ../../sidewalk.asconf
+    directory: sidewalk
+  - path: ../../mfg.runconf
+    directory: sidewalk
+
+tag:
+  - hardware:rf:band:2400
+  - hardware:device:sdid:200
+
+filter:
+  - name: "Wireless Technology"
+    value: ["Sidewalk", "Bluetooth"]
+  - name: "Ecosystem"
+    value: ["Amazon"]
+  - name: "Device Type"
+    value: ["SoC"]
+  - name: "Project Difficulty"
+    value: ["Beginner"]
+
+#-------------- Template Contribution ----------------
+template_contribution:
+#------------------ CLI commands ---------------------
+ - name: bluetooth_on_event
+   value:
+      include: sid_pal_ble_adapter_ifc.h
+      function: sl_ble_adapter_on_event
+ - name: cli_command
+   value:
+      name: connect
+      handler: cli_connect
+      help: "Requests BLE connection"
+ - name: cli_command
+   value:
+      name: update
+      handler: cli_update
+      help: "Updates counter and sends it to the cloud"
+ - name: cli_command
+   value:
+      name: reset
+      handler: cli_reset
+      help: "Returns to factory settings"
+ - name: cli_command
+   value:
+      name: get_conn
+      handler: cli_get_connection_status
+      help: "Gets BLE connection status"
+ - name: cli_command
+   value:
+      name: get_time
+      handler: cli_get_time
+      help: "Gets current time"
+ - name: cli_command
+   value:
+      name: get_mtu
+      handler: cli_get_mtu
+      help: "Gets current MTU"

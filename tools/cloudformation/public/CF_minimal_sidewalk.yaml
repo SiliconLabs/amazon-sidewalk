@@ -1,0 +1,204 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: This is a minimal AWS stack descriptor for Sidewalk project within Silicon Labs.
+Resources:
+####################################################################
+# Type: AWS::SQS::Queue
+# Our SQS queue which we will republish into from our destination
+# rule.
+####################################################################
+  CFSReceiveQueue: 
+    Type: AWS::SQS::Queue
+    Properties: 
+      QueueName: CFSReceiveQueue
+####################################################################
+# Type: AWS::SQS::QueuePolicy
+# This policy is for the SQS to allow us to interract with it.
+####################################################################
+  CFSReceiveQueuePolicy:
+    Type: AWS::SQS::QueuePolicy
+    Properties:
+      PolicyDocument:
+        Id: CFSReceiveQueuePolicy
+        Version: '2012-10-17'
+        Statement:
+          - Sid: Send_Permission
+            Effect: Allow
+            Action:
+              - sqs:*
+            Resource: !GetAtt CFSReceiveQueue.Arn
+      Queues:
+        - !Ref CFSReceiveQueue
+####################################################################
+# Type: AWS::IAM::Role
+# This role is for the destination.
+####################################################################
+  CFSDestinationRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: CFSDestinationRole
+      Description: Allows IoT to call AWS services on your behalf.
+      MaxSessionDuration: 3600
+      Policies: 
+        - 
+          PolicyName: CFSDestinationPolicy
+          PolicyDocument:
+            Statement:
+            - Effect: Allow
+              Action:
+              - iot:Connect
+              - iot:DescribeEndpoint
+              - iot:Publish
+              Resource:
+              - "*"
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: "Allow"
+            Principal: 
+              Service: 
+                - "iotwireless.amazonaws.com"
+            Action:
+              - "sts:AssumeRole"
+####################################################################
+# Type: AWS::IAM::Role
+# This role is for generic republishing.
+####################################################################
+  CFSRepublishRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: CFSRepublishRole
+      Description: Allows IoT to call AWS services on your behalf.
+      MaxSessionDuration: 3600
+      Policies: 
+        - 
+          PolicyName: CFSRepublishPolicy
+          PolicyDocument:
+            Statement:
+            - Effect: Allow
+              Action:
+              - iot:*
+              - sqs:*
+              - iotwireless:*
+              - logs:*
+              Resource:
+              - '*'
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: "Allow"
+            Sid: ""
+            Principal: 
+              Service: 
+                - "iot.amazonaws.com"
+            Action:
+              - "sts:AssumeRole"
+####################################################################
+# Type: AWS::IAM::Role
+# This role is for our republish lambda function.
+####################################################################
+  CFSRepublishLambdaRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: CFSRepublishLambdaRole
+      Description: Allows IoT to call AWS services on your behalf.
+      MaxSessionDuration: 3600
+      Policies: 
+        - 
+          PolicyName: CFSRepublishPolicy
+          PolicyDocument:
+            Statement:
+            - Effect: Allow
+              Action:
+              - iot:*
+              - sqs:*
+              - iotwireless:*
+              - logs:*
+              Resource:
+              - '*'
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: "Allow"
+            Sid: ""
+            Principal: 
+              Service: 
+                - "lambda.amazonaws.com"
+            Action:
+              - "sts:AssumeRole"
+####################################################################
+# Type: AWS::IoT::TopicRule
+# Destination rule which republishes the incoming messages to SQS,
+# mqtt and a lambda function.
+# All three are not necessary it mostly for unique use cases.
+####################################################################
+  CFSDestinationRule:
+    Type: AWS::IoT::TopicRule
+    Properties:
+      RuleName: CFSDestinationRule
+      TopicRulePayload:
+        RuleDisabled: 'false'
+        Sql: SELECT *
+        Actions:
+        - Lambda:
+            FunctionArn: !GetAtt 'CFSRepublishLambda.Arn'
+        - Republish:
+            Qos: 0
+            Topic: sidewalk/received
+            RoleArn: !GetAtt 'CFSRepublishRole.Arn'
+        - Sqs:
+            QueueUrl: !GetAtt 'CFSReceiveQueue.QueueName'
+            RoleArn: !GetAtt 'CFSRepublishRole.Arn'
+####################################################################
+# Type: AWS::Lambda::Permission
+# This permission allows the lambda function to get triggered by
+# the iot core.
+####################################################################
+  CFSRepublishLambdaPermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName: !GetAtt CFSRepublishLambda.Arn
+      Action: lambda:InvokeFunction
+      Principal: iot.amazonaws.com
+      SourceAccount: !Ref 'AWS::AccountId'
+      SourceArn: !GetAtt CFSDestinationRule.Arn
+####################################################################
+# Type: AWS::Lambda::Function
+# Lambda function which decodes the raw input messages 
+# from Sidewalk and republish them to demo/gatewaytest MQTT topic
+####################################################################
+  CFSRepublishLambda:
+    Type: AWS::Lambda::Function
+    Properties:
+      Handler: index.lambda_handler
+      Runtime: python3.8
+      Role: !GetAtt 'CFSRepublishLambdaRole.Arn'
+      Code:
+        ZipFile: | 
+          import json
+          import base64
+          import boto3
+
+          def lambda_handler(event, context):
+              message = json.dumps(event)
+              print(message)
+              payload_data = base64.b64decode(event["PayloadData"])
+              decoded_payload = bytearray.fromhex(base64.b64decode(event["PayloadData"]).decode("utf-8")).decode()
+          
+              client = boto3.client('iot-data', region_name='us-east-1')
+              # Change topic, qos and payload
+              response = client.publish(
+                      topic='demo/gatewaytest',
+                      qos=1,
+                      payload=json.dumps({"payload":decoded_payload, "WirelessMetadata":event["WirelessMetadata"]})
+                  )
+####################################################################
+# Type: AWS::IoTWireless::Destination
+# Destination for the Sidewalk devices
+####################################################################
+  CFSDestination:
+    Type: AWS::IoTWireless::Destination
+    Properties: 
+      Expression: CFSDestinationRule
+      ExpressionType: RuleName
+      Name: CFSDestination
+      RoleArn: !GetAtt 'CFSDestinationRole.Arn'

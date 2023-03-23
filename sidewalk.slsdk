@@ -1,0 +1,13 @@
+# Properties file for Simplicity Studio metadata.
+id=com.silabs.sdk.sidewalk
+label=Sidewalk
+description=Sidewalk Software Development Kit
+version=1.0.0
+dependantSdkVersion=4.2.2
+dependentBLESdkVersion=5.1.1
+prop.subLabel=Sidewalk\\ 1.0.0
+
+# General properties are prepended with "prop."
+prop.file.templatesFile=sidewalk_production_templates.xml
+prop.file.adapterPacks=tools/sidewalk_assistant
+prop.file.hkconfAdkModels=adk_models

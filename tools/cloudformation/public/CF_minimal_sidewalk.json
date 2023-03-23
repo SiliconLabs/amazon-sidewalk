@@ -1,0 +1,279 @@
+{
+    "AWSTemplateFormatVersion": "2010-09-09",
+    "Description": "This is a minimal AWS stack descriptor for Sidewalk project within Silicon Labs.",
+    "Resources": {
+      "CFSReceiveQueue": {
+        "Type": "AWS::SQS::Queue",
+        "Properties": {
+          "QueueName": "CFSReceiveQueue"
+        }
+      },
+      "CFSReceiveQueuePolicy": {
+        "Type": "AWS::SQS::QueuePolicy",
+        "Properties": {
+          "PolicyDocument": {
+            "Id": "CFSReceiveQueuePolicy",
+            "Version": "2012-10-17",
+            "Statement": [
+              {
+                "Sid": "Send_Permission",
+                "Effect": "Allow",
+                "Action": [
+                  "sqs:*"
+                ],
+                "Resource": {
+                  "Fn::GetAtt": [
+                    "CFSReceiveQueue",
+                    "Arn"
+                  ]
+                }
+              }
+            ]
+          },
+          "Queues": [
+            {
+              "Ref": "CFSReceiveQueue"
+            }
+          ]
+        }
+      },
+      "CFSDestinationRole": {
+        "Type": "AWS::IAM::Role",
+        "Properties": {
+          "RoleName": "CFSDestinationRole",
+          "Description": "Allows IoT to call AWS services on your behalf.",
+          "MaxSessionDuration": 3600,
+          "Policies": [
+            {
+              "PolicyName": "CFSDestinationPolicy",
+              "PolicyDocument": {
+                "Statement": [
+                  {
+                    "Effect": "Allow",
+                    "Action": [
+                      "iot:Connect",
+                      "iot:DescribeEndpoint",
+                      "iot:Publish"
+                    ],
+                    "Resource": [
+                      "*"
+                    ]
+                  }
+                ]
+              }
+            }
+          ],
+          "AssumeRolePolicyDocument": {
+            "Version": "2012-10-17",
+            "Statement": [
+              {
+                "Effect": "Allow",
+                "Principal": {
+                  "Service": [
+                    "iotwireless.amazonaws.com"
+                  ]
+                },
+                "Action": [
+                  "sts:AssumeRole"
+                ]
+              }
+            ]
+          }
+        }
+      },
+      "CFSRepublishRole": {
+        "Type": "AWS::IAM::Role",
+        "Properties": {
+          "RoleName": "CFSRepublishRole",
+          "Description": "Allows IoT to call AWS services on your behalf.",
+          "MaxSessionDuration": 3600,
+          "Policies": [
+            {
+              "PolicyName": "CFSRepublishPolicy",
+              "PolicyDocument": {
+                "Statement": [
+                  {
+                    "Effect": "Allow",
+                    "Action": [
+                      "iot:*",
+                      "sqs:*",
+                      "iotwireless:*",
+                      "logs:*"
+                    ],
+                    "Resource": [
+                      "*"
+                    ]
+                  }
+                ]
+              }
+            }
+          ],
+          "AssumeRolePolicyDocument": {
+            "Version": "2012-10-17",
+            "Statement": [
+              {
+                "Effect": "Allow",
+                "Sid": "",
+                "Principal": {
+                  "Service": [
+                    "iot.amazonaws.com"
+                  ]
+                },
+                "Action": [
+                  "sts:AssumeRole"
+                ]
+              }
+            ]
+          }
+        }
+      },
+      "CFSRepublishLambdaRole": {
+        "Type": "AWS::IAM::Role",
+        "Properties": {
+          "RoleName": "CFSRepublishLambdaRole",
+          "Description": "Allows IoT to call AWS services on your behalf.",
+          "MaxSessionDuration": 3600,
+          "Policies": [
+            {
+              "PolicyName": "CFSRepublishPolicy",
+              "PolicyDocument": {
+                "Statement": [
+                  {
+                    "Effect": "Allow",
+                    "Action": [
+                      "iot:*",
+                      "sqs:*",
+                      "iotwireless:*",
+                      "logs:*"
+                    ],
+                    "Resource": [
+                      "*"
+                    ]
+                  }
+                ]
+              }
+            }
+          ],
+          "AssumeRolePolicyDocument": {
+            "Version": "2012-10-17",
+            "Statement": [
+              {
+                "Effect": "Allow",
+                "Sid": "",
+                "Principal": {
+                  "Service": [
+                    "lambda.amazonaws.com"
+                  ]
+                },
+                "Action": [
+                  "sts:AssumeRole"
+                ]
+              }
+            ]
+          }
+        }
+      },
+      "CFSDestinationRule": {
+        "Type": "AWS::IoT::TopicRule",
+        "Properties": {
+          "RuleName": "CFSDestinationRule",
+          "TopicRulePayload": {
+            "RuleDisabled": "false",
+            "Sql": "SELECT *",
+            "Actions": [
+              {
+                "Lambda": {
+                  "FunctionArn": {
+                    "Fn::GetAtt": [
+                      "CFSRepublishLambda",
+                      "Arn"
+                    ]
+                  }
+                }
+              },
+              {
+                "Republish": {
+                  "Qos": 0,
+                  "Topic": "sidewalk/received",
+                  "RoleArn": {
+                    "Fn::GetAtt": [
+                      "CFSRepublishRole",
+                      "Arn"
+                    ]
+                  }
+                }
+              },
+              {
+                "Sqs": {
+                  "QueueUrl": {
+                    "Fn::GetAtt": [
+                      "CFSReceiveQueue",
+                      "QueueName"
+                    ]
+                  },
+                  "RoleArn": {
+                    "Fn::GetAtt": [
+                      "CFSRepublishRole",
+                      "Arn"
+                    ]
+                  }
+                }
+              }
+            ]
+          }
+        }
+      },
+      "CFSRepublishLambdaPermission": {
+        "Type": "AWS::Lambda::Permission",
+        "Properties": {
+          "FunctionName": {
+            "Fn::GetAtt": [
+              "CFSRepublishLambda",
+              "Arn"
+            ]
+          },
+          "Action": "lambda:InvokeFunction",
+          "Principal": "iot.amazonaws.com",
+          "SourceAccount": {
+            "Ref": "AWS::AccountId"
+          },
+          "SourceArn": {
+            "Fn::GetAtt": [
+              "CFSDestinationRule",
+              "Arn"
+            ]
+          }
+        }
+      },
+      "CFSRepublishLambda": {
+        "Type": "AWS::Lambda::Function",
+        "Properties": {
+          "Handler": "index.lambda_handler",
+          "Runtime": "python3.8",
+          "Role": {
+            "Fn::GetAtt": [
+              "CFSRepublishLambdaRole",
+              "Arn"
+            ]
+          },
+          "Code": {
+            "ZipFile": "import json\nimport base64\nimport boto3\n\ndef lambda_handler(event, context):\n  message = json.dumps(event)\n  print(message)\n  payload_data = base64.b64decode(event[\"PayloadData\"])\n  decoded_payload = bytearray.fromhex(base64.b64decode(event[\"PayloadData\"]).decode(\"utf-8\")).decode()\n\n  client = boto3.client('iot-data', region_name='us-east-1')\n  # Change topic, qos and payload\n  response = client.publish(\n      topic='demo/gatewaytest',\n      qos=1,\n      payload=json.dumps({\"payload\":decoded_payload, \"WirelessMetadata\":event[\"WirelessMetadata\"]})\n    )\n"
+          }
+        }
+      },
+      "CFSDestination": {
+        "Type": "AWS::IoTWireless::Destination",
+        "Properties": {
+          "Expression": "CFSDestinationRule",
+          "ExpressionType": "RuleName",
+          "Name": "CFSDestination",
+          "RoleArn": {
+            "Fn::GetAtt": [
+              "CFSDestinationRole",
+              "Arn"
+            ]
+          }
+        }
+      }
+    }
+  }
