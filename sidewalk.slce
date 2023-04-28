@@ -2,7 +2,7 @@ id: sidewalk
 label: Sidewalk
 description: >
   Sidewalk extension for Gecko SDK Suite
-version: "1.0.0"
+version: "1.0.2"
 sdk:
   id: gecko_sdk
   version: "4.2.2"
