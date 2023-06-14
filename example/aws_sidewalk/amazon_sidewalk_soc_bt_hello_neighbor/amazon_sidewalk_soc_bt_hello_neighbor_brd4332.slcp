@@ -1,13 +1,13 @@
-project_name: sidewalk_hello_neighbor_ble
+project_name: amazon_sidewalk_soc_bt_hello_neighbor
 package: amazon_bluetooth
 quality: production
 label: Amazon Sidewalk - SoC Bluetooth Hello Neighbor
-description: "A simple application which does the AWS registration and the actual communication over bluetooth. The application can connect to AWS and send or receive messages on button push."
+description: "The Hello Neighbor Bluetooth sample application leverages the Amazon Sidewalk protocol to connect to the cloud using a Bluetooth connection. The application connects to AWS and send or receive messages on button push."
 category: Example|AWS IoT
 
 sdk_extension:
   - id: sidewalk
-    version: 1.0.2
+    version: 1.0.3
 
 source:
   - path: main.c

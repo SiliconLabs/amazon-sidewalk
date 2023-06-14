@@ -1,13 +1,13 @@
-project_name: sidewalk_hello_neighbor_ble_subghz
+project_name: amazon_sidewalk_soc_bt_subghz_hello_neighbor
 package: amazon_bluetooth
 quality: production
 label: Amazon Sidewalk - SoC Bluetooth Sub-GHz Hello Neighbor
-description: "A simple application which does the AWS registration via bluetooth and the actual communication is going over FSK. The application can connect to AWS and send or receive messages on button push."
+description: "The Hello Neighbor Bluetooth sub-GHz sample application leverages the Amazon Sidewalk protocol to connect to the cloud using sub-GHz FSK or CSS modulation. The application connects to AWS and send or receive messages on button push."
 category: Example|AWS IoT
 
 sdk_extension:
   - id: sidewalk
-    version: 1.0.2
+    version: 1.0.3
 
 source:
   - path: main.c

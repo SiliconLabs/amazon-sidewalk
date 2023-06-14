@@ -45,8 +45,12 @@ The J-Link RTT interface provides access to the CLI commands. The following tabl
 | Command | Description | Example | Main Board Button |
 |---|---|---|---|
 | update | Sends an updated counter value to the cloud | > update | PB1/BTN1 |
-| switch_fsk_css | Switch between FSK/CSS modulation | > switch_fsk_css | PB0/BTN0 |
-| reset | Unregisters the Sidewalk Endpoint | > reset | N/A |
+| send | Sends an ASCII string of length of N to the cloud | > send N | N/A |
+| reset | Deregisters the Sidewalk device and restores settings to factory defaults. | > reset | N/A |
+
+> **⚠ WARNING ⚠**: The `send` command may crash if no argument or too small, large argument is provided. Size (N) must be in the valid range of [1, 20].
+
+> **⚠ WARNING ⚠**: The `reset` command is used to unregister your device with the cloud. It can only be called on a registered AND time synced device.
 
 ## Interacting with the Cloud
 

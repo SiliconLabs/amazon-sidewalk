@@ -1,13 +1,13 @@
-project_name: sidewalk_ble_subghz_cli
+project_name: amazon_sidewalk_soc_bt_subghz_cli
 package: amazon_bluetooth
 quality: production
 label: Amazon Sidewalk - SoC Bluetooth Sub-GHz CLI
-description: "A simple application for using different protocol through a CLI tool."
+description: "The Bluetooth sub-GHz Command Line Interface (CLI) sample application allows the user to interact with the endpoint using CLI commands. The application leverages the Amazon Sidewalk protocol to exchange data between the endpoint and the AWS Cloud using one of the 3 radio layers."
 category: Example|AWS IoT
 
 sdk_extension:
   - id: sidewalk
-    version: 1.0.2
+    version: 1.0.3
 
 source:
   - path: main.c

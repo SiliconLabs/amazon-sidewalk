@@ -70,6 +70,8 @@ To start and switch between links, the command sequence is as follows:
 
 Only one link can be initialized and started at any time. You have to stop and deinitialize the current link before you can start a new one.
 
+The `reset` command is used to unregister your device with the cloud. It can only be called on a registered AND time synced device. To unregister, the device needs to send a message to the cloud, so it needs to be synchronized with AWS.
+
 ### Sidewalk Settings
 
 To see the available settings commands, enter the following command in the console:

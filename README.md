@@ -4,7 +4,7 @@ This repository contains the code for the Simplicity Studio extension for Amazon
 
 ## Getting Started
 
-Refer to the [Amazon Sidewalk Development Journey](https://www.silabs.com/ecosystems/extend-iot-device-range-with-amazon-sidewalk) and the [Silicon Labs' online documentation](https://docs.silabs.com/amazon-sidewalk/latest/) to get started.
+Refer to [Silicon Labs' online documentation](https://docs.silabs.com/amazon-sidewalk/latest/) to get started.
 
 ## Report Bugs & Get Support
 

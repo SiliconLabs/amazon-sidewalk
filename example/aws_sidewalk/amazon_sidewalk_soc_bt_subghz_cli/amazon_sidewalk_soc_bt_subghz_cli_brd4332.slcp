@@ -1,13 +1,13 @@
-project_name: sidewalk_ble_subghz_cli
+project_name: amazon_sidewalk_soc_bt_subghz_cli
 package: amazon_bluetooth
 quality: production
 label: Amazon Sidewalk - SoC Bluetooth Sub-GHz CLI
-description: "A simple application for using different protocol through a CLI tool."
+description: "The Bluetooth sub-GHz Command Line Interface (CLI) sample application allows the user to interact with the endpoint using CLI commands. The application leverages the Amazon Sidewalk protocol to exchange data between the endpoint and the AWS Cloud using one of the 3 radio layers."
 category: Example|AWS IoT
 
 sdk_extension:
   - id: sidewalk
-    version: 1.0.2
+    version: 1.0.3
 
 source:
   - path: main.c
@@ -82,6 +82,10 @@ component:
 - id: rail_lib_multiprotocol
 
 configuration:
+  - name: SL_SPIDRV_EXP_CS_PIN
+    value: 2
+  - name: SL_SPIDRV_EXP_CLK_PIN
+    value: 3
   - name: SL_SPIDRV_EXP_CS_CONTROL
     value: spidrvCsControlApplication
   - name: SL_SPIDRV_EXP_BITRATE
@@ -138,11 +142,6 @@ ui_hints:
       focus: true
 
 config_file:
-  - path: sl_spidrv_exp_config.h
-    override:
-      component: spidrv
-      file_id: spidrv_config
-      instance: exp
   - path: ../../../tools/cloudformation/public/CF_minimal_sidewalk.json
     directory: sidewalk
   - path: ../../sidewalk.asconf

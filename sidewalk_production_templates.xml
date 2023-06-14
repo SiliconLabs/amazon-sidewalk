@@ -1,6 +1,6 @@
 <?xml version='1.0' encoding='ASCII'?>
 <model:MDescriptors xmlns:model="http://www.silabs.com/ss/Studio.ecore">
-  <descriptors name="sidewalk_hello_neighbor_ble" label="Amazon Sidewalk - SoC Bluetooth Hello Neighbor" description="The Hello Neighbor Bluetooth sample application leverages the Amazon Sidewalk protocol to connect to the cloud using a Bluetooth connection. The application connects to AWS and send or receive messages on button push.">
+  <descriptors name="amazon_sidewalk_soc_bt_hello_neighbor" label="Amazon Sidewalk - SoC Bluetooth Hello Neighbor" description="The Hello Neighbor Bluetooth sample application leverages the Amazon Sidewalk protocol to connect to the cloud using a Bluetooth connection. The application connects to AWS and send or receive messages on button push.">
     <properties key="namespace" value="template.uc"/>
     <properties key="keywords" value="universal\ configurator"/>
     <properties key="solutionReferenceId" value="example.aws_sidewalk.amazon_sidewalk_soc_bt_hello_neighbor.amazon_sidewalk_soc_bt_hello_neighbor_brd4181.slcp"/>
@@ -15,7 +15,7 @@
     <properties key="stockConfigCompatibility" value="com.silabs.ss.framework.project.toolchain.core.default"/>
     <properties key="filters" value="Device\ Type|SoC Ecosystem|Amazon Project\ Difficulty|Beginner Wireless\ Technology|Bluetooth Wireless\ Technology|Sidewalk"/>
   </descriptors>
-  <descriptors name="sidewalk_hello_neighbor_ble" label="Amazon Sidewalk - SoC Bluetooth Hello Neighbor" description="A simple application which does the AWS registration and the actual communication over bluetooth. The application can connect to AWS and send or receive messages on button push.">
+  <descriptors name="amazon_sidewalk_soc_bt_hello_neighbor" label="Amazon Sidewalk - SoC Bluetooth Hello Neighbor" description="The Hello Neighbor Bluetooth sample application leverages the Amazon Sidewalk protocol to connect to the cloud using a Bluetooth connection. The application connects to AWS and send or receive messages on button push.">
     <properties key="namespace" value="template.uc"/>
     <properties key="keywords" value="universal\ configurator"/>
     <properties key="solutionReferenceId" value="example.aws_sidewalk.amazon_sidewalk_soc_bt_hello_neighbor.amazon_sidewalk_soc_bt_hello_neighbor_brd4332.slcp"/>
@@ -30,7 +30,7 @@
     <properties key="stockConfigCompatibility" value="com.silabs.ss.framework.project.toolchain.core.default"/>
     <properties key="filters" value="Device\ Type|SoC Ecosystem|Amazon Project\ Difficulty|Beginner Wireless\ Technology|Bluetooth Wireless\ Technology|Sidewalk"/>
   </descriptors>
-  <descriptors name="sidewalk_hello_neighbor_ble" label="Amazon Sidewalk - SoC Bluetooth Hello Neighbor" description="A simple application which does the AWS registration and the actual communication over bluetooth. The application can connect to AWS and send or receive messages on button push.">
+  <descriptors name="amazon_sidewalk_soc_bt_hello_neighbor" label="Amazon Sidewalk - SoC Bluetooth Hello Neighbor" description="The Hello Neighbor Bluetooth sample application leverages the Amazon Sidewalk protocol to connect to the cloud using a Bluetooth connection. The application connects to AWS and send or receive messages on button push.">
     <properties key="namespace" value="template.uc"/>
     <properties key="keywords" value="universal\ configurator"/>
     <properties key="solutionReferenceId" value="example.aws_sidewalk.amazon_sidewalk_soc_bt_hello_neighbor.amazon_sidewalk_soc_bt_hello_neighbor_brd4187.slcp"/>
@@ -45,7 +45,7 @@
     <properties key="stockConfigCompatibility" value="com.silabs.ss.framework.project.toolchain.core.default"/>
     <properties key="filters" value="Device\ Type|SoC Ecosystem|Amazon Project\ Difficulty|Beginner Wireless\ Technology|Bluetooth Wireless\ Technology|Sidewalk"/>
   </descriptors>
-  <descriptors name="sidewalk_ble_subghz_cli" label="Amazon Sidewalk - SoC Bluetooth Sub-GHz CLI" description="The Bluetooth sub-GHz Command Line Interface (CLI) sample application allows the user to interact with the endpoint using CLI commands. The application leverages the Amazon Sidewalk protocol to exchange data between the endpoint and the AWS Cloud using one of the 3 radio layers.">
+  <descriptors name="amazon_sidewalk_soc_bt_subghz_cli" label="Amazon Sidewalk - SoC Bluetooth Sub-GHz CLI" description="The Bluetooth sub-GHz Command Line Interface (CLI) sample application allows the user to interact with the endpoint using CLI commands. The application leverages the Amazon Sidewalk protocol to exchange data between the endpoint and the AWS Cloud using one of the 3 radio layers.">
     <properties key="namespace" value="template.uc"/>
     <properties key="keywords" value="universal\ configurator"/>
     <properties key="solutionReferenceId" value="example.aws_sidewalk.amazon_sidewalk_soc_bt_subghz_cli.amazon_sidewalk_soc_bt_subghz_cli_brd4187.slcp"/>
@@ -60,7 +60,7 @@
     <properties key="stockConfigCompatibility" value="com.silabs.ss.framework.project.toolchain.core.default"/>
     <properties key="filters" value="Device\ Type|SoC Ecosystem|Amazon Project\ Difficulty|Advanced Wireless\ Technology|Bluetooth Wireless\ Technology|Sidewalk"/>
   </descriptors>
-  <descriptors name="sidewalk_ble_subghz_cli" label="Amazon Sidewalk - SoC Bluetooth Sub-GHz CLI" description="A simple application for using different protocol through a CLI tool.">
+  <descriptors name="amazon_sidewalk_soc_bt_subghz_cli" label="Amazon Sidewalk - SoC Bluetooth Sub-GHz CLI" description="The Bluetooth sub-GHz Command Line Interface (CLI) sample application allows the user to interact with the endpoint using CLI commands. The application leverages the Amazon Sidewalk protocol to exchange data between the endpoint and the AWS Cloud using one of the 3 radio layers.">
     <properties key="namespace" value="template.uc"/>
     <properties key="keywords" value="universal\ configurator"/>
     <properties key="solutionReferenceId" value="example.aws_sidewalk.amazon_sidewalk_soc_bt_subghz_cli.amazon_sidewalk_soc_bt_subghz_cli_brd4332.slcp"/>
@@ -75,7 +75,7 @@
     <properties key="stockConfigCompatibility" value="com.silabs.ss.framework.project.toolchain.core.default"/>
     <properties key="filters" value="Device\ Type|SoC Ecosystem|Amazon Project\ Difficulty|Advanced Wireless\ Technology|Bluetooth Wireless\ Technology|Sidewalk"/>
   </descriptors>
-  <descriptors name="sidewalk_ble_subghz_cli" label="Amazon Sidewalk - SoC Bluetooth Sub-GHz CLI" description="The Bluetooth sub-GHz Command Line Interface (CLI) sample application allows the user to interact with the endpoint using CLI commands. The application leverages the Amazon Sidewalk protocol to exchange data between the endpoint and the AWS Cloud using one of the 3 radio layers.">
+  <descriptors name="amazon_sidewalk_soc_bt_subghz_cli" label="Amazon Sidewalk - SoC Bluetooth Sub-GHz CLI" description="The Bluetooth sub-GHz Command Line Interface (CLI) sample application allows the user to interact with the endpoint using CLI commands. The application leverages the Amazon Sidewalk protocol to exchange data between the endpoint and the AWS Cloud using one of the 3 radio layers.">
     <properties key="namespace" value="template.uc"/>
     <properties key="keywords" value="universal\ configurator"/>
     <properties key="solutionReferenceId" value="example.aws_sidewalk.amazon_sidewalk_soc_bt_subghz_cli.amazon_sidewalk_soc_bt_subghz_cli_brd4181.slcp"/>
@@ -90,7 +90,7 @@
     <properties key="stockConfigCompatibility" value="com.silabs.ss.framework.project.toolchain.core.default"/>
     <properties key="filters" value="Device\ Type|SoC Ecosystem|Amazon Project\ Difficulty|Advanced Wireless\ Technology|Bluetooth Wireless\ Technology|Sidewalk"/>
   </descriptors>
-  <descriptors name="sidewalk_hello_neighbor_ble_subghz" label="Amazon Sidewalk - SoC Bluetooth Sub-GHz Hello Neighbor" description="A simple application which does the AWS registration via bluetooth and the actual communication is going over FSK. The application can connect to AWS and send or receive messages via awscli commands.">
+  <descriptors name="amazon_sidewalk_soc_bt_subghz_hello_neighbor" label="Amazon Sidewalk - SoC Bluetooth Sub-GHz Hello Neighbor" description="The Hello Neighbor Bluetooth sub-GHz sample application leverages the Amazon Sidewalk protocol to connect to the cloud using sub-GHz FSK or CSS modulation. The application connects to AWS and send or receive messages on button push.">
     <properties key="namespace" value="template.uc"/>
     <properties key="keywords" value="universal\ configurator"/>
     <properties key="solutionReferenceId" value="example.aws_sidewalk.amazon_sidewalk_soc_bt_subghz_hello_neighbor.amazon_sidewalk_soc_bt_subghz_hello_neighbor_brd4332.slcp"/>
@@ -105,7 +105,7 @@
     <properties key="stockConfigCompatibility" value="com.silabs.ss.framework.project.toolchain.core.default"/>
     <properties key="filters" value="Device\ Type|SoC Ecosystem|Amazon Project\ Difficulty|Beginner Wireless\ Technology|Bluetooth Wireless\ Technology|Sidewalk"/>
   </descriptors>
-  <descriptors name="sidewalk_hello_neighbor_ble_subghz" label="Amazon Sidewalk - SoC Bluetooth Sub-GHz Hello Neighbor" description="A simple application which does the AWS registration via bluetooth and the actual communication is going over FSK. The application can connect to AWS and send or receive messages on button push.">
+  <descriptors name="amazon_sidewalk_soc_bt_subghz_hello_neighbor" label="Amazon Sidewalk - SoC Bluetooth Sub-GHz Hello Neighbor" description="The Hello Neighbor Bluetooth sub-GHz sample application leverages the Amazon Sidewalk protocol to connect to the cloud using sub-GHz FSK or CSS modulation. The application connects to AWS and send or receive messages on button push.">
     <properties key="namespace" value="template.uc"/>
     <properties key="keywords" value="universal\ configurator"/>
     <properties key="solutionReferenceId" value="example.aws_sidewalk.amazon_sidewalk_soc_bt_subghz_hello_neighbor.amazon_sidewalk_soc_bt_subghz_hello_neighbor_brd4187.slcp"/>
@@ -120,7 +120,7 @@
     <properties key="stockConfigCompatibility" value="com.silabs.ss.framework.project.toolchain.core.default"/>
     <properties key="filters" value="Device\ Type|SoC Ecosystem|Amazon Project\ Difficulty|Beginner Wireless\ Technology|Bluetooth Wireless\ Technology|Sidewalk"/>
   </descriptors>
-  <descriptors name="sidewalk_hello_neighbor_ble_subghz" label="Amazon Sidewalk - SoC Bluetooth Sub-GHz Hello Neighbor" description="The Hello Neighbor Bluetooth sub-GHz sample application leverages the Amazon Sidewalk protocol to connect to the cloud using sub-GHz FSK or CSS modulation. The application connects to AWS and send or receive messages on button push.">
+  <descriptors name="amazon_sidewalk_soc_bt_subghz_hello_neighbor" label="Amazon Sidewalk - SoC Bluetooth Sub-GHz Hello Neighbor" description="The Hello Neighbor Bluetooth sub-GHz sample application leverages the Amazon Sidewalk protocol to connect to the cloud using sub-GHz FSK or CSS modulation. The application connects to AWS and send or receive messages on button push.">
     <properties key="namespace" value="template.uc"/>
     <properties key="keywords" value="universal\ configurator"/>
     <properties key="solutionReferenceId" value="example.aws_sidewalk.amazon_sidewalk_soc_bt_subghz_hello_neighbor.amazon_sidewalk_soc_bt_subghz_hello_neighbor_brd4181.slcp"/>
