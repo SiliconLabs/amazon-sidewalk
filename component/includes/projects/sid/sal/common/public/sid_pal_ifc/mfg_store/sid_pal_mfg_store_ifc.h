@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 Amazon.com, Inc. or its affiliates. All rights reserved.
+ * Copyright 2020-2023 Amazon.com, Inc. or its affiliates. All rights reserved.
  *
  * AMAZON PROPRIETARY/CONFIDENTIAL
  *
@@ -33,13 +33,21 @@ extern "C" {
 #include <stddef.h>
 #include <stdint.h>
 
+/*
+ * The current version of the MFG storage. The version is stored during generating MFG.
+ * It can be used to migrate between different versions of MFG when changing its data structure.
+ */
+#define SID_PAL_MFG_STORE_EMPTY_VERSION_NUMBER 0xFFFFFFFF
+#define SID_PAL_MFG_STORE_FIXED_OFFSETS_VERSION 7 // Last version with fixed offsets
+#define SID_PAL_MFG_STORE_TLV_VERSION 8
+
 enum { SID_PAL_MFG_STORE_INVALID_OFFSET = UINT32_MAX };
 
 /* Values available to all users of the manufacturing store.
  */
 typedef enum {
     SID_PAL_MFG_STORE_DEVID = 1, // use sid_pal_mfg_store_dev_id_get
-   /* Version is stored in network order */
+    /* Version is stored in network order */
     SID_PAL_MFG_STORE_VERSION = 2, // use sid_pal_mfg_store_get_version
     SID_PAL_MFG_STORE_SERIAL_NUM = 3, // use sid_pal_mfg_store_dev_id_get
     SID_PAL_MFG_STORE_SMSN = 4,
@@ -78,11 +86,15 @@ typedef enum {
     SID_PAL_MFG_STORE_AMZN_PUB_P256R1 = 37,
     SID_PAL_MFG_STORE_APID = 38,
 
-    // This arbitrary value is the number of value identifiers
-    // reserved by Sidewalk. The range of these value identifiers is:
-    // [0, SID_PAL_MFG_STORE_CORE_VALUE_MAX].
-    // Applications may use identifiers outside of that range.
-    SID_PAL_MFG_STORE_CORE_VALUE_MAX = 4000
+    /*
+     * This arbitrary value is the number of value identifiers
+     * reserved by Sidewalk. The range of these value identifiers is:
+     * [0, SID_PAL_MFG_STORE_CORE_VALUE_MAX].
+     * Applications may use identifiers outside of that range.
+     */
+    SID_PAL_MFG_STORE_CORE_VALUE_MAX = 4000,
+    /* The value 0xFFFF is reserved for internal use */
+    SID_PAL_MFG_STORE_VALUE_MAX = (UINT16_MAX - 1),
 } sid_pal_mfg_store_value_t;
 
 
@@ -196,7 +208,7 @@ bool sid_pal_mfg_store_is_empty(void);
  *
  *  @return  0 on success, negative value on failure.
  */
-int32_t sid_pal_mfg_store_write(int value, const uint8_t *buffer, uint8_t length);
+int32_t sid_pal_mfg_store_write(uint16_t value, const uint8_t *buffer, uint16_t length);
 
 
 /** Read from mfg store.
@@ -210,7 +222,30 @@ int32_t sid_pal_mfg_store_write(int value, const uint8_t *buffer, uint8_t length
  *
  *
  */
-void sid_pal_mfg_store_read(int value, uint8_t *buffer, uint8_t length);
+void sid_pal_mfg_store_read(uint16_t value, uint8_t *buffer, uint16_t length);
+
+
+/** Get length of a tag ID.
+ *
+ *  @param[in]  value  Enum constant for the desired value. Use values from
+ *                     sid_pal_mfg_store_value_t or application defined values
+ *                     here.
+ *
+ *  @return  Length of the value in bytes for the tag that is requested on success,
+ *           0 on failure (not found)
+ */
+uint16_t sid_pal_mfg_store_get_length_for_value(uint16_t value);
+
+
+/** Check if the manufacturing store supports TLV based storage.
+ *
+ *  NOTE: This function only indicates that the platform supports TLV,
+ *        but the device may have storage with fixed offsets that was
+ *        flashed during production.
+ *
+ *  @return  true if the manufacturing store supports TLV based storage
+ */
+bool sid_pal_mfg_store_is_tlv_support(void);
 
 
 /* Functions specific to Sidewalk with special handling */
@@ -241,6 +276,21 @@ bool sid_pal_mfg_store_dev_id_get(uint8_t dev_id[SID_PAL_MFG_STORE_DEVID_SIZE]);
  *  @return true if the device serial number could be found
  */
 bool sid_pal_mfg_store_serial_num_get(uint8_t serial_num[SID_PAL_MFG_STORE_SERIAL_NUM_SIZE]);
+
+/** Get the APID.
+ *  Applicable only for products with short form certificate chain.
+ *
+ *  @param[out] apid The apid
+ */
+void sid_pal_mfg_store_apid_get(uint8_t apid[SID_PAL_MFG_STORE_APID_SIZE]);
+
+
+/** Get the Application public key.
+ *  Applicable only for products with short form certificate chain.
+ *
+ *  @param[out] app_pub The Application public key
+ */
+void sid_pal_mfg_store_app_pub_key_get(uint8_t app_pub[SID_PAL_MFG_STORE_APP_PUB_ED25519_SIZE]);
 
 #ifdef __cplusplus
 }

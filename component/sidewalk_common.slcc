@@ -1,0 +1,86 @@
+id: "sidewalk_common"
+label: amazon_bluetooth
+package: "Flex"
+description: "Simple component to gather all of the sidewalk related libraries and header files."
+category: Example|AWS IoT
+quality: production
+root_path: "component"
+
+config_file:
+  - path: sidewalk_common/config/sl_sidewalk_common_config.h
+
+provides:
+  - name: "sidewalk_common"
+#######################################
+# FAMILIES WITH EXTERNAL SUBGHZ RADIO
+#######################################
+  - name: sl_sidewalk_radio_external
+    condition:
+      - device_generic_family_efr32xg21
+  - name: sl_sidewalk_radio_external
+    condition:
+      - device_generic_family_efr32xg24
+#######################################
+# FAMILIES WITH NATIVE SUBGHZ RADIO
+#######################################
+  - name: sl_sidewalk_radio_native
+    condition:
+      - device_generic_family_efr32xg28
+#######################################
+# FAMILIES WITH BLE
+#######################################
+  - name: sl_sidewalk_radio_ble
+    condition:
+      - device_generic_family_efr32xg21
+  - name: sl_sidewalk_radio_ble
+    condition:
+      - device_generic_family_efr32xg24
+  - name: sl_sidewalk_radio_ble
+    condition:
+      - device_generic_family_efr32xg28
+
+define:
+  - name: REGION_US915
+    condition:
+      - sl_sidewalk_radio_native
+  - name: REGION_US915
+    condition:
+      - sl_sidewalk_radio_external
+  - name: SL_RADIO_NATIVE
+    condition:
+    - sl_sidewalk_radio_native
+  - name: SL_BLE_SUPPORTED
+    condition:
+      - sl_sidewalk_radio_ble
+  - name: SL_FSK_SUPPORTED
+    condition:
+    - sl_sidewalk_radio_external
+  - name: SL_FSK_SUPPORTED
+    condition:
+    - sl_sidewalk_radio_native
+  - name: SL_CSS_SUPPORTED
+    condition:
+      - sl_sidewalk_radio_external
+  - name: RADIO_DRIVER_RAIL
+    value: 1
+    condition:
+    - sl_sidewalk_radio_native
+  - name: SL_TEMPERATURE_SENSOR_INTERNAL
+    condition:
+      - tempdrv
+  - name: SL_TEMPERATURE_SENSOR_EXTERNAL
+    condition:
+      - si70xx_driver
+
+library:
+  - path: "ble_subghz/lib/sl_lib_ble_subghz.a"
+  - path: "ble_subghz/lib/sl_lib_radio_sx126x.a"
+    condition:
+      - sl_sidewalk_radio_external
+template_contribution:
+#---------------- Component Catalog ------------------
+  - name: component_catalog
+    value: sidewalk_common
+ui_hints:
+  visibility: never
+

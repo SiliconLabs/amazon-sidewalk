@@ -8,15 +8,97 @@ root_path: "component"
 
 provides:
   - name: "sidewalk_ble_subghz"
+source:
+  - path: "sources/projects/sid/sal/silabs/sid_pal/ble_adapter/ble_adapter.c"
+    condition:
+      - sl_sidewalk_radio_ble
+  - path: "sources/projects/sid/sal/silabs/sid_pal/serial_bus/sid_pal_serial_bus_spi.c"
+    condition:
+      - spidrv
+      - sl_sidewalk_radio_external
+  - path: "sources/projects/sid/sal/silabs/sid_pal/serial_bus/sid_pal_serial_bus_spi.c"
+    condition:
+      - spidrv_eusart
+      - sl_sidewalk_radio_external
+  - path: "sources/projects/sid/sal/silabs/sid_pal/efr32xgxx_radio/silabs/efr32xgxx.c"
+    condition:
+      - sl_sidewalk_radio_native
+  - path: "sources/projects/sid/sal/silabs/sid_pal/efr32xgxx_radio/efr32xgxx_radio_fsk.c"
+    condition:
+      - sl_sidewalk_radio_native
+  - path: "sources/projects/sid/sal/silabs/sid_pal/efr32xgxx_radio/efr32xgxx_radio_lora.c"
+    condition:
+      - sl_sidewalk_radio_native
+  - path: "sources/projects/sid/sal/silabs/sid_pal/efr32xgxx_radio/efr32xgxx_radio.c"
+    condition:
+      - sl_sidewalk_radio_native
+  - path: "sources/projects/sid/sal/silabs/sid_pal/gpio.c"
+  - path: "sources/projects/sid/sal/silabs/sid_pal/assert.c"
+  - path: "sources/projects/sid/sal/silabs/sid_pal/common.c"
+  - path: "sources/projects/sid/sal/silabs/sid_pal/critical_region.c"
+  - path: "sources/projects/sid/sal/silabs/sid_pal/delay.c"
+  - path: "sources/projects/sid/sal/silabs/sid_pal/log.c"
+  - path: "sources/projects/sid/sal/silabs/sid_pal/mfg_store.c"
+  - path: "sources/projects/sid/sal/silabs/sid_pal/nvm3_manager.c"
+  - path: "sources/projects/sid/sal/silabs/sid_pal/sid_pal_crypto_ifc.c"
+  - path: "sources/projects/sid/sal/silabs/sid_pal/storage_kv.c"
+  - path: "sources/projects/sid/sal/silabs/sid_pal/swi.c"
+  - path: "sources/projects/sid/sal/silabs/sid_pal/temperature.c"
+  - path: "sources/projects/sid/sal/silabs/sid_pal/timer.c"
+  - path: "sources/projects/sid/sal/silabs/sid_pal/uptime.c"
+  - path: "ble_subghz/radio/ble/app_ble_config.c"
+    condition:
+      - sl_sidewalk_radio_ble
+  - path: "ble_subghz/radio/subghz/rail/app_subghz_config.c"
+    condition:
+      - sl_sidewalk_radio_native
+  - path: "ble_subghz/radio/subghz/semtech/app_subghz_config.c"
+    condition:
+      - sl_sidewalk_radio_external
+#############################################
+# PHY sources
+#############################################
+  - path: "sources/phys/xg28/efr32xgxx_railcfg.c"
+    condition:
+    - device_generic_family_efr32xg28
+
+template_file:
+  - path: /ble_subghz/app_gpio_config.c.jinja
+    condition:
+    - sl_sidewalk_radio_external
+  - path: /ble_subghz/app_gpio_config.c.jinja
+    condition:
+    - sl_sidewalk_radio_native
+
+config_file:
+  - path: "ble_subghz/radio/subghz/rail/app_subghz_config.h"
+    condition:
+      - sl_sidewalk_radio_native
+  - path: "ble_subghz/radio/subghz/semtech/app_subghz_config.h"
+    condition:
+      - sl_sidewalk_radio_external
+  - path: "ble_subghz/radio/ble/app_ble_config.h"
+    condition:
+      - sl_sidewalk_radio_ble
+  - path: ble_subghz/config/efr32xg24/app_gpio_config.h
+    condition:
+      - device_generic_family_efr32xg24
+      - sl_sidewalk_radio_external
+  - path: ble_subghz/config/efr32xg28/app_gpio_config.h
+    condition:
+      - device_generic_family_efr32xg28
+  - path: ble_subghz/config/efr32xg21/app_gpio_config.h
+    condition:
+      - device_generic_family_efr32xg21
+      - sl_sidewalk_radio_external
+    unless:
+      - brd4332a
+  - path: ble_subghz/config/kg100s/app_gpio_config.h
+    condition:
+      - brd4332a
+      - sl_sidewalk_radio_external
+
 include:
-  - path: "includes/platform/sid_mcu/silabs/sdk/gsdk/platform/common/inc"
-    file_list:
-    - path: "sl_status.h"
-  - path: "includes/platform/sid_mcu/silabs/sdk/gsdk/protocol/bluetooth/inc"
-    file_list:
-    - path: "sl_bt_api.h"
-    - path: "sl_bgapi.h"
-    - path: "sl_bt_api_compatibility.h"
   - path: "includes/projects/sid/sal/common/public/sid_ifc/sid_ble_cfg"
     file_list:
     - path: "sid_ble_link_config_ifc.h"
@@ -75,7 +157,7 @@ include:
     - path: "sall_app_error.h"
   - path: "includes/projects/sid/sal/common/public/sid_ifc/sid_900_cfg"
     file_list:
-    - path: "sid_900_cfg.h" 
+    - path: "sid_900_cfg.h"
   - path: "includes/projects/sid/sal/common/public/sid_ifc/sid_api"
     file_list:
     - path: "sid_api.h"
@@ -94,15 +176,31 @@ include:
   - path: "includes/projects/sid/sal/silabs/sid_pal/include/"
     file_list:
     - path: "gpio.h"
+    - path: "delay.h"
+    - path: "nvm3_manager.h"
+  - path: "includes/projects/sid/sal/silabs/sid_pal/efr32xgxx_radio/include"
+    condition:
+    - sl_sidewalk_radio_native
+    file_list:
+    - path: 'silabs/efr32xgxx.h'
+    - path: "efr32xgxx_config.h"
+    - path: "efr32xgxx_radio.h"
   - path: "includes/projects/sid/sal/common/internal/sid_time_ops/include"
     file_list:
     - path: "sid_time_ops.h"
     - path: "sid_time_types.h"
+  - path: "includes/projects/sid/sal/common/internal/sid_clock_ifc"
+    file_list:
+    - path: "sid_clock_ifc.h"
   - path: "includes/platform/sid_mcu/semtech/hal/sx126x"
+    condition:
+    - sl_sidewalk_radio_external
     file_list:
     - path: "sx126x_config.h"
     - path: "sx126x_radio.h"
   - path: "includes/platform/sid_mcu/semtech/hal/sx126x/semtech"
+    condition:
+    - sl_sidewalk_radio_external
     file_list:
     - path: "sx126x_hal.h"
     - path: "sx126x_halo.h"
@@ -110,17 +208,18 @@ include:
     - path: "sx126x_timings.h"
     - path: "sx126x.h"
   - path: "includes/platform/sid_mcu/semtech/hal/common"
+    condition:
+    - sl_sidewalk_radio_external
     file_list:
     - path: "semtech_radio_ifc.h"
-  - path: "includes/projects/sid/sal/silabs/sid_pal"
-    file_list:
-    - path: "include/gpio.h"
   - path: "includes/projects/sid/sal/silabs/sid_pal/interfaces/timer_types"
     file_list:
     - path: "sid_pal_timer_types.h"
+  - path: "includes/projects/sid/sal/silabs/sid_pal/ble_adapter/include"
+    file_list:
+    - path: "ble_adapter.h"
   - path: "includes/platform/sid_mcu/silabs/hal/sid_hal"
     file_list:
-    - path: "include/config.h"
     - path: "include/sid_hal_log.h"
   - path: "includes/projects/sid/sal/common/public/sid_pal_ifc/common"
     file_list:
@@ -128,6 +227,11 @@ include:
   - path: "includes/projects/sid/sal/silabs/sid_pal/serial_bus/include"
     file_list:
     - path: "sid_pal_serial_bus_efr32_spi_config.h"
+      condition:
+        - spidrv
+    - path: "sid_pal_serial_bus_efr32_spi_config.h"
+      condition:
+        - spidrv_eusart
   - path: "includes/projects/sid/sal/common/public/sid_pal_ifc/serial_bus_ifc"
     file_list:
     - path: "sid_pal_serial_bus_ifc.h"
@@ -135,9 +239,72 @@ include:
     file_list:
     - path: "sid_900_cfg.h"
 
+define:
+  - name: EFR32XG21
+    condition:
+      - device_generic_family_efr32xg21
+  - name: EFR32XG24
+    condition:
+      - device_generic_family_efr32xg24
+  - name: EFR32XG28
+    condition:
+      - device_generic_family_efr32xg28
+  - name: MODULE_MAUI
+    value: 2
+    condition:
+      - brd4332a
+  - name: EFR32XG21
+    condition:
+      - brd4332a
+
+
 template_contribution:
 #---------------- Component Catalog ------------------
   - name: component_catalog
     value: sidewalk
+  - name: sx126_pinout
+    condition:
+      - sl_sidewalk_radio_external
+    value:
+      id: SL_PIN_BUSY
+      pin: SL_BUSY_PIN
+      port: SL_BUSY_PORT
+  - name: sx126_pinout
+    condition:
+      - sl_sidewalk_radio_external
+    value:
+      id: SL_PIN_ANTSW
+      pin: SL_ANTSW_PIN
+      port: SL_ANTSW_PORT
+  - name: sx126_pinout
+    condition:
+      - sl_sidewalk_radio_external
+    value:
+      id: SL_PIN_DIO
+      pin: SL_DIO_PIN
+      port: SL_DIO_PORT
+  - name: sx126_pinout
+    condition:
+      - sl_sidewalk_radio_external
+    value:
+      id: SL_PIN_NRESET
+      pin: SL_NRESET_PIN
+      port: SL_NRESET_PORT
+  - name: sx126_pinout
+    condition:
+    - sl_sidewalk_radio_external
+    value:
+      id: SL_PIN_NSS
+      pin: SL_SX_CS_PIN
+      port: SL_SX_CS_PORT
+  - name: sx126_pinout
+    condition:
+    - brd4332a
+    - sl_sidewalk_radio_external
+    value:
+      id: SL_PIN_MAUI_BAND_SEL
+      pin: SL_PIN_BAND_SEL_PIN
+      port: SL_PIN_BAND_SEL_PORT
+
 ui_hints:
   visibility: never

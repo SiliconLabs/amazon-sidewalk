@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 Amazon.com, Inc. or its affiliates. All rights reserved.
+ * Copyright 2020-2023 Amazon.com, Inc. or its affiliates. All rights reserved.
  *
  * AMAZON PROPRIETARY/CONFIDENTIAL
  *
@@ -38,6 +38,8 @@
 #ifdef __cplusplus
 extern "C" {
 #endif
+
+#define SID_PAL_KV_STORE_MAX_LENGTH_BYTES 48
 
 /**
  * Initialize the key value storage subsystem

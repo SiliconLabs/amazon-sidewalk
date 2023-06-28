@@ -1,3 +1,11 @@
+v1.1.0
+------
+
+- Supporting GSDK 4.3.0
+- PAL source files are opened
+- The BLE and SubGHz Hello Neighbor sample applications are merged into one
+- The BLE and SubGHz Sidewalk CLI sample applications are merged into one
+
 v1.0.3
 ------
 

@@ -12,17 +12,6 @@ To successfully interface with Amazon Sidewalk, this example application require
 
 > **Ⓘ INFO Ⓘ**: Make note of the additional sub-GHz considerations discussed in the [Silicon Labs Wireless Development Kit](https://docs.silabs.com/amazon-sidewalk/latest/sidewalk-getting-started/prerequisites#silicon-labs-wireless-development-kit) section of the hardware prequisites.
 
-### Troubleshooting
-
-In the Sidewalk Assistant, if the manufacturing page generation is stuck, you need to install the adapter pack for the Sidewalk Assistant:
-
-- Click the **Preferences** icon on the toolbar.
-- In the **Simplicity Studio** > **Adapter Packs** menu, click **Add...**.
-- Browse to your freshly installed GSDK folder, then select the folder `extension/sidewalk/tools/sidewalk_assistant`.
-- Click **Select Folder**.
-- **Sidewalk Assistant** should appear in your adapter packs list.
-- For macOS and Linux platforms you also need to give execution permissions to the binaries in `<your_gsdk_installation>/extension/sidewalk/tools/sidewalk_assistant/deploy/`.
-
 ## Build the Application
 
 With prerequisites in place, generate the primary application image as described in [Getting Started: Create and Compile your Sidewalk Application](https://docs.silabs.com/amazon-sidewalk/latest/sidewalk-getting-started/create-and-compile-application).

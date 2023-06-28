@@ -114,9 +114,13 @@ typedef struct sid_pal_radio_fsk_cad_params {
     int16_t fsk_ed_rssi_threshold;
     uint16_t fsk_ed_duration_mus;
     uint8_t fsk_cs_min_prm_det;
-    uint16_t fsk_cs_duration;
+    uint32_t fsk_cs_duration_us;
 } sid_pal_radio_fsk_cad_params_t;
 
+enum sid_pal_radio_fsk_header_type {
+    SID_PAL_RADIO_FSK_SIDEWALK_HEADER = 0,
+    SID_PAL_RADIO_FSK_CUSTOM_HEADER = 1,
+};
 
 /** Sidewalk phy fsk modulation parameters*/
 typedef struct sid_pal_radio_fsk_modulation_params {
@@ -147,6 +151,8 @@ typedef enum {
     RADIO_FSK_FCS_TYPE_1 = 1,  // 2-octet FCS
 } radio_fsk_fcs_t;
 
+#define SID_MAX_CUSTOM_PHYHDR_SZ 4
+
 /**
  * @brief Radio FSK PHY HDR structure definition
  */
@@ -154,6 +160,8 @@ typedef struct {
     radio_fsk_fcs_t   fcs_type;
     bool              is_data_whitening_enabled;
     bool              is_fec_enabled;
+    uint8_t           phy_hdr_len;
+    uint8_t           phy_header[SID_MAX_CUSTOM_PHYHDR_SZ];
 } sid_pal_radio_fsk_phy_hdr_t;
 
 typedef struct {
@@ -171,13 +179,15 @@ typedef struct sid_pal_radio_fsk_rx_packet_status {
     int8_t rssi_sync;
 } sid_pal_radio_fsk_rx_packet_status_t;
 
-
-/** Sidewalk phy fsk configuation handle*/
+/** Sidewalk phy fsk configuration handle*/
 typedef struct sid_pal_radio_fsk_phy_settings {
     uint32_t freq;
     int8_t power;
     uint8_t sync_word[SID_PAL_RADIO_FSK_SYNC_WORD_LENGTH];
+    uint8_t sync_word_len;
     uint16_t whitening_seed;
+    uint16_t crc_polynomial;
+    uint16_t crc_seed;
     uint32_t tx_timeout;
     uint32_t symbol_timeout;
     sid_pal_radio_fsk_modulation_params_t fsk_modulation_params;

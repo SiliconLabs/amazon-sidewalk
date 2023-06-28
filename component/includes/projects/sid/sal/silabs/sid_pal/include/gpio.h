@@ -1,17 +1,50 @@
-/*
- * Copyright 2021 Amazon.com, Inc. or its affiliates. All rights reserved.
+/***************************************************************************//**
+ * @file
+ * @brief gpio.h
+ *******************************************************************************
+ * # License
+ * <b>Copyright 2023 Silicon Laboratories Inc. www.silabs.com</b>
+ *******************************************************************************
  *
- * AMAZON PROPRIETARY/CONFIDENTIAL
+ * SPDX-License-Identifier: Zlib
  *
- * You may not use this file except in compliance with the terms and
- * conditions set forth in the accompanying LICENSE.txt file. This file is a
- * Modifiable File, as defined in the accompanying LICENSE.txt file.
+ * The licensor of this software is Silicon Laboratories Inc.
+ * Your use of this software is governed by the terms of
+ * Silicon Labs Master Software License Agreement (MSLA)available at
+ * www.silabs.com/about-us/legal/master-software-license-agreement.
+ * This software contains Third Party Software licensed by Silicon Labs from
+ * Amazon.com Services LLC and its affiliates and is governed by the sections
+ * of the MSLA applicable to Third Party Software and the additional terms set
+ * forth in amazon_sidewalk_license.txt.
  *
- * THESE MATERIALS ARE PROVIDED ON AN "AS IS" BASIS. AMAZON SPECIFICALLY
- * DISCLAIMS, WITH RESPECT TO THESE MATERIALS, ALL WARRANTIES, EXPRESS,
- * IMPLIED, OR STATUTORY, INCLUDING THE IMPLIED WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE, AND NON-INFRINGEMENT.
- */
+ * This software is provided 'as-is', without any express or implied
+ * warranty. In no event will the authors be held liable for any damages
+ * arising from the use of this software.
+ *
+ * Permission is granted to anyone to use this software for any purpose,
+ * including commercial applications, and to alter it and redistribute it
+ * freely, subject to the following restrictions:
+ *
+ * 1. The origin of this software must not be misrepresented; you must not
+ *  claim that you wrote the original software. If you use this software
+ *  in a product, an acknowledgment in the product documentation would be
+ *  appreciated but is not required.
+ * 2. Altered source versions must be plainly marked as such, and must not be
+ *  misrepresented as being the original software.
+ * 3. This notice may not be removed or altered from any source distribution.
+ *
+ ******************************************************************************/
+
+#ifndef GPIO_H
+#define GPIO_H
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+// -----------------------------------------------------------------------------
+//                                   Includes
+// -----------------------------------------------------------------------------
 #include <stdlib.h>
 #include <string.h>
 #include <stdint.h>
@@ -21,29 +54,36 @@
 #include <sid_pal_gpio_ifc.h>
 #include "em_gpio.h"
 
+// -----------------------------------------------------------------------------
+//                              Macros and Typedefs
+// -----------------------------------------------------------------------------
 enum SL_PINout {
-    SL_PIN_BUSY = 0,
-    SL_PIN_ANTSW,
-    SL_PIN_DIO,
-    SL_PIN_NRESET,
-    SL_PIN_NSS,
-#ifdef EFR32BG21
-    SL_PIN_MAUI_BAND_SEL,
+  SL_PIN_BUSY = 0,
+  SL_PIN_ANTSW,
+  SL_PIN_DIO,
+  SL_PIN_NRESET,
+  SL_PIN_NSS,
+#ifdef EFR32XG21
+  SL_PIN_MAUI_BAND_SEL,
 #endif
-    SL_PIN_MAX
+  SL_PIN_MAX
 };
 
-struct GPIO_LookupItem
-{
-    uint32_t GPIO_Port;
-    uint8_t Pin;
-    GPIO_Mode_TypeDef mode;
-    sid_pal_gpio_irq_handler_t callback;
-    struct
-    {
-        bool falling;
-        bool rising;
-    }
-    irq;
-    void * callbackarg;
+struct GPIO_LookupItem{
+  uint32_t GPIO_Port;
+  uint8_t Pin;
+  GPIO_Mode_TypeDef mode;
+  sid_pal_gpio_irq_handler_t callback;
+  struct {
+    bool falling;
+    bool rising;
+  }
+  irq;
+  void * callbackarg;
 };
+
+#ifdef __cplusplus
+}
+#endif
+
+#endif /* GPIO_H */

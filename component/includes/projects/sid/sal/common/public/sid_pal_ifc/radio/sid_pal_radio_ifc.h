@@ -92,6 +92,7 @@ typedef enum {
     SID_PAL_RADIO_EVENT_CS_DONE       = 8,
     SID_PAL_RADIO_EVENT_CS_TIMEOUT    = 9,
     SID_PAL_RADIO_EVENT_HEADER_ERROR  = 10,
+    SID_PAL_RADIO_EVENT_SYNC_DET      = 11,
 } sid_pal_radio_events_t;
 
 /** Sidewalk Phy Radio Data Rate*/
@@ -103,7 +104,8 @@ typedef enum sid_pal_radio_data_rate {
     SID_PAL_RADIO_DATA_RATE_150KBPS   = 4,
     SID_PAL_RADIO_DATA_RATE_250KBPS   = 5,
     SID_PAL_RADIO_DATA_RATE_12_5KBPS  = 6,
-    SID_PAL_RADIO_DATA_RATE_MAX_NUM   = SID_PAL_RADIO_DATA_RATE_12_5KBPS, // 0 is not a valid data rate
+    SID_PAL_RADIO_DATA_RATE_CUSTOM    = 7,
+    SID_PAL_RADIO_DATA_RATE_MAX_NUM   = SID_PAL_RADIO_DATA_RATE_CUSTOM, // 0 is not a valid data rate
 } sid_pal_radio_data_rate_t;
 
 typedef enum {
@@ -712,6 +714,18 @@ int32_t sid_pal_radio_prepare_fsk_for_tx(sid_pal_radio_fsk_pkt_cfg_t *tx_pkt_cfg
  *  @retval  On success RADIO_ERROR_NONE, on error a negative number is returned
  */
 int32_t sid_pal_radio_prepare_fsk_for_rx(sid_pal_radio_fsk_pkt_cfg_t *rx_pkt_cfg);
+
+/** @brief Configure crc parameters.
+ *
+ *  This API is used to configure the crc polynomial and seed.
+ *  This API needs to be called before tx and rx in FSK mode.
+ *
+ *  @param[in] crc_polynomial polynomial for crc calculation
+ *  @param[in] crc_seed seed value for crc calculation
+ *  @retval  On success RADIO_ERROR_NONE, on error a negative number is returned
+ */
+int32_t sid_pal_radio_set_fsk_crc_polynomial(uint16_t crc_polynomial, uint16_t crc_seed);
+
 
 #ifdef __cplusplus
 }
