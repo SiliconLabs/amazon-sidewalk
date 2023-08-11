@@ -2,10 +2,10 @@
 id=com.silabs.sdk.sidewalk
 label=Sidewalk
 description=Sidewalk Software Development Kit
-version=1.1.0
-dependantSdkVersion=4.3.0
-dependentBLESdkVersion=6.0.0
-prop.subLabel=Sidewalk\\ 1.1.0
+version=1.2.0
+dependantSdkVersion=4.3.1
+dependentBLESdkVersion=6.1.0
+prop.subLabel=Sidewalk\\ 1.2.0
 
 # General properties are prepended with "prop."
 prop.file.templatesFile=sidewalk_production_templates.xml

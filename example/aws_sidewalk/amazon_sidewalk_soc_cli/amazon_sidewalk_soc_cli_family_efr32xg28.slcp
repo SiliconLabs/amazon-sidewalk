@@ -7,7 +7,7 @@ category: Example|AWS IoT
 
 sdk_extension:
   - id: sidewalk
-    version: 1.1.0
+    version: 1.2.0
 
 source:
   - path: main.c
@@ -37,8 +37,6 @@ component:
 #############################################
 # GSDK extension components
 #############################################
-- id: spidrv_eusart
-  instance: [exp]
 - id: iostream_rtt
 - id: sl_system
 - id: iostream_retarget_stdio
@@ -46,8 +44,6 @@ component:
 - id: gpiointerrupt
 - id: device_init_lfxo
 - id: device_init_hfxo
-- id: simple_led
-  instance: [led0]
 - id: cli
   instance: [inst]
 - id: device_init
@@ -73,27 +69,39 @@ component:
 - id: app_assert
 - id: freertos
 - id: freertos_heap_4
-- id: bluetooth_stack
-- id: bluetooth_on_demand_start
-- id: bluetooth_feature_dynamic_gattdb
-- id: bluetooth_feature_gatt_server
-- id: bluetooth_feature_gatt
-- id: bluetooth_feature_system
-- id: bluetooth_feature_advertiser
-- id: bluetooth_feature_connection
-- id: bluetooth_feature_legacy_advertiser
-- id: bluetooth_feature_sm
 - id: device_init_dpll
 - id: printf
+- id: rail_util_pa
 - id: rail_lib_multiprotocol
+- id: power_manager
+- id: gpiointerrupt
+- id: emlib_gpio
+
+requires:
+  - name: bluetooth_stack
+    condition: [device_supports_bluetooth]
+  - name: bluetooth_feature_dynamic_gattdb
+    condition: [device_supports_bluetooth]
+  - name: bluetooth_feature_gatt_server
+    condition: [device_supports_bluetooth]
+  - name: bluetooth_feature_gatt
+    condition: [device_supports_bluetooth]
+  - name: bluetooth_feature_system
+    condition: [device_supports_bluetooth]
+  - name: bluetooth_feature_advertiser
+    condition: [device_supports_bluetooth]
+  - name: bluetooth_feature_connection
+    condition: [device_supports_bluetooth]
+  - name: bluetooth_feature_legacy_advertiser
+    condition: [device_supports_bluetooth]
+  - name: bluetooth_feature_sm
+    condition: [device_supports_bluetooth]
+  - name: bluetooth_on_demand_start
+    condition: [device_supports_bluetooth]
 
 configuration:
   - name: SL_SIDEWALK_COMMON_DEFAULT_LINK_TYPE
     value: SL_SIDEWALK_LINK_FSK
-  - name: SL_SPIDRV_EUSART_EXP_CS_CONTROL
-    value: spidrvCsControlApplication
-  - name: SL_SPIDRV_EUSART_EXP_BITRATE
-    value: 8000000
   - name: SL_BOARD_ENABLE_VCOM
     value: 0
   - name: SL_IOSTREAM_USART_VCOM_RESTRICT_ENERGY_MODE_TO_ALLOW_RECEPTION
@@ -163,14 +171,19 @@ filter:
 #-------------- Template Contribution ----------------
 template_contribution:
 - name: bluetooth_on_event
+  condition:
+    - device_supports_bluetooth
   value:
     include: ble_adapter.h
     function: sl_ble_adapter_on_event
 - name: event_handler
+  condition:
+    - device_supports_bluetooth
   value:
     event: kernel_start
     include: ble_adapter.h
     handler: sl_ble_adapter_on_kernel_start
+
 #-----------------------------------------------------
 #----------- Sidewalk cli template contribution ------
 - name: cli_group

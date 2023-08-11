@@ -1,3 +1,13 @@
+v1.2.0
+------
+
+- Supporting GSDK 4.3.1
+- EFR32xG23 support
+- EFR32xG28 support
+- EFR32xG24 Dev Kit support
+- Button handling rework
+- Sidewalk CLI sample application improvements
+
 v1.1.0
 ------
 

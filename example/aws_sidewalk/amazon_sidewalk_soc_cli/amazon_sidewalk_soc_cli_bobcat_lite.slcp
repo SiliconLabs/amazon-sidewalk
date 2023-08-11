@@ -1,0 +1,257 @@
+project_name: amazon_sidewalk_soc_cli
+package: amazon_bluetooth
+quality: production
+label: Amazon Sidewalk - SoC CLI
+description: "The Bluetooth sub-GHz Command Line Interface (CLI) sample application allows the user to interact with the endpoint using CLI commands. The application leverages the Amazon Sidewalk protocol to exchange data between the endpoint and the AWS Cloud using one of the 3 radio layers."
+category: Example|AWS IoT
+
+sdk_extension:
+  - id: sidewalk
+    version: 1.2.0
+
+source:
+  - path: main.c
+  - path: app_init.c
+  - path: app_process.c
+  - path: app_cli.c
+  - path: app_cli_settings.c
+include:
+  - path: .
+    file_list:
+    - path: app_init.h
+    - path: app_process.h
+    - path: app_cli_settings.h
+    - path: app_cli.h
+component:
+#############################################
+# Sidewalk extension components
+#############################################
+- id: sidewalk_common
+  from: sidewalk
+- id: sidewalk_ble_subghz
+  from: sidewalk
+- id: sidewalk_cli_util
+  from: sidewalk
+- id: app_log
+  from: sidewalk
+#############################################
+# GSDK extension components
+#############################################
+- id: iostream_rtt
+- id: sl_system
+- id: iostream_retarget_stdio
+- id: iostream_recommended_stream
+- id: cli
+  instance: [inst]
+- id: device_init
+- id: iostream_stdlib_config
+- id: sleeptimer
+- id: udelay
+- id: psa_crypto
+- id: psa_its
+- id: psa_crypto_ecc
+- id: psa_crypto_ecdh
+- id: psa_crypto_ecdsa
+- id: psa_crypto_hmac
+- id: psa_crypto_cmac
+- id: psa_crypto_gcm
+- id: psa_crypto_ccm
+- id: psa_crypto_sha512
+- id: psa_crypto_ecc_curve25519
+- id: psa_crypto_ecc_secp256r1
+- id: psa_crypto_cipher_ctr
+- id: psa_crypto_sha256
+- id: psa_crypto_ecc_edwards25519
+- id: psa_crypto_eddsa
+- id: app_assert
+- id: freertos
+- id: freertos_heap_4
+- id: device_init_dpll
+- id: printf
+- id: rail_lib_multiprotocol
+- id: gpiointerrupt
+- id: emlib_gpio
+
+requires:
+  - name: bluetooth_stack
+    condition: [device_supports_bluetooth]
+  - name: bluetooth_feature_dynamic_gattdb
+    condition: [device_supports_bluetooth]
+  - name: bluetooth_feature_gatt_server
+    condition: [device_supports_bluetooth]
+  - name: bluetooth_feature_gatt
+    condition: [device_supports_bluetooth]
+  - name: bluetooth_feature_system
+    condition: [device_supports_bluetooth]
+  - name: bluetooth_feature_advertiser
+    condition: [device_supports_bluetooth]
+  - name: bluetooth_feature_connection
+    condition: [device_supports_bluetooth]
+  - name: bluetooth_feature_legacy_advertiser
+    condition: [device_supports_bluetooth]
+  - name: bluetooth_feature_sm
+    condition: [device_supports_bluetooth]
+  - name: bluetooth_on_demand_start
+    condition: [device_supports_bluetooth]
+
+configuration:
+  - name: SL_SIDEWALK_COMMON_DEFAULT_LINK_TYPE
+    value: SL_SIDEWALK_LINK_BLE
+  - name: SL_SPIDRV_EUSART_EXP_CS_CONTROL
+    value: spidrvCsControlApplication
+  - name: SL_SPIDRV_EUSART_EXP_BITRATE
+    value: 8000000
+  - name: SL_BOARD_ENABLE_VCOM
+    value: 0
+  - name: SL_IOSTREAM_USART_VCOM_RESTRICT_ENERGY_MODE_TO_ALLOW_RECEPTION
+    value: 0
+    condition: [iostream_usart]
+  - name: SL_IOSTREAM_UART_VCOM_RESTRICT_ENERGY_MODE_TO_ALLOW_RECEPTION
+    value: 0
+    condition: [iostream_uart]
+  - name: configMINIMAL_STACK_SIZE
+    value: 1024
+  - name: configTOTAL_HEAP_SIZE
+    value: 13312
+  - name: SL_HEAP_SIZE
+    value: 8192
+  - name: NVM3_DEFAULT_NVM_SIZE
+    value: 24576
+  - name: APP_LOG_AUTO_NL
+    value: 1
+  - name: SL_BT_CONFIG_MIN_TX_POWER
+    value: (-260)
+  - name: SL_BT_CONFIG_MAX_TX_POWER
+    value: (100)
+  - name: SL_BT_RTOS_EVENT_HANDLER_STACK_SIZE
+    value: 2048
+  - name: APP_LOG_LEVEL_DEBUG_PREFIX
+    value: '"<debug>"'
+  - name: APP_LOG_LEVEL_INFO_PREFIX
+    value: '"<info>"'
+  - name: APP_LOG_LEVEL_WARNING_PREFIX
+    value: '"<warning>"'
+  - name: APP_LOG_LEVEL_ERROR_PREFIX
+    value: '"<error>"'
+  - name: APP_LOG_LEVEL_CRITICAL_PREFIX
+    value: '"<critical>"'
+
+readme:
+  - path: ../../../documentation/example/amazon_sidewalk_soc_bt_subghz_cli/readme.md
+
+ui_hints:
+  highlight:
+    - path: config/sidewalk/sidewalk.asconf
+    - path: readme.md
+      focus: true
+
+config_file:
+  - path: ../../../tools/cloudformation/public/CF_minimal_sidewalk.json
+    directory: sidewalk
+  - path: ../../sidewalk.asconf
+    directory: sidewalk
+  - path: ../../mfg.runconf
+    directory: sidewalk
+
+tag:
+  - hardware:rf:band:2400|915
+  - hardware:device:sdid:215
+
+filter:
+  - name: "Wireless Technology"
+    value: ["Sidewalk", "Bluetooth"]
+  - name: "Ecosystem"
+    value: ["Amazon"]
+  - name: "Device Type"
+    value: ["SoC"]
+  - name: "Project Difficulty"
+    value: ["Advanced"]
+#-------------- Template Contribution ----------------
+template_contribution:
+- name: bluetooth_on_event
+  value:
+    include: ble_adapter.h
+    function: sl_ble_adapter_on_event
+- name: event_handler
+  value:
+    event: kernel_start
+    include: ble_adapter.h
+    handler: sl_ble_adapter_on_kernel_start
+#-----------------------------------------------------
+#----------- Sidewalk cli template contribution ------
+- name: cli_group
+  value:
+     name: sidewalk
+     help: "Sidewalk stack interraction: init, deinit, start, stop"
+     shortcuts:
+       - name: sid
+
+- name: cli_command
+  value:
+     name: init
+     handler: cli_sid_init
+     argument:
+       - type: string
+         help: "ble, fsk or css"
+       - type: additional
+         help: "More args..."
+     help: "Initialize Sidewalk stack for chosen communication link: ble, fsk or css"
+     group: sidewalk
+
+- name: cli_command
+  value:
+     name: start
+     handler: cli_sid_start
+     argument:
+       - type: string
+         help: "ble, fsk or css"
+       - type: additional
+         help: "More args..."
+     help: "Initialize Sidewalk stack for chosen communication link: ble, fsk or css"
+     group: sidewalk
+
+- name: cli_command
+  value:
+     name: stop
+     handler: cli_sid_stop
+     argument:
+       - type: string
+         help: "ble, fsk or css"
+       - type: additional
+         help: "More args"
+
+     help: "Stop Sidewalk stack for chosen communication link: ble, fsk or css"
+     group: sidewalk
+
+- name: cli_command
+  value:
+     name: deinit
+     handler: cli_sid_deinit
+     help: "Deinitialize Sidewalk stack"
+     group: sidewalk
+
+- name: cli_command
+  value:
+     name: reset
+     handler: cli_sid_reset
+     help: "Deregister Sidewalk device and returns to factory settings"
+     group: sidewalk
+
+- name: cli_command
+  value:
+     name: bleconnect
+     handler: cli_sid_ble_connect
+     help: "Before sending uplink to sidewalk network, you first need to connect to the network. Connection will timeout after 30sec of innactivity."
+     group: sidewalk
+
+- name: cli_command
+  value:
+     name: send
+     handler: cli_sid_send
+     argument:
+       - type: string
+         help: "get, set, notify or response"
+       - type: additional
+         help: "ASCII encoded string"
+     help: "Send a custom message to the cloud. arg0: get, set, notify or response; arg1: ASCII encoded string"
+     group: sidewalk

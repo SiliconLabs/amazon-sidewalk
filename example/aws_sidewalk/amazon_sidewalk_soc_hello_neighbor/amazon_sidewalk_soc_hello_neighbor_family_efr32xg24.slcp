@@ -2,12 +2,12 @@ project_name: amazon_sidewalk_soc_hello_neighbor
 package: amazon_bluetooth
 quality: production
 label: Amazon Sidewalk - SoC Bluetooth Sub-GHz Hello Neighbor
-description: "The Hello Neighbor Bluetooth sample application leverages the Amazon Sidewalk protocol to connect to the cloud using a either of the 3 radio layer, depending on board and configuration. The application connects to AWS and send or receive messages on button push."
+description: "The Hello Neighbor sample application leverages the Amazon Sidewalk protocol to connect to the cloud using a either of the 3 radio layer, depending on board and configuration. The application connects to AWS and send or receive messages on button push."
 category: Example|AWS IoT
 
 sdk_extension:
   - id: sidewalk
-    version: 1.1.0
+    version: 1.2.0
 
 source:
   - path: main.c
@@ -29,6 +29,8 @@ component:
   from: sidewalk
 - id: app_log
   from: sidewalk
+- id: app_button_press
+  from: sidewalk
 #############################################
 # GSDK extension components
 #############################################
@@ -40,8 +42,6 @@ component:
 - id: simple_button
   instance: [btn0, btn1]
 - id: iostream_recommended_stream
-- id: simple_led
-  instance: [led0, led1]
 - id: cli
   instance: [inst]
 - id: device_init
@@ -67,19 +67,32 @@ component:
 - id: app_assert
 - id: freertos
 - id: freertos_heap_4
-- id: bluetooth_stack
-- id: bluetooth_on_demand_start
-- id: bluetooth_feature_dynamic_gattdb
-- id: bluetooth_feature_gatt_server
-- id: bluetooth_feature_gatt
-- id: bluetooth_feature_system
-- id: bluetooth_feature_advertiser
-- id: bluetooth_feature_connection
-- id: bluetooth_feature_legacy_advertiser
-- id: bluetooth_feature_sm
 - id: device_init_dpll
 - id: printf
 - id: rail_lib_multiprotocol
+
+requires:
+  - name: bluetooth_stack
+    condition: [device_supports_bluetooth]
+  - name: bluetooth_feature_dynamic_gattdb
+    condition: [device_supports_bluetooth]
+  - name: bluetooth_feature_gatt_server
+    condition: [device_supports_bluetooth]
+  - name: bluetooth_feature_gatt
+    condition: [device_supports_bluetooth]
+  - name: bluetooth_feature_system
+    condition: [device_supports_bluetooth]
+  - name: bluetooth_feature_advertiser
+    condition: [device_supports_bluetooth]
+  - name: bluetooth_feature_connection
+    condition: [device_supports_bluetooth]
+  - name: bluetooth_feature_legacy_advertiser
+    condition: [device_supports_bluetooth]
+  - name: bluetooth_feature_sm
+    condition: [device_supports_bluetooth]
+  - name: bluetooth_on_demand_start
+    condition: [device_supports_bluetooth]
+
 
 configuration:
   - name: SL_SIDEWALK_COMMON_DEFAULT_LINK_TYPE
@@ -171,9 +184,9 @@ template_contribution:
 #------------------ CLI commands ---------------------
  - name: cli_command
    value:
-      name: update
-      handler: cli_update
-      help: "Updates counter and sends it to the cloud"
+      name: send
+      handler: cli_send
+      help: "Updates counter value and sends it to the cloud"
  - name: cli_command
    value:
       name: reset
@@ -191,19 +204,6 @@ template_contribution:
       help: "Gets current MTU"
  - name: cli_command
    value:
-      name: switch_fsk_css
-      handler: cli_switch_fsk_css
-      help: "Switch between FSK/CSS"
- - name: cli_command
-   value:
-      name: send
-      handler: cli_send
-      help: "Sends an ASCII string with a length of N specified in the first argument"
-      argument:
-        - type: uint8
-          help: "Length (N)"
- - name: cli_command
-   value:
-      name: connect
-      handler: cli_connect
-      help: "Requests BLE connection"
+      name: switch_link
+      handler: cli_link_switch
+      help: "Switch between BLE/FSK/CSS depending on available radio links"

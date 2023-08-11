@@ -61,6 +61,9 @@ source:
   - path: "sources/phys/xg28/efr32xgxx_railcfg.c"
     condition:
     - device_generic_family_efr32xg28
+  - path: "sources/phys/xg23/efr32xgxx_railcfg.c"
+    condition:
+    - device_generic_family_efr32xg23
 
 template_file:
   - path: /ble_subghz/app_gpio_config.c.jinja
@@ -97,6 +100,9 @@ config_file:
     condition:
       - brd4332a
       - sl_sidewalk_radio_external
+  - path: ble_subghz/config/efr32xg23/app_gpio_config.h
+    condition:
+      - device_generic_family_efr32xg23
 
 include:
   - path: "includes/projects/sid/sal/common/public/sid_ifc/sid_ble_cfg"
@@ -146,6 +152,8 @@ include:
     file_list:
     - path: "sid_pal_critical_region_ifc.h"
   - path: "includes/projects/sid/sal/common/public/sid_pal_ifc/ble_adapter"
+    condition:
+    - sl_sidewalk_radio_ble
     file_list:
     - path: "sid_pal_ble_adapter_ifc.h"
   - path: "includes/projects/sid/sal/common/public/sid_pal_ifc/assert"
@@ -216,6 +224,8 @@ include:
     file_list:
     - path: "sid_pal_timer_types.h"
   - path: "includes/projects/sid/sal/silabs/sid_pal/ble_adapter/include"
+    condition:
+    - sl_sidewalk_radio_ble
     file_list:
     - path: "ble_adapter.h"
   - path: "includes/platform/sid_mcu/silabs/hal/sid_hal"
@@ -249,13 +259,38 @@ define:
   - name: EFR32XG28
     condition:
       - device_generic_family_efr32xg28
-  - name: MODULE_MAUI
+  - name: EFR32XG23
+    condition:
+      - device_generic_family_efr32xg23
+  - name: MODULE_KG100S
     value: 2
     condition:
       - brd4332a
   - name: EFR32XG21
     condition:
       - brd4332a
+
+recommends:
+  - id: bluetooth_stack
+    condition: [device_supports_bluetooth]
+  - id: bluetooth_feature_dynamic_gattdb
+    condition: [device_supports_bluetooth]
+  - id: bluetooth_feature_gatt_server
+    condition: [device_supports_bluetooth]
+  - id: bluetooth_feature_gatt
+    condition: [device_supports_bluetooth]
+  - id: bluetooth_feature_system
+    condition: [device_supports_bluetooth]
+  - id: bluetooth_feature_advertiser
+    condition: [device_supports_bluetooth]
+  - id: bluetooth_feature_connection
+    condition: [device_supports_bluetooth]
+  - id: bluetooth_feature_legacy_advertiser
+    condition: [device_supports_bluetooth]
+  - id: bluetooth_feature_sm
+    condition: [device_supports_bluetooth]
+  - id: bluetooth_on_demand_start
+    condition: [device_supports_bluetooth]
 
 
 template_contribution:
@@ -302,7 +337,7 @@ template_contribution:
     - brd4332a
     - sl_sidewalk_radio_external
     value:
-      id: SL_PIN_MAUI_BAND_SEL
+      id: SL_PIN_KG100S_BAND_SEL
       pin: SL_PIN_BAND_SEL_PIN
       port: SL_PIN_BAND_SEL_PORT
 

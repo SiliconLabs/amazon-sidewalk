@@ -257,7 +257,7 @@
             ]
           },
           "Code": {
-            "ZipFile": "import json\nimport base64\nimport boto3\n\ndef lambda_handler(event, context):\n  message = json.dumps(event)\n  print(message)\n  payload_data = base64.b64decode(event[\"PayloadData\"])\n  decoded_payload = bytearray.fromhex(base64.b64decode(event[\"PayloadData\"]).decode(\"utf-8\")).decode()\n\n  client = boto3.client('iot-data', region_name='us-east-1')\n  # Change topic, qos and payload\n  response = client.publish(\n      topic='demo/gatewaytest',\n      qos=1,\n      payload=json.dumps({\"payload\":decoded_payload, \"WirelessMetadata\":event[\"WirelessMetadata\"]})\n    )\n"
+            "ZipFile": "import json\nimport base64\nimport boto3\n\ndef lambda_handler(event, context):\n  message = json.dumps(event)\n  print(message)\n  payload_data = base64.b64decode(event[\"PayloadData\"])\n  decoded_payload = bytearray.fromhex(base64.b64decode(event[\"PayloadData\"]).decode(\"utf-8\")).decode().replace(\"\\u0000\", \"\")\n\n  client = boto3.client('iot-data', region_name='us-east-1')\n  # Change topic, qos and payload\n  response = client.publish(\n      topic='demo/gatewaytest',\n      qos=1,\n      payload=json.dumps({\"payload\":decoded_payload, \"WirelessMetadata\":event[\"WirelessMetadata\"]})\n    )\n"
           }
         }
       },

@@ -31,6 +31,7 @@
 // -----------------------------------------------------------------------------
 //                                   Includes
 // -----------------------------------------------------------------------------
+#include <stdio.h>
 #include <string.h>
 
 #include "app_process.h"
@@ -40,6 +41,7 @@
 #include "sid_api.h"
 #include "sl_sidewalk_common_config.h"
 #include "sl_malloc.h"
+#include "app_button_press.h"
 
 #if (defined(SL_FSK_SUPPORTED) || defined(SL_CSS_SUPPORTED))
 #include "app_subghz_config.h"
@@ -81,15 +83,6 @@ static void queue_event(QueueHandle_t queue, enum event_type event, bool in_isr)
  * @param[in] app_context The context which is applicable for the current application
  ******************************************************************************/
 static void send_counter_update(app_context_t *app_context);
-
-/*******************************************************************************
- * Function to send an array of 0x31 (ASCII symbol '1') with the length specified in `len`
- *
- * @param[in] app_context The context which is applicable for the current application
- * @param[in] config The configuration parameters
- * @param[in] len Data length
- ******************************************************************************/
-static void send(app_context_t *app_context, struct sid_config *config, uint8_t len);
 
 /*******************************************************************************
  * Function to get time
@@ -162,7 +155,7 @@ static void on_sidewalk_status_changed(const struct sid_status *status, void *co
 static void on_sidewalk_factory_reset(void *context);
 
 /*******************************************************************************
- * Function to switch between FSK/CSS modulation
+ * Function to switch between available links
  *
  * @param[out] app_context The context which is applicable for the current application
  * @param[out] config The configuration parameters
@@ -170,7 +163,7 @@ static void on_sidewalk_factory_reset(void *context);
  * @returns #true           on success
  * @returns #false          on failure
  ******************************************************************************/
-static bool toggle_fsk_css_switch(app_context_t *app_context, struct sid_config *config);
+static bool link_switch(app_context_t *app_context, struct sid_config *config);
 
 /*******************************************************************************
  * Function to convert link_type configuration to sidewalk stack link_mask
@@ -201,6 +194,10 @@ static void toggle_connection_request(app_context_t *context);
 static QueueHandle_t g_event_queue;
 // uint8_t type arguments
 static uint8_t cli_arg_uint8_t;
+#if defined(SL_BLE_SUPPORTED)
+// button send update request
+static bool button_send_update_req;
+#endif
 
 static app_context_t application_context;
 // -----------------------------------------------------------------------------
@@ -237,6 +234,9 @@ static int32_t init_and_start_link(app_context_t *context, struct sid_config *co
     }
   }
   application_context.current_link_type = link_mask;
+#if defined(SL_BLE_SUPPORTED)
+  button_send_update_req = false;
+#endif
 
   return 0;
 
@@ -307,6 +307,7 @@ void main_thread(void * context)
 
 #if defined(SL_BLE_SUPPORTED)
   config.link_config = app_get_ble_config();
+  button_send_update_req = false;
 #endif
 
   if (init_and_start_link(&application_context, &config, link_type_to_link_mask(SL_SIDEWALK_COMMON_REGISTRATION_LINK)) != 0) {
@@ -343,16 +344,6 @@ void main_thread(void * context)
           }
           break;
 
-        case EVENT_TYPE_SEND:
-          app_log_info("app: send event");
-
-          if (application_context.state == STATE_SIDEWALK_READY) {
-            send(&application_context, &config, cli_arg_uint8_t);
-          } else {
-            app_log_warning("app: sidewalk not ready");
-          }
-          break;
-
         case EVENT_TYPE_GET_TIME:
           app_log_info("app: get time event");
 
@@ -371,10 +362,10 @@ void main_thread(void * context)
           factory_reset(&application_context);
           break;
 
-        case EVENT_TYPE_FSK_CSS_SWITCH:
-          app_log_info("app: FSK/CSS switch event");
+        case EVENT_TYPE_LINK_SWITCH:
+          app_log_info("app: link switch event");
 
-          if (toggle_fsk_css_switch(&application_context, &config) != true) {
+          if (link_switch(&application_context, &config) != true) {
             goto error;
           }
           break;
@@ -418,24 +409,49 @@ void main_thread(void * context)
 /*******************************************************************************
  * Button handler callback
  * @param[in] handle Button handler
+ * @note This callback is called in the interrupt context
  ******************************************************************************/
-void sl_button_on_change(const sl_button_t *handle)
+void app_button_press_cb(uint8_t button, uint8_t duration)
 {
-  if (sl_button_get_state(handle) == SL_SIMPLE_BUTTON_PRESSED) {
-    if (&sl_button_btn0 == handle) {
-      if (application_context.current_link_type & SID_LINK_TYPE_1) {
-#if defined(SL_BLE_SUPPORTED)
-        app_trigger_connection_request();
-#endif
-      } else {
-        app_trigger_fsk_css_switch();
-      }
-    } else if (&sl_button_btn1 == handle) {
-      app_trigger_send_counter_update();
+  if (button == 0) { // PB0
+#if !defined(SL_CATALOG_BTN1_PRESENT) // KG100S
+    if (duration != APP_BUTTON_PRESS_DURATION_SHORT) { // long press
+      app_trigger_link_switch();
+    } else { // short press
+      app_trigger_connect_and_send();
     }
+#else /* All others target others than KG100S */
+    app_trigger_link_switch();
+#endif /* !defined(SL_CATALOG_BTN1_PRESENT) */
+  } else { // PB1
+#if !defined(SL_CATALOG_BTN1_PRESENT) //KG100S
+    app_log_error("app: KG100S button 1 is not configured.");
+#else
+    app_trigger_connect_and_send();
+#endif /* !defined(SL_CATALOG_BTN1_PRESENT) */
   }
 }
 #endif
+
+void app_trigger_connect_and_send(void)
+{
+  if(application_context.current_link_type & SID_LINK_TYPE_1) { // BLE
+#if defined(SL_BLE_SUPPORTED)
+    if (application_context.state != STATE_SIDEWALK_READY) {
+      if (!button_send_update_req) {
+        button_send_update_req = true;
+        app_trigger_connection_request();
+      } else {
+        app_log_info("app: waiting for connection");
+      }
+    } else {
+      app_trigger_send_counter_update();
+    }
+#endif /* defined(SL_BLE_SUPPORTED) */
+  } else { // FSK or CSS
+    app_trigger_send_counter_update();
+  }
+}
 
 #if defined(SL_BLE_SUPPORTED)
 static void toggle_connection_request(app_context_t *context)
@@ -443,14 +459,12 @@ static void toggle_connection_request(app_context_t *context)
   if (context->state == STATE_SIDEWALK_READY) {
     app_log_info("app: sidewalk ready, operation not valid");
   } else {
-    bool next = !context->connection_request;
+    context->connection_request = true;
 
-    app_log_info("app: %s connection request", next ? "set" : "clear");
+    app_log_info("app: set connection request");
 
-    sid_error_t ret = sid_ble_bcn_connection_request(context->sidewalk_handle, next);
-    if (ret == SID_ERROR_NONE) {
-      context->connection_request = next;
-    } else {
+    sid_error_t ret = sid_ble_bcn_connection_request(context->sidewalk_handle, context->connection_request);
+    if (ret != SID_ERROR_NONE) {
       app_log_error("app: connection request failed: %d", (int)ret);
     }
   }
@@ -464,11 +478,11 @@ void app_trigger_switching_to_default_link(void)
   app_log_info("app: initialising default link");
 }
 
-void app_trigger_fsk_css_switch(void)
+void app_trigger_link_switch(void)
 {
-  queue_event(g_event_queue, EVENT_TYPE_FSK_CSS_SWITCH, true);
+  queue_event(g_event_queue, EVENT_TYPE_LINK_SWITCH, true);
 
-  app_log_info("app: FSK/CSS switch user event");
+  app_log_info("app: link switch user event");
 }
 
 void app_trigger_send_counter_update(void)
@@ -483,14 +497,6 @@ void app_trigger_factory_reset(void)
   queue_event(g_event_queue, EVENT_TYPE_FACTORY_RESET, true);
 
   app_log_info("app: factory reset user event");
-}
-
-void app_trigger_send(uint8_t len)
-{
-  cli_arg_uint8_t = len;
-  queue_event(g_event_queue, EVENT_TYPE_SEND, true);
-
-  app_log_info("app: send user event");
 }
 
 void app_trigger_get_time(void)
@@ -602,6 +608,14 @@ static void on_sidewalk_status_changed(const struct sid_status *status,
   app_log_info("app: registration status: %d, time sync status: %d, link status: %d",
                (int) status->detail.registration_status, (int) status->detail.time_sync_status,
                (int) status->detail.link_status_mask);
+
+#if defined(SL_BLE_SUPPORTED)
+  if (button_send_update_req && status->state == SID_STATE_READY) {
+    button_send_update_req = false;
+    app_trigger_send_counter_update();
+  }
+#endif
+
 }
 
 static void on_sidewalk_factory_reset(void *context)
@@ -612,43 +626,75 @@ static void on_sidewalk_factory_reset(void *context)
   NVIC_SystemReset();
 }
 
-static bool toggle_fsk_css_switch(app_context_t *app_context, struct sid_config *config)
+/*******************************************************************************
+ * Function that returns the next available link in the order BLE -> FSK -> CSS
+ * @param[in] current_link Current link
+ * @return Next available link
+ * @note Returns the same link if there is no available link to switch
+ ******************************************************************************/
+static enum sid_link_type get_next_link(enum sid_link_type current_link)
 {
-#if !defined(SL_CSS_SUPPORTED)
-  (void)app_context;
-  (void)config;
-  app_log_warning("app: CSS is not supported for this target");
-  return true;
-#else
-  enum sid_link_type current_link_type = config->link_mask;
-
-  if (current_link_type == SID_LINK_TYPE_2) {
-    if (init_and_start_link(app_context, config, SID_LINK_TYPE_3) != 0) {
-      return false;
-    }
-    app_log_info("app: Switching to CSS...");
-  } else if (current_link_type == SID_LINK_TYPE_3) {
-    if (init_and_start_link(app_context, config, SID_LINK_TYPE_2) != 0) {
-      return false;
-    }
+  // BLE -> FSK -> CSS
+  if (current_link == SID_LINK_TYPE_1) {
+#if defined(SL_FSK_SUPPORTED)
     app_log_info("app: Switching to FSK...");
+    return SID_LINK_TYPE_2;
+#elif defined(SL_CSS_SUPPORTED)
+    app_log_info("app: Switching to CSS...");
+    return SID_LINK_TYPE_3;
+#endif
+    return SID_LINK_TYPE_1;
+  } else if (current_link == SID_LINK_TYPE_2) {
+#if defined(SL_CSS_SUPPORTED)
+    app_log_info("app: Switching to CSS...");
+    return SID_LINK_TYPE_3;
+#elif defined(SL_BLE_SUPPORTED)
+    app_log_info("app: Switching to BLE...");
+    return SID_LINK_TYPE_1;
+#endif
+    return SID_LINK_TYPE_2;
+  } else { // (current_link == SID_LINK_TYPE_3)
+#if defined(SL_BLE_SUPPORTED)
+    app_log_info("app: Switching to BLE...");
+    return SID_LINK_TYPE_1;
+#elif defined(SL_FSK_SUPPORTED)
+    app_log_info("app: Switching to FSK...");
+    return SID_LINK_TYPE_2;
+#endif
+    return SID_LINK_TYPE_3;
+  }
+}
+
+static bool link_switch(app_context_t *app_context, struct sid_config *config)
+{
+  enum sid_link_type current_link = config->link_mask;
+  enum sid_link_type next_link = get_next_link(config->link_mask);
+
+  if (current_link != next_link) {
+    if (init_and_start_link(app_context, config, next_link) != 0) {
+      return false;
+    }
   } else {
-    app_log_warning("app: FSK/CSS switch can not be performed");
+    app_log_warning("app: only one link is available on this platform...");
   }
 
   return true;
-#endif
 }
 
 static void send_counter_update(app_context_t *app_context)
 {
+  char counter_buff[10] = {0};
+
   if (app_context->state == STATE_SIDEWALK_READY
       || app_context->state == STATE_SIDEWALK_SECURE_CONNECTION) {
     app_log_info("app: sending counter update: %d", app_context->counter);
 
+    // buffer for str representation of integer value
+    snprintf(counter_buff, sizeof(counter_buff), "%d", app_context->counter );
+
     struct sid_msg msg = {
-      .data = (uint8_t *)&app_context->counter,
-      .size = sizeof(uint8_t)
+      .data = (void *)counter_buff,
+      .size = sizeof(counter_buff)
     };
     struct sid_msg_desc desc = {
       .type = SID_MSG_TYPE_NOTIFY,
@@ -665,51 +711,6 @@ static void send_counter_update(app_context_t *app_context)
     app_context->counter++;
   } else {
     app_log_error("app: sidewalk is not ready yet");
-  }
-}
-
-static void send(app_context_t *app_context, struct sid_config *config, uint8_t len)
-{
-  size_t mtu = 0;
-  sid_error_t ret = sid_get_mtu(app_context->sidewalk_handle, config->link_mask, &mtu);
-  if (ret == SID_ERROR_NONE) {
-    if (len > 0 && len <= mtu) {
-      if (app_context->state == STATE_SIDEWALK_READY || app_context->state == STATE_SIDEWALK_SECURE_CONNECTION) {
-        app_log_info("app: sending %d bytes", (int)len);
-
-        uint8_t *data = (uint8_t *)sl_malloc(len * sizeof(uint8_t));
-        if (data != NULL) {
-          memset(data, 0x31, len);
-
-          struct sid_msg msg = {
-            .data = data,
-            .size = len
-          };
-          struct sid_msg_desc desc = {
-            .type = SID_MSG_TYPE_NOTIFY,
-            .link_type = SID_LINK_TYPE_ANY,
-          };
-
-          sid_error_t ret = sid_put_msg(app_context->sidewalk_handle, &msg, &desc);
-          if (ret != SID_ERROR_NONE) {
-            app_log_error("app: failed queueing data: %d", (int)ret);
-          } else {
-            app_log_info("app: queued data message id: %u", desc.id);
-          }
-
-          sl_free(data);
-          data = NULL;
-        } else {
-          app_log_error("app: memory allocation failed for the message");
-        }
-      } else {
-        app_log_error("app: sidewalk is not ready yet");
-      }
-    } else {
-      app_log_error("app: Unsupported argument");
-    }
-  } else {
-    app_log_error("app: failed getting MTU: %d", ret);
   }
 }
 

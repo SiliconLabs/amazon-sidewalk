@@ -86,14 +86,14 @@ static uint32_t sl_app_util_printable_hex_line(char *line_buffer,
 /**************************************************************************//**
  * @brief App util get string
  *****************************************************************************/
-sl_status_t sl_app_util_get_string(char *const value_str,
+sl_status_t sl_sidewalk_cli_util_get_string(char *const value_str,
                                    uint32_t value,
-                                   const sl_app_enum_t *const value_enum_list,
+                                   const sl_sidewalk_cli_util_enum_t *const value_enum_list,
                                    uint8_t is_value_signed,
                                    uint8_t is_value_hex,
                                    uint8_t value_length)
 {
-  const sl_app_enum_t *value_enum;
+  const sl_sidewalk_cli_util_enum_t *value_enum;
   char value_format_str[10];
   char value_temp[10];
 
@@ -101,7 +101,7 @@ sl_status_t sl_app_util_get_string(char *const value_str,
   value_str[0] = '\0';
 
   // Attempt to find a matching enumeration
-  value_enum = sl_app_util_get_enum_by_integer(value_enum_list, value);
+  value_enum = sl_sidewalk_cli_util_get_enum_by_integer(value_enum_list, value);
 
   if (value_length && is_value_hex) {
     // Fixed-length hex values are always zero-filled
@@ -152,17 +152,17 @@ sl_status_t sl_app_util_get_string(char *const value_str,
 /**************************************************************************//**
  * @brief App util get integer
  *****************************************************************************/
-sl_status_t sl_app_util_get_integer(uint32_t *const value,
+sl_status_t sl_sidewalk_cli_util_get_integer(uint32_t *const value,
                                     const char *value_str,
-                                    const sl_app_enum_t *const value_enum_list,
+                                    const sl_sidewalk_cli_util_enum_t *const value_enum_list,
                                     uint8_t is_value_signed)
 {
-  const sl_app_enum_t *value_enum;
+  const sl_sidewalk_cli_util_enum_t *value_enum;
   uint32_t value_base = 10;
   char *value_end = NULL;
 
   // Attempt to find a matching enumeration
-  value_enum = sl_app_util_get_enum_by_string(value_enum_list, value_str);
+  value_enum = sl_sidewalk_cli_util_get_enum_by_string(value_enum_list, value_str);
 
   // Return a matching enumeration value directly
   if (value_enum) {
@@ -196,7 +196,7 @@ sl_status_t sl_app_util_get_integer(uint32_t *const value,
 /**************************************************************************//**
  * @brief App util get enum by string
  *****************************************************************************/
-const sl_app_enum_t *sl_app_util_get_enum_by_string(const sl_app_enum_t *value_enum_list,
+const sl_sidewalk_cli_util_enum_t *sl_sidewalk_cli_util_get_enum_by_string(const sl_sidewalk_cli_util_enum_t *value_enum_list,
                                                     const char *const value)
 {
   while (value_enum_list && value_enum_list->value_str) {
@@ -213,7 +213,7 @@ const sl_app_enum_t *sl_app_util_get_enum_by_string(const sl_app_enum_t *value_e
 /**************************************************************************//**
  * @brief App util get enum by integerApp util get enum by integer
  *****************************************************************************/
-const sl_app_enum_t *sl_app_util_get_enum_by_integer(const sl_app_enum_t *value_enum_list,
+const sl_sidewalk_cli_util_enum_t *sl_sidewalk_cli_util_get_enum_by_integer(const sl_sidewalk_cli_util_enum_t *value_enum_list,
                                                      uint32_t value)
 {
   while (value_enum_list && value_enum_list->value_str) {
@@ -230,7 +230,7 @@ const sl_app_enum_t *sl_app_util_get_enum_by_integer(const sl_app_enum_t *value_
 /**************************************************************************//**
  * @brief App util printable data init
  *****************************************************************************/
-char *sl_app_util_printable_data_init(sl_app_printable_data_ctx_t *const ctx,
+char *sl_sidewalk_cli_util_printable_data_init(sl_sidewalk_cli_util_printable_data_ctx_t *const ctx,
                                       const uint8_t *const data,
                                       const uint16_t data_length,
                                       uint8_t is_hex,
@@ -251,13 +251,13 @@ char *sl_app_util_printable_data_init(sl_app_printable_data_ctx_t *const ctx,
   ctx->line_length = line_length;
 
   // Get the first line
-  return sl_app_util_printable_data_next(ctx);
+  return sl_sidewalk_cli_util_printable_data_next(ctx);
 }
 
 /**************************************************************************//**
  * @brief App util get next printable data
  *****************************************************************************/
-char *sl_app_util_printable_data_next(sl_app_printable_data_ctx_t *const ctx)
+char *sl_sidewalk_cli_util_printable_data_next(sl_sidewalk_cli_util_printable_data_ctx_t *const ctx)
 {
   uint32_t ret;
 

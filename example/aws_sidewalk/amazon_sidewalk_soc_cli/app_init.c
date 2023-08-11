@@ -43,14 +43,10 @@
 #include "sid_pal_mfg_store_ifc.h"
 #include "sid_pal_storage_kv_ifc.h"
 #include "sid_pal_common_ifc.h"
+#include "sl_system_kernel.h"
 
 #if (defined(SL_FSK_SUPPORTED) || defined(SL_CSS_SUPPORTED))
 #include "app_subghz_config.h"
-#endif
-
-#if defined(SL_BLE_SUPPORTED)
-#include "ble_adapter.h"
-#include "sl_bt_rtos_adaptation.h"
 #endif
 
 // -----------------------------------------------------------------------------
@@ -89,9 +85,9 @@ void app_init(void)
   // Initialize the common PAL interfaces
   sid_error_t ret = sid_pal_common_init();
   if (ret != SID_ERROR_NONE) {
-    app_log_error("Sidewalk platform common init failed, err: %d\n", ret);
+    app_log_error("app: sidewalk platform common init failed, err: %d\n", ret);
   }
-  app_assert(ret == SID_ERROR_NONE, "Sidewalk platform common init failed\n");
+  app_assert(ret == SID_ERROR_NONE, "sidewalk platform common init failed\n");
 
   // Initialize the Key-Value storage PAL module
   ret = sid_pal_storage_kv_init();
@@ -113,7 +109,7 @@ void app_init(void)
 
 #if defined(SL_RADIO_NATIVE)
   set_radio_efr32xgxx_device_config(get_radio_cfg());
-#else
+#elif defined(SL_RADIO_EXTERNAL)
   set_radio_sx126x_device_config(get_radio_cfg());
 #endif
 
@@ -126,15 +122,16 @@ void app_init(void)
     .state           = STATE_INIT
   };
 
-  BaseType_t status = xTaskCreate(main_task, "MAIN", MAIN_TASK_STACK_SIZE, &app_context, 1, &app_context.main_task);
+  BaseType_t status = xTaskCreate(main_task,
+                                  "MAIN",
+                                  MAIN_TASK_STACK_SIZE,
+                                  &app_context,
+                                  1,
+                                  &app_context.main_task);
   app_assert(status == pdPASS, "main task creation failed\n");
 
-#if defined(SL_BLE_SUPPORTED)
-  sli_bt_rtos_adaptation_kernel_start();
-  sl_ble_adapter_on_kernel_start();
-#endif
-
-  vTaskStartScheduler();
+  // Start the kernel. Task(s) created in app_init() will start running.
+  sl_system_kernel_start();
 }
 
 // -----------------------------------------------------------------------------

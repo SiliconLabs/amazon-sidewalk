@@ -519,7 +519,6 @@ static sid_error_t efr32_crypto_ecc_dsa(sid_pal_dsa_params_t *params)
 
   switch (params->algo) {
     case SID_PAL_EDDSA_ED25519:
-#if (_SILICON_LABS_SECURITY_FEATURE == _SILICON_LABS_SECURITY_FEATURE_VAULT)
       psa_set_key_bits(&key_attr, 255);
       psa_set_key_algorithm(&key_attr, PSA_ALG_PURE_EDDSA);
       if (params->mode == SID_PAL_CRYPTO_SIGN) {
@@ -532,9 +531,6 @@ static sid_error_t efr32_crypto_ecc_dsa(sid_pal_dsa_params_t *params)
         psa_set_key_usage_flags(&key_attr, PSA_KEY_USAGE_VERIFY_MESSAGE);
       }
       break;
-#else
-      return SID_ERROR_NOSUPPORT;
-#endif
 
     case SID_PAL_ECDSA_SECP256R1:
       psa_set_key_bits(&key_attr, 256);   // Independent of private or public key
@@ -564,7 +560,6 @@ static sid_error_t efr32_crypto_ecc_dsa(sid_pal_dsa_params_t *params)
           return SID_ERROR_GENERIC;
         }
       }
-#if (_SILICON_LABS_SECURITY_FEATURE == _SILICON_LABS_SECURITY_FEATURE_VAULT)
       if (params->algo == SID_PAL_EDDSA_ED25519) {
         ret = psa_sign_message(key_id,
                                PSA_ALG_PURE_EDDSA,
@@ -581,7 +576,6 @@ static sid_error_t efr32_crypto_ecc_dsa(sid_pal_dsa_params_t *params)
         }
         break;
       }
-#endif
 
       ret = psa_sign_message(key_id,
                              PSA_ALG_ECDSA(PSA_ALG_SHA_256),
@@ -599,7 +593,6 @@ static sid_error_t efr32_crypto_ecc_dsa(sid_pal_dsa_params_t *params)
       break;
 
     case SID_PAL_CRYPTO_VERIFY: {
-#if (_SILICON_LABS_SECURITY_FEATURE == _SILICON_LABS_SECURITY_FEATURE_VAULT)
       if (params->algo == SID_PAL_EDDSA_ED25519) {
         ret = psa_import_key(&key_attr, params->key, params->key_size,
                              &key_id);
@@ -620,7 +613,6 @@ static sid_error_t efr32_crypto_ecc_dsa(sid_pal_dsa_params_t *params)
         }
         break;
       }
-#endif
 
       // Public key in uncompressed format
       uint8_t buf_tmp[65];
@@ -737,7 +729,6 @@ static sid_error_t efr32_crypto_ecc_key_gen(sid_pal_ecc_key_gen_params_t *params
 
   switch (params->algo) {
     case SID_PAL_EDDSA_ED25519:
-#if (_SILICON_LABS_SECURITY_FEATURE == _SILICON_LABS_SECURITY_FEATURE_VAULT)
       psa_set_key_type(&key_attr,
                        PSA_KEY_TYPE_ECC_KEY_PAIR(PSA_ECC_FAMILY_TWISTED_EDWARDS));
       psa_set_key_bits(&key_attr, 255);
@@ -745,9 +736,6 @@ static sid_error_t efr32_crypto_ecc_key_gen(sid_pal_ecc_key_gen_params_t *params
                               PSA_KEY_USAGE_EXPORT | PSA_KEY_USAGE_SIGN_MESSAGE);
       psa_set_key_algorithm(&key_attr, PSA_ALG_PURE_EDDSA);
       break;
-#else
-      return SID_ERROR_NOSUPPORT;
-#endif
 
     case SID_PAL_ECDSA_SECP256R1:
       psa_set_key_type(&key_attr,

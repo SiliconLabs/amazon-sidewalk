@@ -62,14 +62,14 @@ void main_thread(void * context);
 void app_trigger_send_counter_update(void);
 
 /*******************************************************************************
+ * Application function to connect, update and send counter
+ ******************************************************************************/
+void app_trigger_connect_and_send(void);
+
+/*******************************************************************************
  * Application function to trigger Factory reset
  ******************************************************************************/
 void app_trigger_factory_reset(void);
-
-/*******************************************************************************
- * Application function to send
- ******************************************************************************/
-void app_trigger_send(uint8_t len);
 
 /*******************************************************************************
  * Application function to trigger get time
@@ -82,9 +82,9 @@ void app_trigger_get_time(void);
 void app_trigger_get_mtu(void);
 
 /*******************************************************************************
- * Application function to switch between FSK/CSS
+ * Application function to switch between BLE/FSK/CSS
  ******************************************************************************/
-void app_trigger_fsk_css_switch(void);
+void app_trigger_link_switch(void);
 
 /*******************************************************************************
  * Application function to trigger connection request

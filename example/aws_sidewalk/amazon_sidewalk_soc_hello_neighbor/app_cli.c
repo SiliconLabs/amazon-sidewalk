@@ -53,36 +53,22 @@
 // -----------------------------------------------------------------------------
 //                          Public Function Definitions
 // -----------------------------------------------------------------------------
-void cli_switch_fsk_css(sl_cli_command_arg_t *arguments)
+void cli_link_switch(sl_cli_command_arg_t *arguments)
 {
   (void)arguments;
-  app_trigger_fsk_css_switch();
-}
-
-void cli_update(sl_cli_command_arg_t *arguments)
-{
-  (void)arguments;
-  app_trigger_send_counter_update();
+  app_trigger_link_switch();
 }
 
 void cli_send(sl_cli_command_arg_t *arguments)
 {
-  uint8_t len = sl_cli_get_argument_uint8(arguments, 0);
-  app_trigger_send(len);
+  (void)arguments;
+  app_trigger_connect_and_send();
 }
 
 void cli_reset(sl_cli_command_arg_t *arguments)
 {
   (void)arguments;
   app_trigger_factory_reset();
-}
-
-void cli_connect(sl_cli_command_arg_t *arguments)
-{
-  (void)arguments;
-#if defined(SL_BLE_SUPPORTED)
-  app_trigger_connection_request();
-#endif
 }
 
 void cli_get_connection_status(sl_cli_command_arg_t *arguments)

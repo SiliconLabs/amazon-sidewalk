@@ -20,24 +20,37 @@ provides:
   - name: sl_sidewalk_radio_external
     condition:
       - device_generic_family_efr32xg24
+      - spidrv
+  - name: sl_sidewalk_radio_external
+    condition:
+      - device_generic_family_efr32xg24
+      - spidrv_eusart
 #######################################
 # FAMILIES WITH NATIVE SUBGHZ RADIO
 #######################################
   - name: sl_sidewalk_radio_native
     condition:
+      - device_generic_family_efr32xg23
+      - device_has_radio_subghz
+  - name: sl_sidewalk_radio_native
+    condition:
       - device_generic_family_efr32xg28
+      - device_has_radio_subghz
 #######################################
 # FAMILIES WITH BLE
 #######################################
   - name: sl_sidewalk_radio_ble
     condition:
       - device_generic_family_efr32xg21
+      - device_supports_bluetooth
   - name: sl_sidewalk_radio_ble
     condition:
       - device_generic_family_efr32xg24
+      - device_supports_bluetooth
   - name: sl_sidewalk_radio_ble
     condition:
       - device_generic_family_efr32xg28
+      - device_supports_bluetooth
 
 define:
   - name: REGION_US915
@@ -49,6 +62,9 @@ define:
   - name: SL_RADIO_NATIVE
     condition:
     - sl_sidewalk_radio_native
+  - name: SL_RADIO_EXTERNAL
+    condition:
+    - sl_sidewalk_radio_external
   - name: SL_BLE_SUPPORTED
     condition:
       - sl_sidewalk_radio_ble
@@ -74,9 +90,33 @@ define:
 
 library:
   - path: "ble_subghz/lib/sl_lib_ble_subghz.a"
+    unless:
+      - efr32mg24a010f768im40
+      - efr32mg24a010f768im48
+      - efr32mg24a020f768im40
+  - path: "ble_subghz/lib/sl_lib_ble.a"
+    condition:
+      - efr32mg24a010f768im40
+  - path: "ble_subghz/lib/sl_lib_ble.a"
+    condition:
+      - efr32mg24a010f768im48
+  - path: "ble_subghz/lib/sl_lib_ble.a"
+    condition:
+      - efr32mg24a020f768im40
   - path: "ble_subghz/lib/sl_lib_radio_sx126x.a"
     condition:
       - sl_sidewalk_radio_external
+
+toolchain_settings:
+  - option: gcc_compiler_option
+    value: -DCORE_ATOMIC_METHOD=CORE_ATOMIC_METHOD_PRIMASK
+  - option: gcc_compiler_option
+    value: -fshort-enums
+  - option: gcc_compiler_option
+    value: -fno-strict-aliasing
+  - option: gcc_compiler_option
+    value: -mabi=aapcs
+
 template_contribution:
 #---------------- Component Catalog ------------------
   - name: component_catalog

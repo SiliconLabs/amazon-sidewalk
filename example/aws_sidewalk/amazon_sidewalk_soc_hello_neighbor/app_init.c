@@ -37,20 +37,17 @@
 #include "app_assert.h"
 #include "app_init.h"
 #include "app_process.h"
+#include "app_button_press.h"
 #include "FreeRTOS.h"
 #include "task.h"
 #include "sid_pal_crypto_ifc.h"
 #include "sid_pal_mfg_store_ifc.h"
 #include "sid_pal_storage_kv_ifc.h"
 #include "sid_pal_common_ifc.h"
+#include "sl_system_kernel.h"
 
 #if (defined(SL_FSK_SUPPORTED) || defined(SL_CSS_SUPPORTED))
 #include "app_subghz_config.h"
-#endif
-
-#if defined(SL_BLE_SUPPORTED)
-#include "ble_adapter.h"
-#include "sl_bt_rtos_adaptation.h"
 #endif
 
 #if defined(SIDEWALK_POWER_CONSUMPTION_WORKAROUND)
@@ -101,13 +98,15 @@ void app_init(void)
   sl_sysrtc_enable();
 #endif
 
+  app_button_press_enable();
+
   app_log_info("app: sid_subghz application started");
   // Initialize the common PAL interfaces
   sid_error_t ret = sid_pal_common_init();
   if (ret != SID_ERROR_NONE) {
-    app_log_error("Sidewalk platform common init failed, err: %d", ret);
+    app_log_error("app: sidewalk platform common init failed, err: %d", ret);
   }
-  app_assert(ret == SID_ERROR_NONE, "Sidewalk platform common init failed");
+  app_assert(ret == SID_ERROR_NONE, "sidewalk platform common init failed");
 
   // Initialize the Key-Value storage PAL module
   ret = sid_pal_storage_kv_init();
@@ -141,12 +140,8 @@ void app_init(void)
                                   NULL);
   app_assert(status == pdPASS, "main task creation failed");
 
-#if defined(SL_BLE_SUPPORTED)
-  sli_bt_rtos_adaptation_kernel_start();
-  sl_ble_adapter_on_kernel_start();
-#endif
-
-  vTaskStartScheduler();
+  // Start the kernel. Task(s) created in app_init() will start running.
+  sl_system_kernel_start();
 }
 
 // -----------------------------------------------------------------------------

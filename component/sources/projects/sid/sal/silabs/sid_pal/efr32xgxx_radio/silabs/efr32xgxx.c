@@ -494,9 +494,7 @@ int32_t efr32xgxx_set_txpower(int8_t power)
     }
 
     RAIL_TxPower_t powerLevelDeciDbm = (int16_t)power * 10;     // convert from dBm to deci-dBm
-    RAIL_TxPowerLevel_t powerLevelRaw = RAIL_ConvertDbmToRaw(g_rail_handle, drv_ctx->config->tx_power_cfg.mode, powerLevelDeciDbm);
-
-    status = RAIL_SetTxPower(g_rail_handle, powerLevelRaw);
+    status = RAIL_SetTxPowerDbm(g_rail_handle, powerLevelDeciDbm);
     if (status != RAIL_STATUS_NO_ERROR) {
       SID_PAL_LOG_ERROR("radio set tx pwr err: %d", status);
       err = RADIO_ERROR_HARDWARE_ERROR;

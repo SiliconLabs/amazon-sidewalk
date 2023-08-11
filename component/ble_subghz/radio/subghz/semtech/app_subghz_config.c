@@ -147,7 +147,7 @@ static uint8_t radio_sx1262_buffer[RADIO_SX1262_SPI_BUFFER_SIZE] = { 0 };
 const radio_sx126x_device_config_t radio_sx1262_cfg = {
   .id                         = SEMTECH_ID_SX1262,   // chip id register not supported
   .regulator_mode             = RADIO_SX126X_REGULATOR_DCDC,
-#ifndef MODULE_MAUI
+#ifndef MODULE_KG100S
   .rx_boost                   = false,
 #else
   .rx_boost                   = true,
@@ -157,7 +157,7 @@ const radio_sx126x_device_config_t radio_sx1262_cfg = {
   .gpio_power                 = SL_PIN_NRESET,
   .gpio_int1                  = SL_PIN_DIO,
   .gpio_radio_busy            = SL_PIN_BUSY,
-#ifndef MODULE_MAUI
+#ifndef MODULE_KG100S
   .gpio_rf_sw_ena             = SL_PIN_ANTSW,
 #else
   .gpio_rf_sw_ena             = HALO_GPIO_NOT_CONNECTED,
@@ -276,9 +276,9 @@ const struct sid_sub_ghz_links_config *app_get_sub_ghz_config(void)
   return &sub_ghz_link_config;
 }
 
-#if (MODULE_MAUI == 2)
+#if (MODULE_KG100S == 2)
 /*
- * MAUI DVT1 use SX126X DIO3 to supply power for ANT SW.
+ * KG100S DVT1 use SX126X DIO3 to supply power for ANT SW.
  * Configuration:
  * 1. Set bit 3 of register@0x0580 (output enable on DIO3)
  * 2. Clear bit 3 of register@0x0583 (input disable on DIO3)

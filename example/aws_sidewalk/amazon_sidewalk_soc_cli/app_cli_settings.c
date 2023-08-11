@@ -29,8 +29,12 @@
 #include "app_process.h"
 #include "sl_sidewalk_cli_settings.h"
 #include "sid_api.h"
-#include "sid_ble_link_config_ifc.h"
-#include "app_ble_config.h"
+
+#if defined(SL_BLE_SUPPORTED)
+  #include "sid_ble_link_config_ifc.h"
+  #include "app_ble_config.h"
+#endif
+
 #include "app_cli.h"
 
 // -----------------------------------------------------------------------------
@@ -60,11 +64,15 @@ static const app_settings_radio_t app_settings_radio_default = {
   .snr = 0
 };
 
+#if defined(SL_BLE_SUPPORTED)
 static const app_settings_ble_t app_settings_ble_default = {
   .random_mac = "PUBLIC",
   .output_power = 22
 };
+app_settings_ble_t app_settings_ble;
+#endif
 
+#if defined(SL_FSK_SUPPORTED)
 static const app_settings_fsk_t app_settings_fsk_default = {
   .data_rate = "50 Kbps",
   .min_freq = "902.2 MHz",
@@ -78,7 +86,10 @@ static const app_settings_fsk_t app_settings_fsk_default = {
   .rx_window_separation = 0,
   .rx_window_duration = 0
 };
+app_settings_fsk_t app_settings_fsk;
+#endif
 
+#if defined(SL_CSS_SUPPORTED)
 static const app_settings_css_t app_settings_css_default = {
   .bandwidth = "500 Khz",
   .min_freq = "902.5 MHz",
@@ -88,6 +99,8 @@ static const app_settings_css_t app_settings_css_default = {
   .rx_window_separation = 5,
   .rx_window_count = 20
 };
+app_settings_css_t app_settings_css;
+#endif
 
 // -----------------------------------------------------------------------------
 //                                Global Variables
@@ -95,60 +108,79 @@ static const app_settings_css_t app_settings_css_default = {
 
 app_settings_sidewalk_t app_settings_sidewalk;
 app_settings_radio_t app_settings_radio;
-app_settings_ble_t app_settings_ble;
-app_settings_fsk_t app_settings_fsk;
-app_settings_css_t app_settings_css;
 
 const char *app_settings_domain_str[] =
 {
   "sidewalk",
   "radio",
+
+#if defined(SL_BLE_SUPPORTED)
   "ble",
+#endif
+
+#if defined(SL_FSK_SUPPORTED)
   "fsk",
+#endif
+
+#if defined(SL_CSS_SUPPORTED)
   "css",
+#endif
+
   NULL,
 };
 
-const sl_app_saving_item_t app_saving_item_sidewalk = {
+const sl_sidewalk_cli_util_saving_item_t app_saving_item_sidewalk = {
   .data = &app_settings_sidewalk,
   .data_size = sizeof(app_settings_sidewalk),
   .default_val = &app_settings_sidewalk_default
 };
 
-const sl_app_saving_item_t app_saving_item_radio = {
+const sl_sidewalk_cli_util_saving_item_t app_saving_item_radio = {
   .data = &app_settings_radio,
   .data_size = sizeof(app_settings_radio),
   .default_val = &app_settings_radio_default
 };
 
-const sl_app_saving_item_t app_saving_item_ble = {
+#if defined(SL_BLE_SUPPORTED)
+const sl_sidewalk_cli_util_saving_item_t app_saving_item_ble = {
   .data = &app_settings_ble,
   .data_size = sizeof(app_settings_ble),
   .default_val = &app_settings_ble_default
 };
+#endif
 
-const sl_app_saving_item_t app_saving_item_fsk = {
+#if defined(SL_FSK_SUPPORTED)
+const sl_sidewalk_cli_util_saving_item_t app_saving_item_fsk = {
   .data = &app_settings_fsk,
   .data_size = sizeof(app_settings_fsk),
   .default_val = &app_settings_fsk_default
 };
+#endif
 
-const sl_app_saving_item_t app_saving_item_css = {
+#if defined(SL_CSS_SUPPORTED)
+const sl_sidewalk_cli_util_saving_item_t app_saving_item_css = {
   .data = &app_settings_css,
   .data_size = sizeof(app_settings_css),
   .default_val = &app_settings_css_default
 };
+#endif
 
-const sl_app_saving_item_t *saving_settings[] = {
+const sl_sidewalk_cli_util_saving_item_t *saving_settings[] = {
   &app_saving_item_sidewalk,
   &app_saving_item_radio,
+#if defined(SL_BLE_SUPPORTED)
   &app_saving_item_ble,
+#endif
+#if defined(SL_FSK_SUPPORTED)
   &app_saving_item_fsk,
+#endif
+#if defined(SL_CSS_SUPPORTED)
   &app_saving_item_css,
+#endif
   NULL
 };
 
-const sl_app_settings_entry_t app_settings_entries[] =
+const sl_sidewalk_cli_util_entry_t app_settings_entries[] =
 {
   {
     .key = "initialized_link",
@@ -267,6 +299,7 @@ const sl_app_settings_entry_t app_settings_entries[] =
     .get_handler = sl_app_settings_get_snr,
     .description = "Signal over Noise Ratio from last *downlink* received message."
   },
+#if defined(SL_BLE_SUPPORTED)
   {
     .key = "ble_mtu",
     .domain = app_settings_domain_ble,
@@ -311,6 +344,8 @@ const sl_app_settings_entry_t app_settings_entries[] =
     .get_handler = sl_app_settings_get_output_power,
     .description = "TX output power in dBm."
   },
+#endif
+#if defined(SL_FSK_SUPPORTED)
   {
     .key = "fsk_data_rate",
     .domain = app_settings_domain_fsk,
@@ -321,7 +356,7 @@ const sl_app_settings_entry_t app_settings_entries[] =
     .input_enum_list = NULL,
     .output_enum_list = NULL,
     .set_handler = NULL,
-    .get_handler = sl_app_settings_get_string,
+    .get_handler = sl_sidewalk_cli_util_settings_get_string,
     .description = "FSK default data rate"
   },
   {
@@ -334,7 +369,7 @@ const sl_app_settings_entry_t app_settings_entries[] =
     .input_enum_list = NULL,
     .output_enum_list = NULL,
     .set_handler = NULL,
-    .get_handler = sl_app_settings_get_string,
+    .get_handler = sl_sidewalk_cli_util_settings_get_string,
     .description = "FSK low frequency"
   },
   {
@@ -347,7 +382,7 @@ const sl_app_settings_entry_t app_settings_entries[] =
     .input_enum_list = NULL,
     .output_enum_list = NULL,
     .set_handler = NULL,
-    .get_handler = sl_app_settings_get_string,
+    .get_handler = sl_sidewalk_cli_util_settings_get_string,
     .description = "FSK top frequency"
   },
   {
@@ -360,7 +395,7 @@ const sl_app_settings_entry_t app_settings_entries[] =
     .input_enum_list = NULL,
     .output_enum_list = NULL,
     .set_handler = NULL,
-    .get_handler = sl_app_settings_get_string,
+    .get_handler = sl_sidewalk_cli_util_settings_get_string,
     .description = "FSK region parameters"
   },
   {
@@ -467,6 +502,8 @@ const sl_app_settings_entry_t app_settings_entries[] =
     .get_handler = NULL,
     .description = "Duration of RX opportunities."
   },
+#endif
+#if defined(SL_CSS_SUPPORTED)
   {
     .key = "css_bandwidth",
     .domain = app_settings_domain_css,
@@ -477,7 +514,7 @@ const sl_app_settings_entry_t app_settings_entries[] =
     .input_enum_list = NULL,
     .output_enum_list = NULL,
     .set_handler = NULL,
-    .get_handler = sl_app_settings_get_string,
+    .get_handler = sl_sidewalk_cli_util_settings_get_string,
     .description = "CSS Bandwidth"
   },
   {
@@ -490,7 +527,7 @@ const sl_app_settings_entry_t app_settings_entries[] =
     .input_enum_list = NULL,
     .output_enum_list = NULL,
     .set_handler = NULL,
-    .get_handler = sl_app_settings_get_string,
+    .get_handler = sl_sidewalk_cli_util_settings_get_string,
     .description = "CSS Low frequency"
   },
   {
@@ -503,7 +540,7 @@ const sl_app_settings_entry_t app_settings_entries[] =
     .input_enum_list = NULL,
     .output_enum_list = NULL,
     .set_handler = NULL,
-    .get_handler = sl_app_settings_get_string,
+    .get_handler = sl_sidewalk_cli_util_settings_get_string,
     .description = "CSS Top frequency"
   },
   {
@@ -516,7 +553,7 @@ const sl_app_settings_entry_t app_settings_entries[] =
     .input_enum_list = NULL,
     .output_enum_list = NULL,
     .set_handler = NULL,
-    .get_handler = sl_app_settings_get_string,
+    .get_handler = sl_sidewalk_cli_util_settings_get_string,
     .description = "CSS Bandwidth"
   },
   {
@@ -571,6 +608,7 @@ const sl_app_settings_entry_t app_settings_entries[] =
     .get_handler = sl_app_settings_get_css_rx_window_count,
     .description = "Number of RX windows after transmission - CSS power_profile A only."
   },
+#endif
   {
     .key = NULL,
     .domain = 0,
@@ -592,7 +630,7 @@ const sl_app_settings_entry_t app_settings_entries[] =
 
 sl_status_t sl_app_settings_get_initialized_link(char *value_str,
                                                  const char *key_str,
-                                                 const sl_app_settings_entry_t *entry)
+                                                 const sl_sidewalk_cli_util_entry_t *entry)
 {
   char s_link[LINK_STRING_SIZE + 1] = { 0 };
 
@@ -614,17 +652,17 @@ sl_status_t sl_app_settings_get_initialized_link(char *value_str,
       break;
   }
   // Write result to state attribute
-  sl_app_settings_set_string(s_link, key_str, entry);
+  sl_sidewalk_cli_util_set_string(s_link, key_str, entry);
 
   // Finally display value to user
-  sl_app_settings_get_string(value_str, key_str, entry);
+  sl_sidewalk_cli_util_settings_get_string(value_str, key_str, entry);
 
   return SID_ERROR_NONE;
 }
 
 sl_status_t sl_app_settings_get_started_link(char *value_str,
                                              const char *key_str,
-                                             const sl_app_settings_entry_t *entry)
+                                             const sl_sidewalk_cli_util_entry_t *entry)
 {
   sl_status_t ret = SID_ERROR_NONE;
   char s_link[LINK_STRING_SIZE + 1] = { 0 };
@@ -653,10 +691,10 @@ sl_status_t sl_app_settings_get_started_link(char *value_str,
         break;
     }
     // Write result to state attribute
-    sl_app_settings_set_string(s_link, key_str, entry);
+    sl_sidewalk_cli_util_set_string(s_link, key_str, entry);
 
     // Finally display value to user
-    sl_app_settings_get_string(value_str, key_str, entry);
+    sl_sidewalk_cli_util_settings_get_string(value_str, key_str, entry);
   } else {
     printf("Error while trying to get link\n");
     ret = SID_ERROR_GENERIC;
@@ -667,16 +705,16 @@ sl_status_t sl_app_settings_get_started_link(char *value_str,
 
 sl_status_t sl_app_settings_get_region(char *value_str,
                                        const char *key_str,
-                                       const sl_app_settings_entry_t *entry)
+                                       const sl_sidewalk_cli_util_entry_t *entry)
 {
-  return sl_app_settings_get_string(value_str, key_str, entry);
+  return sl_sidewalk_cli_util_settings_get_string(value_str, key_str, entry);
 }
 
 sl_status_t sl_app_settings_set_region(const char *value_str,
                                        const char *key_str,
-                                       const sl_app_settings_entry_t *entry)
+                                       const sl_sidewalk_cli_util_entry_t *entry)
 {
-  sl_app_settings_set_string(value_str, key_str, entry);
+  sl_sidewalk_cli_util_set_string(value_str, key_str, entry);
   printf("Attribute not supported for now.\n");
 
   return SL_STATUS_NOT_SUPPORTED;
@@ -684,7 +722,7 @@ sl_status_t sl_app_settings_set_region(const char *value_str,
 
 sl_status_t sl_app_settings_get_state(char *value_str,
                                       const char *key_str,
-                                      const sl_app_settings_entry_t *entry)
+                                      const sl_sidewalk_cli_util_entry_t *entry)
 {
   sl_status_t ret = SID_ERROR_NONE;
   char s_state[STATE_STRING_SIZE + 1] = { 0 };
@@ -717,10 +755,10 @@ sl_status_t sl_app_settings_get_state(char *value_str,
         break;
     }
     // Write result to state attribute
-    sl_app_settings_set_string(s_state, key_str, entry);
+    sl_sidewalk_cli_util_set_string(s_state, key_str, entry);
 
     // Finally display value to user
-    sl_app_settings_get_string(value_str, key_str, entry);
+    sl_sidewalk_cli_util_settings_get_string(value_str, key_str, entry);
   } else {
     printf("Error while trying to get state\n");
     ret = SID_ERROR_GENERIC;
@@ -731,7 +769,7 @@ sl_status_t sl_app_settings_get_state(char *value_str,
 
 sl_status_t sl_app_settings_get_time(char *value_str,
                                      const char *key_str,
-                                     const sl_app_settings_entry_t *entry)
+                                     const sl_sidewalk_cli_util_entry_t *entry)
 {
   char s_time[TIME_STRING_SIZE + 1] = { 0 };
   app_setting_cli_queue_t settings = { 0 };
@@ -743,10 +781,10 @@ sl_status_t sl_app_settings_get_time(char *value_str,
   if (xQueueReceive(g_cli_event_queue, &settings, pdMS_TO_TICKS(2000))) {
     // Write result to time attribute
     sprintf(s_time, "%lu.%lu", settings.current_time.tv_sec, settings.current_time.tv_nsec);
-    sl_app_settings_set_string(s_time, key_str, entry);
+    sl_sidewalk_cli_util_set_string(s_time, key_str, entry);
 
     // Finally display value to user
-    sl_app_settings_get_string(value_str, key_str, entry);
+    sl_sidewalk_cli_util_settings_get_string(value_str, key_str, entry);
   } else {
     printf("Error while trying to get time\n");
   }
@@ -756,16 +794,16 @@ sl_status_t sl_app_settings_get_time(char *value_str,
 
 sl_status_t sl_app_settings_get_autoconnect(char *value_str,
                                             const char *key_str,
-                                            const sl_app_settings_entry_t *entry)
+                                            const sl_sidewalk_cli_util_entry_t *entry)
 {
-  sl_app_settings_get_string(value_str, key_str, entry);
+  sl_sidewalk_cli_util_settings_get_string(value_str, key_str, entry);
 
   return SID_ERROR_NONE;
 }
 
 sl_status_t sl_app_settings_set_autoconnect(const char *value_str,
                                             const char *key_str,
-                                            const sl_app_settings_entry_t *entry)
+                                            const sl_sidewalk_cli_util_entry_t *entry)
 {
   (void)value_str;
   (void)key_str;
@@ -777,14 +815,14 @@ sl_status_t sl_app_settings_set_autoconnect(const char *value_str,
 
 sl_status_t sl_app_settings_get_frequency(char *value_str,
                                           const char *key_str,
-                                          const sl_app_settings_entry_t *entry)
+                                          const sl_sidewalk_cli_util_entry_t *entry)
 {
-  return sl_app_settings_get_string(value_str, key_str, entry);
+  return sl_sidewalk_cli_util_settings_get_string(value_str, key_str, entry);
 }
 
 sl_status_t sl_app_settings_set_wakeup_type(const char *value_str,
                                             const char *key_str,
-                                            const sl_app_settings_entry_t *entry)
+                                            const sl_sidewalk_cli_util_entry_t *entry)
 {
   (void)value_str;
   (void)key_str;
@@ -796,40 +834,41 @@ sl_status_t sl_app_settings_set_wakeup_type(const char *value_str,
 
 sl_status_t sl_app_settings_get_wakeup_type(char *value_str,
                                             const char *key_str,
-                                            const sl_app_settings_entry_t *entry)
+                                            const sl_sidewalk_cli_util_entry_t *entry)
 {
-  return sl_app_settings_get_string(value_str, key_str, entry);
+  return sl_sidewalk_cli_util_settings_get_string(value_str, key_str, entry);
 }
 
 sl_status_t sl_app_settings_get_rssi(char *value_str,
                                      const char *key_str,
-                                     const sl_app_settings_entry_t *entry)
+                                     const sl_sidewalk_cli_util_entry_t *entry)
 {
   char s_rssi[10] = { 0 };
 
   sprintf(s_rssi, "%d", LAST_MESSG_RCVD_DESC.msg_desc_attr.rx_attr.rssi);
-  sl_app_settings_set_integer(s_rssi, key_str, entry);
-  sl_app_settings_get_integer(value_str, key_str, entry);
+  sl_sidewalk_cli_util_set_integer(s_rssi, key_str, entry);
+  sl_sidewalk_cli_util_settings_get_integer(value_str, key_str, entry);
 
   return SL_STATUS_OK;
 }
 
 sl_status_t sl_app_settings_get_snr(char *value_str,
                                     const char *key_str,
-                                    const sl_app_settings_entry_t *entry)
+                                    const sl_sidewalk_cli_util_entry_t *entry)
 {
   char s_snr[10] = { 0 };
 
   sprintf(s_snr, "%d", LAST_MESSG_RCVD_DESC.msg_desc_attr.rx_attr.snr);
-  sl_app_settings_set_integer(s_snr, key_str, entry);
-  sl_app_settings_get_integer(value_str, key_str, entry);
+  sl_sidewalk_cli_util_set_integer(s_snr, key_str, entry);
+  sl_sidewalk_cli_util_settings_get_integer(value_str, key_str, entry);
 
   return SL_STATUS_OK;
 }
 
+#if defined(SL_FSK_SUPPORTED)
 sl_status_t sl_app_settings_get_mtu_fsk(char *value_str,
                                         const char *key_str,
-                                        const sl_app_settings_entry_t *entry)
+                                        const sl_sidewalk_cli_util_entry_t *entry)
 {
   char s_mtu[MTU_STRING_SIZE] = { 0 };
   app_setting_cli_queue_t settings = { 0 };
@@ -840,20 +879,22 @@ sl_status_t sl_app_settings_get_mtu_fsk(char *value_str,
   if (xQueueReceive(g_cli_event_queue, &settings, pdMS_TO_TICKS(2000))) {
     // Write result to time attribute
     sprintf(s_mtu, "%u", settings.mtu);
-    sl_app_settings_set_integer(s_mtu, key_str, entry);
+    sl_sidewalk_cli_util_set_integer(s_mtu, key_str, entry);
 
     // Finally display value to user
-    sl_app_settings_get_integer(value_str, key_str, entry);
+    sl_sidewalk_cli_util_settings_get_integer(value_str, key_str, entry);
   } else {
     printf("Error while trying to get mtu\n");
   }
 
   return SL_STATUS_OK;
 }
+#endif
 
+#if defined(SL_CSS_SUPPORTED)
 sl_status_t sl_app_settings_get_mtu_css(char *value_str,
                                         const char *key_str,
-                                        const sl_app_settings_entry_t *entry)
+                                        const sl_sidewalk_cli_util_entry_t *entry)
 {
   char s_mtu[MTU_STRING_SIZE] = { 0 };
   app_setting_cli_queue_t settings = { 0 };
@@ -864,20 +905,22 @@ sl_status_t sl_app_settings_get_mtu_css(char *value_str,
   if (xQueueReceive(g_cli_event_queue, &settings, pdMS_TO_TICKS(2000))) {
     // Write result to time attribute
     sprintf(s_mtu, "%u", settings.mtu);
-    sl_app_settings_set_integer(s_mtu, key_str, entry);
+    sl_sidewalk_cli_util_set_integer(s_mtu, key_str, entry);
 
     // Finally display value to user
-    sl_app_settings_get_integer(value_str, key_str, entry);
+    sl_sidewalk_cli_util_settings_get_integer(value_str, key_str, entry);
   } else {
     printf("Error while trying to get mtu\n");
   }
 
   return SL_STATUS_OK;
 }
+#endif
 
+#if defined(SL_BLE_SUPPORTED)
 sl_status_t sl_app_settings_get_mtu_ble(char *value_str,
                                         const char *key_str,
-                                        const sl_app_settings_entry_t *entry)
+                                        const sl_sidewalk_cli_util_entry_t *entry)
 {
   char s_mtu[MTU_STRING_SIZE] = { 0 };
   app_setting_cli_queue_t settings = { 0 };
@@ -888,20 +931,22 @@ sl_status_t sl_app_settings_get_mtu_ble(char *value_str,
   if (xQueueReceive(g_cli_event_queue, &settings, pdMS_TO_TICKS(2000))) {
     // Write result to time attribute
     sprintf(s_mtu, "%u", settings.mtu);
-    sl_app_settings_set_integer(s_mtu, key_str, entry);
+    sl_sidewalk_cli_util_set_integer(s_mtu, key_str, entry);
 
     // Finally display value to user
-    sl_app_settings_get_integer(value_str, key_str, entry);
+    sl_sidewalk_cli_util_settings_get_integer(value_str, key_str, entry);
   } else {
     printf("Error while trying to get mtu\n");
   }
 
   return SL_STATUS_OK;
 }
+#endif
 
+#if defined(SL_BLE_SUPPORTED)
 sl_status_t sl_app_settings_get_random_mac(char *value_str,
                                            const char *key_str,
-                                           const sl_app_settings_entry_t *entry)
+                                           const sl_sidewalk_cli_util_entry_t *entry)
 {
   const sid_ble_link_config_t *ble_config = app_get_ble_config();
   char s_random_mac[MAC_STRING_SIZE] = "";
@@ -929,25 +974,27 @@ sl_status_t sl_app_settings_get_random_mac(char *value_str,
       break;
   }
 
-  sl_app_settings_set_string(s_random_mac, key_str, entry);
+  sl_sidewalk_cli_util_set_string(s_random_mac, key_str, entry);
 
-  sl_app_settings_get_string(value_str, key_str, entry);
+  sl_sidewalk_cli_util_settings_get_string(value_str, key_str, entry);
 
   return SL_STATUS_OK;
 }
+#endif
 
 sl_status_t sl_app_settings_get_output_power(char *value_str,
                                              const char *key_str,
-                                             const sl_app_settings_entry_t *entry)
+                                             const sl_sidewalk_cli_util_entry_t *entry)
 {
-  sl_app_settings_get_integer(value_str, key_str, entry);
+  sl_sidewalk_cli_util_settings_get_integer(value_str, key_str, entry);
 
   return SL_STATUS_OK;
 }
 
+#if defined(SL_FSK_SUPPORTED)
 sl_status_t sl_app_settings_get_fsk_power_profile(char *value_str,
                                                   const char *key_str,
-                                                  const sl_app_settings_entry_t *entry)
+                                                  const sl_sidewalk_cli_util_entry_t *entry)
 {
   char s_dev_prof_id[DEVICE_PROFILE_ID_SIZE] = { 0 };
   app_setting_cli_queue_t settings = { 0 };
@@ -971,10 +1018,10 @@ sl_status_t sl_app_settings_get_fsk_power_profile(char *value_str,
     }
 
     // Write result to dev profile attribute
-    sl_app_settings_set_string(s_dev_prof_id, key_str, entry);
+    sl_sidewalk_cli_util_set_string(s_dev_prof_id, key_str, entry);
 
     // Finally display value to user
-    sl_app_settings_get_string(value_str, key_str, entry);
+    sl_sidewalk_cli_util_settings_get_string(value_str, key_str, entry);
   } else {
     printf("Error while trying to get dev_profile_id\n");
   }
@@ -984,7 +1031,7 @@ sl_status_t sl_app_settings_get_fsk_power_profile(char *value_str,
 
 sl_status_t sl_app_settings_set_fsk_power_profile(const char *value_str,
                                                   const char *key_str,
-                                                  const sl_app_settings_entry_t *entry)
+                                                  const sl_sidewalk_cli_util_entry_t *entry)
 {
   sl_status_t ret = SID_ERROR_NONE;
   (void)key_str;
@@ -1006,10 +1053,11 @@ sl_status_t sl_app_settings_set_fsk_power_profile(const char *value_str,
 
   return ret;
 }
+#endif /* SL_FSK_SUPPORTED */
 
 sl_status_t sl_app_settings_get_css_power_profile(char *value_str,
                                                   const char *key_str,
-                                                  const sl_app_settings_entry_t *entry)
+                                                  const sl_sidewalk_cli_util_entry_t *entry)
 {
   char s_dev_prof_id[DEVICE_PROFILE_ID_SIZE] = { 0 };
   app_setting_cli_queue_t settings = { 0 };
@@ -1037,10 +1085,10 @@ sl_status_t sl_app_settings_get_css_power_profile(char *value_str,
     }
 
     // Write result to dev profile attribute
-    sl_app_settings_set_string(s_dev_prof_id, key_str, entry);
+    sl_sidewalk_cli_util_set_string(s_dev_prof_id, key_str, entry);
 
     // Finally display value to user
-    sl_app_settings_get_string(value_str, key_str, entry);
+    sl_sidewalk_cli_util_settings_get_string(value_str, key_str, entry);
   } else {
     printf("Error while trying to get dev_profile_id\n");
   }
@@ -1050,7 +1098,7 @@ sl_status_t sl_app_settings_get_css_power_profile(char *value_str,
 
 sl_status_t sl_app_settings_set_css_power_profile(const char *value_str,
                                                   const char *key_str,
-                                                  const sl_app_settings_entry_t *entry)
+                                                  const sl_sidewalk_cli_util_entry_t *entry)
 {
   sl_status_t ret = SID_ERROR_NONE;
   (void)key_str;
@@ -1077,52 +1125,53 @@ sl_status_t sl_app_settings_set_css_power_profile(const char *value_str,
 
 sl_status_t sl_app_settings_set_offset(const char *value_str,
                                        const char *key_str,
-                                       const sl_app_settings_entry_t *entry)
+                                       const sl_sidewalk_cli_util_entry_t *entry)
 {
-  sl_app_settings_set_integer(value_str, key_str, entry);
+  sl_sidewalk_cli_util_set_integer(value_str, key_str, entry);
 
   return SL_STATUS_OK;
 }
 
 sl_status_t sl_app_settings_get_offset(char *value_str,
                                        const char *key_str,
-                                       const sl_app_settings_entry_t *entry)
+                                       const sl_sidewalk_cli_util_entry_t *entry)
 {
-  sl_app_settings_get_integer(value_str, key_str, entry);
+  sl_sidewalk_cli_util_settings_get_integer(value_str, key_str, entry);
 
   return SL_STATUS_OK;
 }
 
 sl_status_t sl_app_settings_set_range(const char *value_str,
                                       const char *key_str,
-                                      const sl_app_settings_entry_t *entry)
+                                      const sl_sidewalk_cli_util_entry_t *entry)
 {
-  sl_app_settings_set_integer(value_str, key_str, entry);
+  sl_sidewalk_cli_util_set_integer(value_str, key_str, entry);
 
   return SL_STATUS_OK;
 }
 
 sl_status_t sl_app_settings_get_range(char *value_str,
                                       const char *key_str,
-                                      const sl_app_settings_entry_t *entry)
+                                      const sl_sidewalk_cli_util_entry_t *entry)
 {
-  sl_app_settings_get_integer(value_str, key_str, entry);
+  sl_sidewalk_cli_util_settings_get_integer(value_str, key_str, entry);
 
   return SL_STATUS_OK;
 }
 
 sl_status_t sl_app_settings_get_beacon_interval(char *value_str,
                                                 const char *key_str,
-                                                const sl_app_settings_entry_t *entry)
+                                                const sl_sidewalk_cli_util_entry_t *entry)
 {
-  sl_app_settings_get_integer(value_str, key_str, entry);
+  sl_sidewalk_cli_util_settings_get_integer(value_str, key_str, entry);
 
   return SL_STATUS_OK;
 }
 
+#if defined(SL_FSK_SUPPORTED)
 sl_status_t sl_app_settings_get_fsk_rx_window_count(char *value_str,
                                                     const char *key_str,
-                                                    const sl_app_settings_entry_t *entry)
+                                                    const sl_sidewalk_cli_util_entry_t *entry)
 {
   char s_rx_window_count[DEVICE_PROFILE_ID_SIZE] = { 0 };
   app_setting_cli_queue_t settings = { 0 };
@@ -1134,10 +1183,10 @@ sl_status_t sl_app_settings_get_fsk_rx_window_count(char *value_str,
     sprintf(s_rx_window_count, "%d", settings.device_profile.unicast_params.rx_window_count);
 
     // Write result to dev profile attribute
-    sl_app_settings_set_integer(s_rx_window_count, key_str, entry);
+    sl_sidewalk_cli_util_set_integer(s_rx_window_count, key_str, entry);
 
     // Finally display value to user
-    sl_app_settings_get_integer(value_str, key_str, entry);
+    sl_sidewalk_cli_util_settings_get_integer(value_str, key_str, entry);
   } else {
     printf("Error while trying to get dev_profile_id\n");
   }
@@ -1147,7 +1196,7 @@ sl_status_t sl_app_settings_get_fsk_rx_window_count(char *value_str,
 
 sl_status_t sl_app_settings_get_fsk_rx_window_separation(char *value_str,
                                                          const char *key_str,
-                                                         const sl_app_settings_entry_t *entry)
+                                                         const sl_sidewalk_cli_util_entry_t *entry)
 {
   char s_rx_window_separation[DEVICE_PROFILE_ID_SIZE] = { 0 };
   app_setting_cli_queue_t settings = { 0 };
@@ -1159,20 +1208,22 @@ sl_status_t sl_app_settings_get_fsk_rx_window_separation(char *value_str,
     sprintf(s_rx_window_separation, "%d", settings.device_profile.unicast_params.unicast_window_interval.sync_rx_interval_ms);
 
     // Write result to dev profile attribute
-    sl_app_settings_set_integer(s_rx_window_separation, key_str, entry);
+    sl_sidewalk_cli_util_set_integer(s_rx_window_separation, key_str, entry);
 
     // Finally display value to user
-    sl_app_settings_get_integer(value_str, key_str, entry);
+    sl_sidewalk_cli_util_settings_get_integer(value_str, key_str, entry);
   } else {
     printf("Error while trying to get dev_profile_id\n");
   }
 
   return SL_STATUS_OK;
 }
+#endif /* SL_FSK_SUPPORTED */
 
+#if defined(SL_CSS_SUPPORTED)
 sl_status_t sl_app_settings_get_css_rx_window_separation(char *value_str,
                                                          const char *key_str,
-                                                         const sl_app_settings_entry_t *entry)
+                                                         const sl_sidewalk_cli_util_entry_t *entry)
 {
   char s_rx_window_separation[DEVICE_PROFILE_ID_SIZE] = { 0 };
   app_setting_cli_queue_t settings = { 0 };
@@ -1184,10 +1235,10 @@ sl_status_t sl_app_settings_get_css_rx_window_separation(char *value_str,
     sprintf(s_rx_window_separation, "%d", settings.device_profile.unicast_params.unicast_window_interval.async_rx_interval_ms);
 
     // Write result to dev profile attribute
-    sl_app_settings_set_integer(s_rx_window_separation, key_str, entry);
+    sl_sidewalk_cli_util_set_integer(s_rx_window_separation, key_str, entry);
 
     // Finally display value to user
-    sl_app_settings_get_integer(value_str, key_str, entry);
+    sl_sidewalk_cli_util_settings_get_integer(value_str, key_str, entry);
   } else {
     printf("Error while trying to get dev_profile_id\n");
   }
@@ -1197,7 +1248,7 @@ sl_status_t sl_app_settings_get_css_rx_window_separation(char *value_str,
 
 sl_status_t sl_app_settings_get_css_rx_window_count(char *value_str,
                                                     const char *key_str,
-                                                    const sl_app_settings_entry_t *entry)
+                                                    const sl_sidewalk_cli_util_entry_t *entry)
 {
   char s_rx_window_count[DEVICE_PROFILE_ID_SIZE] = { 0 };
   app_setting_cli_queue_t settings = { 0 };
@@ -1209,10 +1260,10 @@ sl_status_t sl_app_settings_get_css_rx_window_count(char *value_str,
     sprintf(s_rx_window_count, "%d", settings.device_profile.unicast_params.rx_window_count);
 
     // Write result to dev profile attribute
-    sl_app_settings_set_integer(s_rx_window_count, key_str, entry);
+    sl_sidewalk_cli_util_set_integer(s_rx_window_count, key_str, entry);
 
     // Finally display value to user
-    sl_app_settings_get_integer(value_str, key_str, entry);
+    sl_sidewalk_cli_util_settings_get_integer(value_str, key_str, entry);
   } else {
     printf("Error while trying to get dev_profile_id\n");
   }
@@ -1222,7 +1273,7 @@ sl_status_t sl_app_settings_get_css_rx_window_count(char *value_str,
 
 sl_status_t sl_app_settings_set_css_rx_window_count(const char *value_str,
                                                     const char *key_str,
-                                                    const sl_app_settings_entry_t *entry)
+                                                    const sl_sidewalk_cli_util_entry_t *entry)
 {
   sl_status_t ret = SID_ERROR_NONE;
   (void)key_str;
@@ -1249,3 +1300,4 @@ sl_status_t sl_app_settings_set_css_rx_window_count(const char *value_str,
 
   return ret;
 }
+#endif /* SL_CSS_SUPPORTED */

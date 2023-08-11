@@ -7,7 +7,7 @@ category: Example|AWS IoT
 
 sdk_extension:
   - id: sidewalk
-    version: 1.1.0
+    version: 1.2.0
 
 source:
   - path: main.c
@@ -46,8 +46,6 @@ component:
 - id: gpiointerrupt
 - id: device_init_lfxo
 - id: device_init_hfxo
-- id: simple_led
-  instance: [led0]
 - id: cli
   instance: [inst]
 - id: device_init
@@ -73,19 +71,33 @@ component:
 - id: app_assert
 - id: freertos
 - id: freertos_heap_4
-- id: bluetooth_stack
-- id: bluetooth_on_demand_start
-- id: bluetooth_feature_dynamic_gattdb
-- id: bluetooth_feature_gatt_server
-- id: bluetooth_feature_gatt
-- id: bluetooth_feature_system
-- id: bluetooth_feature_advertiser
-- id: bluetooth_feature_connection
-- id: bluetooth_feature_legacy_advertiser
-- id: bluetooth_feature_sm
 - id: device_init_dpll
 - id: printf
 - id: rail_lib_multiprotocol
+- id: gpiointerrupt
+- id: emlib_gpio
+
+requires:
+  - name: bluetooth_stack
+    condition: [device_supports_bluetooth]
+  - name: bluetooth_feature_dynamic_gattdb
+    condition: [device_supports_bluetooth]
+  - name: bluetooth_feature_gatt_server
+    condition: [device_supports_bluetooth]
+  - name: bluetooth_feature_gatt
+    condition: [device_supports_bluetooth]
+  - name: bluetooth_feature_system
+    condition: [device_supports_bluetooth]
+  - name: bluetooth_feature_advertiser
+    condition: [device_supports_bluetooth]
+  - name: bluetooth_feature_connection
+    condition: [device_supports_bluetooth]
+  - name: bluetooth_feature_legacy_advertiser
+    condition: [device_supports_bluetooth]
+  - name: bluetooth_feature_sm
+    condition: [device_supports_bluetooth]
+  - name: bluetooth_on_demand_start
+    condition: [device_supports_bluetooth]
 
 configuration:
   - name: SL_SPIDRV_EXP_CS_PIN

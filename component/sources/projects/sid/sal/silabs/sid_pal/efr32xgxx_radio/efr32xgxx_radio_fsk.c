@@ -239,12 +239,6 @@ int32_t sid_pal_radio_prepare_fsk_for_tx(sid_pal_radio_fsk_pkt_cfg_t *tx_pkt_cfg
     }
 
     sid_pal_radio_fsk_phy_hdr_t *phr = tx_pkt_cfg->phy_hdr;
-    // TODO (SIDEWALK-662): remove below line and re-generate PHYs for ocelot and
-    // margay with 2-bytes FCS length
-    //
-    // modify this in profile_sidewalk.py for nerio
-    // IProfile.make_optional_input(profile, model.vars.fcs_type_802154, 'advanced',
-    // readable_name="FCS Type (CRC)", default=model.vars.fcs_type_802154.var_enum.FOUR_BYTE)
     if (((phr->fcs_type == RADIO_FSK_FCS_TYPE_0)
          && (f_pp->payload_length > MAX_PAYLOAD_LENGTH_WITH_FCS_TYPE_0))
         || ((phr->fcs_type == RADIO_FSK_FCS_TYPE_1)

@@ -66,38 +66,42 @@ extern "C" {
 #define SL_APP_SETTINGS_VALUE_SIZE_UINT16     (2U)
 #define SL_APP_SETTINGS_VALUE_SIZE_UINT32     (4U)
 
-struct sl_app_settings_entry_t;
+struct sl_sidewalk_cli_util_entry_t;
 
 /**************************************************************************//**
  * @brief Function pointer for setter function
  *****************************************************************************/
-typedef sl_status_t (*sl_app_settings_set_key_handler)(const char *value_str,
+
+
+typedef sl_status_t (*sl_sidewalk_cli_util_set_key_handler)(const char *value_str,
                                                        const char *key_str,
-                                                       const struct sl_app_settings_entry_t *entry);
+                                                       const struct sl_sidewalk_cli_util_entry_t *entry);
 
 /**************************************************************************//**
  * @brief Function pointer for getter function
  *****************************************************************************/
-typedef sl_status_t (*sl_app_settings_get_key_handler)(char *value_str,
+
+typedef sl_status_t (*sl_sidewalk_cli_util_get_key_handler)(char *value_str,
                                                        const char *key_str,
-                                                       const struct sl_app_settings_entry_t *entry);
+                                                       const struct sl_sidewalk_cli_util_entry_t *entry);
 
 /**************************************************************************//**
  * @brief Structure for settings entry
  *****************************************************************************/
-typedef struct sl_app_settings_entry_t{
+
+typedef struct sl_sidewalk_cli_util_entry_t{
   char *key;
   uint8_t domain;
   uint8_t value_size;
   uint8_t input;
   uint8_t output;
   void *value;
-  const sl_app_enum_t *input_enum_list;
-  const sl_app_enum_t *output_enum_list;
-  sl_app_settings_set_key_handler set_handler;
-  sl_app_settings_get_key_handler get_handler;
+  const sl_sidewalk_cli_util_enum_t *input_enum_list;
+  const sl_sidewalk_cli_util_enum_t *output_enum_list;
+  sl_sidewalk_cli_util_set_key_handler set_handler;
+  sl_sidewalk_cli_util_get_key_handler get_handler;
   char *description;
-} sl_app_settings_entry_t;
+} sl_sidewalk_cli_util_entry_t;
 
 /**************************************************************************//**
  * @brief Structure for saving items
@@ -106,7 +110,7 @@ typedef struct {
   void *data;
   size_t data_size;
   const void *default_val;
-} sl_app_saving_item_t;
+} sl_sidewalk_cli_util_saving_item_t;
 
 // -----------------------------------------------------------------------------
 //                              Macros and Typedefs
@@ -124,7 +128,7 @@ typedef struct {
  * @brief Initialize settings.
  * @details This function loads the settings from NVM.
  *****************************************************************************/
-void sl_app_settings_init(void);
+void sl_sidewalk_cli_util_settings_init(void);
 
 /**************************************************************************//**
  * @brief Save settings.
@@ -132,13 +136,14 @@ void sl_app_settings_init(void);
  * @return SL_STATUS_OK if the saving is successful
  * @return SL_STATUS_FAIL saving failed
  *****************************************************************************/
-sl_status_t sl_app_settings_save(void);
+sl_status_t sl_sidewalk_cli_util_save(void);
+
 
 /**************************************************************************//**
  * @brief Reset settings.
  * @details This function deletes settings by NVM and reverts their default value.
  *****************************************************************************/
-void sl_app_settings_reset(void);
+void sl_sidewalk_cli_util_reset(void);
 
 /**************************************************************************//**
  * @brief Set app settings.
@@ -147,7 +152,7 @@ void sl_app_settings_reset(void);
  * @param[in] value_str Value string
  * @return sl_status_t SL_STATUS_INVALID_KEY on error, otherwise the setter result
  *****************************************************************************/
-sl_status_t sl_app_settings_set(char *const domain_and_key, const char *const value_str);
+sl_status_t sl_sidewalk_cli_util_set(char *const domain_and_key, const char *const value_str);
 
 /**************************************************************************//**
  * @brief Get app settings.
@@ -155,7 +160,7 @@ sl_status_t sl_app_settings_set(char *const domain_and_key, const char *const va
  * @param domain_and_key Domain and key string
  * @return sl_status_t SL_STATUS_OK on success, otherwise SL_STATUS_FAIL
  *****************************************************************************/
-sl_status_t sl_app_settings_get(char *const domain_and_key);
+sl_status_t sl_sidewalk_cli_util_get(char *const domain_and_key);
 
 /**************************************************************************//**
  * @brief App settings help.
@@ -164,7 +169,7 @@ sl_status_t sl_app_settings_get(char *const domain_and_key);
  * @param get Function called by a Get method or a Set method
  * @return sl_status_t SL_STATUS_OK on success, otherwise SL_STATUS_FAIL
  *****************************************************************************/
-sl_status_t sl_app_settings_help(char *const domain_and_key, bool get);
+sl_status_t sl_sidewalk_cli_util_help(char *const domain_and_key, bool get);
 
 /**************************************************************************//**
  * @brief Set a string in app settings.
@@ -174,9 +179,9 @@ sl_status_t sl_app_settings_help(char *const domain_and_key, bool get);
  * @param[in] entry App settings entry
  * @return sl_status_t SL_STATUS_OK on success, SL_STATUS_FAIL on error
  *****************************************************************************/
-sl_status_t sl_app_settings_set_string(const char *value_str,
+sl_status_t sl_sidewalk_cli_util_set_string(const char *value_str,
                                        const char *key_str,
-                                       const sl_app_settings_entry_t *entry);
+                                       const sl_sidewalk_cli_util_entry_t *entry);
 
 /**************************************************************************//**
  * @brief Get string from app settings.
@@ -186,9 +191,9 @@ sl_status_t sl_app_settings_set_string(const char *value_str,
  * @param[in] entry App settings entry
  * @return sl_status_t SL_STATUS_OK on success, SL_STATUS_FAIL on error
  *****************************************************************************/
-sl_status_t sl_app_settings_get_string(char *value_str,
+sl_status_t sl_sidewalk_cli_util_settings_get_string(char *value_str,
                                        const char *key_str,
-                                       const sl_app_settings_entry_t *entry);
+                                       const sl_sidewalk_cli_util_entry_t *entry);
 
 /**************************************************************************//**
  * @brief Set an integer in app settings.
@@ -198,9 +203,9 @@ sl_status_t sl_app_settings_get_string(char *value_str,
  * @param[in] entry App settings entry
  * @return sl_status_t SL_STATUS_OK on success, SL_STATUS_FAIL on error
  *****************************************************************************/
-sl_status_t sl_app_settings_set_integer(const char *value_str,
+sl_status_t sl_sidewalk_cli_util_set_integer(const char *value_str,
                                         const char *key_str,
-                                        const sl_app_settings_entry_t *entry);
+                                        const sl_sidewalk_cli_util_entry_t *entry);
 
 /**************************************************************************//**
  * @brief Get an integer from app settings.
@@ -210,21 +215,10 @@ sl_status_t sl_app_settings_set_integer(const char *value_str,
  * @param[in] entry App settings entry
  * @return sl_status_t SL_STATUS_OK on success, SL_STATUS_FAIL on error
  *****************************************************************************/
-sl_status_t sl_app_settings_get_integer(char *value_str,
+sl_status_t sl_sidewalk_cli_util_settings_get_integer(char *value_str,
                                         const char *key_str,
-                                        const sl_app_settings_entry_t *entry);
+                                        const sl_sidewalk_cli_util_entry_t *entry);
 
-/**************************************************************************//**
- * @brief Get IP address from app settings.
- * @details Get the IP address string.
- * @param[out] value_str Value string destination
- * @param[in] key_str Key string
- * @param[in] entry App settings entry
- * @return sl_status_t SL_STATUS_OK on success, SL_STATUS_FAIL on error
- *****************************************************************************/
-sl_status_t sl_app_settings_get_ip_address(char *value_str,
-                                           const char *key_str,
-                                           const sl_app_settings_entry_t *entry);
 
 #ifdef __cplusplus
 }

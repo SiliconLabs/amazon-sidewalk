@@ -45,6 +45,7 @@
 #include <task.h>
 
 #include <stdatomic.h>
+#include <em_core.h>
 
 // -----------------------------------------------------------------------------
 //                                Static Variables
@@ -56,7 +57,7 @@ static atomic_int count = ATOMIC_VAR_INIT(0);
 // -----------------------------------------------------------------------------
 void sid_pal_enter_critical_region(void)
 {
-  taskDISABLE_INTERRUPTS();
+  CORE_ATOMIC_IRQ_DISABLE();
   const unsigned int prev_val = atomic_fetch_add(&count, 1);
   SID_PAL_ASSERT(prev_val <= 8);    // Some maximum amount of re-entry
 }
@@ -66,6 +67,6 @@ void sid_pal_exit_critical_region(void)
   const unsigned int prev_val = atomic_fetch_sub(&count, 1);
   SID_PAL_ASSERT(prev_val > 0);
   if (prev_val == 1) {
-    taskENABLE_INTERRUPTS();
+    CORE_ATOMIC_IRQ_ENABLE();
   }
 }

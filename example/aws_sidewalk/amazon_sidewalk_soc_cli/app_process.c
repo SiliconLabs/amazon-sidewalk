@@ -141,7 +141,10 @@ static void on_sidewalk_factory_reset(void *context);
  * Function to parse the message type
  *
  * @param[in] link_type_str The link type string
- * @returns Link type
+ * @returns Link mask:  0 if link is not available,
+                        SID_LINK_TYPE_1 for ble,
+                        SID_LINK_TYPE_2 for fsk,
+                        SID_LINK_TYPE_3 for css
  ******************************************************************************/
 static uint8_t parse_link_type(char *link_type_str);
 
@@ -517,15 +520,21 @@ static uint8_t parse_link_type(char *link_type_str)
   uint8_t link_type = 0;
 
   if (strstr(link_type_str, "ble") != NULL) {
+#if defined(SL_BLE_SUPPORTED)
     link_type |= SID_LINK_TYPE_1;
+#endif
   }
 
   if (strstr(link_type_str, "fsk") != NULL) {
+#if defined(SL_FSK_SUPPORTED)
     link_type |= SID_LINK_TYPE_2;
+#endif
   }
 
   if (strstr(link_type_str, "css") != NULL) {
+#if defined(SL_CSS_SUPPORTED)
     link_type |= SID_LINK_TYPE_3;
+#endif
   }
 
   return link_type;
@@ -623,6 +632,13 @@ static sl_status_t init_sidewalk(app_context_t *app_context, char *link_str)
     .sub_ghz_link_config = NULL
   };
 
+  if(app_context->sid_cfg.link_mask == 0) {
+    // Issued link is not available on current platform
+    // Ignore command but don't return error as this will cause main task to be deleted.
+    app_log_error("app: the chosen link is not available on current platform! Ignoring init command.");
+    return SL_STATUS_OK;
+  }
+
 #if (defined(SL_FSK_SUPPORTED) || defined(SL_CSS_SUPPORTED))
   app_context->sid_cfg.sub_ghz_link_config = app_get_sub_ghz_config();
 #endif
@@ -649,7 +665,15 @@ static sl_status_t init_sidewalk(app_context_t *app_context, char *link_str)
 
 static sl_status_t start_sidewalk(app_context_t *app_context, char *link_str)
 {
-  sid_error_t ret = sid_start(app_context->sidewalk_handle, parse_link_type(link_str));
+  uint8_t link_mask = parse_link_type(link_str);
+  if(link_mask == 0) {
+    // Issued link is not available on current platform
+    // Ignore command but don't return error as this will cause main task to be deleted.
+    app_log_error("app: the chosen link is not available on current platform! Ignoring start command.");
+    return SL_STATUS_OK;
+  }
+
+  sid_error_t ret = sid_start(app_context->sidewalk_handle, link_mask);
   if (ret != SID_ERROR_NONE) {
     app_log_error("app: failed to start sidewalk stack: %d\n", ret);
     app_context->sidewalk_handle = NULL;
@@ -665,7 +689,15 @@ static sl_status_t start_sidewalk(app_context_t *app_context, char *link_str)
 
 static sl_status_t stop_sidewalk(app_context_t *app_context, char *link_str)
 {
-  sid_error_t ret = sid_stop(app_context->sidewalk_handle, parse_link_type(link_str));
+  uint8_t link_mask = parse_link_type(link_str);
+  if(link_mask == 0) {
+    // Issued link is not available on current platform
+    // Ignore the command but don't return error as this will cause main task to be deleted.
+    app_log_error("app: the chosen link is not available on current platform! Ignoring stop command.");
+    return SL_STATUS_OK;
+  }
+
+  sid_error_t ret = sid_stop(app_context->sidewalk_handle, link_mask);
   if (ret != SID_ERROR_NONE) {
     app_log_error("app: failed to stop sidewalk stack: %d\n", ret);
     app_context->sidewalk_handle = NULL;

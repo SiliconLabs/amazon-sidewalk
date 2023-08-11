@@ -45,24 +45,6 @@ extern "C" {
 //                              Macros and Typedefs
 // -----------------------------------------------------------------------------
 
-/**************************************************************************//**
- * @brief Unlock th CLI mutex and return.
- *****************************************************************************/
-#define sl_app_sidewalk_release_cli_mutex_and_return() \
-  do {                                                 \
-    sl_app_sidewalk_cli_mutex_unlock();                \
-    return;                                            \
-  } while (0)
-
-/**************************************************************************//**
- * @brief Unlock the CLI mutex and return with a value.
- *****************************************************************************/
-#define sl_app_sidewalk_release_cli_mutex_and_return_val(__val) \
-  do {                                                          \
-    sl_app_sidewalk_cli_mutex_unlock();                         \
-    return (__val);                                             \
-  } while (0)
-
 // -----------------------------------------------------------------------------
 //                                Global Variables
 // -----------------------------------------------------------------------------
@@ -75,17 +57,7 @@ extern "C" {
  * @brief Initialize the CLI components mutex.
  * @details This function initializes the CLI mutex.
  *****************************************************************************/
-void sl_app_sidewalk_cli_init(void);
-
-/**************************************************************************//**
- * @brief Lock by mutex.
- *****************************************************************************/
-void sl_app_sidewalk_cli_mutex_lock(void);
-
-/**************************************************************************//**
- * @brief Unlock by mutex.
- *****************************************************************************/
-void sl_app_sidewalk_cli_mutex_unlock(void);
+void sl_sidewalk_cli_util_init(void);
 
 #ifdef __cplusplus
 }

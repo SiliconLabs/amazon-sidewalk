@@ -64,7 +64,7 @@ enum SL_PINout {
   SL_PIN_NRESET,
   SL_PIN_NSS,
 #ifdef EFR32XG21
-  SL_PIN_MAUI_BAND_SEL,
+  SL_PIN_KG100S_BAND_SEL,
 #endif
   SL_PIN_MAX
 };
