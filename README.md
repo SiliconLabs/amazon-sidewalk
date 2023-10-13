@@ -8,4 +8,4 @@ Refer to [Silicon Labs' online documentation](https://docs.silabs.com/amazon-sid
 
 ## Report Bugs & Get Support
 
-You are always encouraged and welcome to ask any questions or report any issues you found to us via [Silicon Labs Community](https://community.silabs.com).
+You are always encouraged and welcome to ask any questions or report any issues you found to us via [Silicon Labs Community](https://community.silabs.com/s/topic/0TO8Y000000eHD9WAM/amazon-sidewalk).

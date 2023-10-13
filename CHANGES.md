@@ -1,3 +1,8 @@
+v1.2.1
+------
+- Bugfix for manufacturing page generator
+- Source files of manufacturing page generator are added
+
 v1.2.0
 ------
 

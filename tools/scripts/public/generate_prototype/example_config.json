@@ -1,0 +1,16 @@
+{
+    "awsAccount": {
+        "awsRegion": "us-east-1",
+        "awsProfile": "default"
+    },
+    "commanderPath": "C:\\SiliconLabs\\SimplicityStudio\\v5_4\\developer\\adapter_packs\\commander\\commander.exe",
+    "generationRequests": [
+        {
+            "deviceProfileId": null,
+            "deviceName": null,
+            "destinationName": "CFSDestination",
+            "targetPart": null,
+            "quantity": 1
+        }
+    ]
+}
