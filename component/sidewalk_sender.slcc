@@ -1,0 +1,27 @@
+id: "sidewalk_sender"
+label: "Sidewal sender"
+package: "Flex"
+description: "Provides Sidewalk message sending functions"
+category: Example|AWS IoT
+quality: production
+root_path: "component/sidewalk_sender"
+
+provides:
+  - name: "sidewalk_sender"
+source:
+  - path: "sl_sidewalk_sender.c"
+include:
+  - path: "."
+    file_list:
+    - "path": "sl_sidewalk_sender.h"
+
+#-------------- Template Contribution ----------------
+template_contribution:
+#---------------- Component Catalog ------------------
+  - name: component_catalog
+    value: sidewalk_sender
+  - name: event_handler
+    value:
+      event: service_init
+      include: sl_sidewalk_sender.h
+      handler: sl_sidewalk_sender_init

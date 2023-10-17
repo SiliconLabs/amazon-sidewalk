@@ -1,0 +1,32 @@
+id: "sidewalk_utils"
+label: "Sidewalk utils"
+package: "Flex"
+description: "Provides Sidewalk utility functions"
+category: Example|AWS IoT
+quality: production
+root_path: "component/sidewalk_utils"
+
+provides:
+  - name: "sidewalk_utils"
+source:
+  - path: "sl_sidewalk_utils.c"
+include:
+  - path: "."
+    file_list:
+    - "path": "sl_sidewalk_utils.h"
+    - "path": "sl_sidewalk_utils_types.h"
+
+config_file:
+  - path: "config/sl_sidewalk_utils_config.h"
+
+#-------------- Template Contribution ----------------
+template_contribution:
+#---------------- Component Catalog ------------------
+  - name: component_catalog
+    value: sidewalk_utils
+#---------------- Event handler ----------------------
+  - name: event_handler
+    value:
+      event: service_init
+      include: sl_sidewalk_utils.h
+      handler: sl_sidewalk_utils_init

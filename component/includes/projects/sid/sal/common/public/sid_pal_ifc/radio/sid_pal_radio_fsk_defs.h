@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 Amazon.com, Inc. or its affiliates. All rights reserved.
+ * Copyright 2020-2023 Amazon.com, Inc. or its affiliates. All rights reserved.
  *
  * AMAZON PROPRIETARY/CONFIDENTIAL
  *
@@ -17,20 +17,21 @@
 
 /** @file sid_pal_radio_fsk_defs.h
  *
- * @defgroup sid_pal_lib_radio sid Radio interface
+ * @defgroup sid_pal_radio_ifc SID Sub-Ghz Radio interface
  * @{
  * @ingroup sid_pal_ifc
  *
- * @details     FSK modulation defines for Sidewalk
+ * @details FSK modulation defines for Sidewalk
  *
  */
+
+#include <stdbool.h>
+#include <stdint.h>
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-#include <stdbool.h>
-#include <stdint.h>
 
 // Radio Mod Shaping parameter
 #define SID_PAL_RADIO_FSK_MOD_SHAPING_OFF 0x00
@@ -160,8 +161,8 @@ typedef struct {
     radio_fsk_fcs_t   fcs_type;
     bool              is_data_whitening_enabled;
     bool              is_fec_enabled;
-    uint8_t           phy_hdr_len;
-    uint8_t           phy_header[SID_MAX_CUSTOM_PHYHDR_SZ];
+    uint8_t phy_hdr_len;
+    uint8_t phy_header[SID_MAX_CUSTOM_PHYHDR_SZ];
 } sid_pal_radio_fsk_phy_hdr_t;
 
 typedef struct {
@@ -202,4 +203,4 @@ typedef struct sid_pal_radio_fsk_phy_settings {
 
 /** @} */
 
-#endif
+#endif /* SID_PAL_RADIO_FSK_DEFS_H */

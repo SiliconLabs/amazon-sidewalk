@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 Amazon.com, Inc. or its affiliates. All rights reserved.
+ * Copyright 2021-2023 Amazon.com, Inc. or its affiliates. All rights reserved.
  *
  * AMAZON PROPRIETARY/CONFIDENTIAL
  *
@@ -15,6 +15,14 @@
 #ifndef SID_PAL_SERIAL_IFC_H
 #define SID_PAL_SERIAL_IFC_H
 
+/** @file
+ *
+ * @defgroup sid_pal_serial_client_ifc SID serial client interface
+ * @{
+ * @ingroup sid_pal_ifc
+ *
+ * @details Provides serial client interface to be implemented by platform
+ */
 
 #include <sid_error.h>
 
@@ -24,7 +32,6 @@
 #ifdef __cplusplus
 extern "C" {
 #endif
-
 
 /**
  * @struct sid_pal_serial_callbacks_t
@@ -215,5 +222,6 @@ typedef struct {
 } // extern "C"
 #endif
 
+/** @} */
 
 #endif /* SID_PAL_SERIAL_IFC_H */

@@ -15,6 +15,16 @@
 #ifndef SID_ERROR_H
 #define SID_ERROR_H
 
+/// @cond (sid_ifc_ep_en || sid_ifc_gw_en)
+
+/** @file
+ *
+ * @defgroup SIDEWALK_API Sidewalk API
+ * @brief API for communicating with the Sidewalk network
+ * @{
+ * @ingroup  SIDEWALK_API
+ */
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -104,5 +114,9 @@ typedef enum {
 #ifdef __cplusplus
 }
 #endif
+
+/** @} */
+
+/// @endcond
 
 #endif

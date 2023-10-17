@@ -1,0 +1,34 @@
+id: "sidewalk_cmd_executor"
+label: "Sidewalk command processor"
+package: "Flex"
+description: "Provides Sidewalk command processing functions"
+category: Example|AWS IoT
+quality: production
+root_path: "component/sidewalk_cmd_executor"
+
+provides:
+  - name: "sidewalk_cmd_executor"
+requires:
+  - name: "sidewalk_sender"
+source:
+  - path: "sl_sidewalk_cmd_executor.c"
+include:
+  - path: "."
+    file_list:
+    - "path": "sl_sidewalk_cmd_executor.h"
+template_file:
+  - path: template/sl_command_table.c.jinja
+  - path: template/sl_command_table.h.jinja
+
+#-------------- Template Contribution ----------------
+template_contribution:
+#---------------- Component Catalog ------------------
+  - name: component_catalog
+    value: sidewalk_cmd_executer
+#---------------- Event handler ----------------------
+  - name: event_handler
+    value:
+      event: service_init
+      include: sl_sidewalk_cmd_executor.h
+      handler: sl_sidewalk_cmd_executor_init
+

@@ -355,7 +355,7 @@ void sl_app_trigger_sid_send(char *message_type_str, char *message_str)
   memcpy(cli_arg_str, message_type_str, strlen(message_type_str));
   memset(cli_arg_str_2, 0, sizeof(cli_arg_str_2));
   memcpy(cli_arg_str_2, message_str, strlen(message_str));
-  queue_event(g_event_queue, EVENT_TYPE_SID_SEND, true);
+  queue_event(g_event_queue, EVENT_TYPE_SID_SEND);
 
   app_log_info("app: send user event\n");
 }
@@ -367,7 +367,7 @@ void sl_app_trigger_sid_send(char *message_type_str, char *message_str)
  ******************************************************************************/
 void sl_app_trigger_sid_reset(void)
 {
-  queue_event(g_event_queue, EVENT_TYPE_SID_RESET, true);
+  queue_event(g_event_queue, EVENT_TYPE_SID_RESET);
   app_log_info("app: reset user event\n");
 }
 
@@ -380,7 +380,7 @@ void sl_app_trigger_sid_init(char *link_str)
 {
   memset(cli_arg_str, 0, sizeof(cli_arg_str));
   memcpy(cli_arg_str, link_str, strlen(link_str));
-  queue_event(g_event_queue, EVENT_TYPE_SID_INIT, true);
+  queue_event(g_event_queue, EVENT_TYPE_SID_INIT);
 
   app_log_info("app: init user event\n");
 }
@@ -394,7 +394,7 @@ void sl_app_trigger_sid_start(char *link_str)
 {
   memset(cli_arg_str, 0, sizeof(cli_arg_str));
   memcpy(cli_arg_str, link_str, strlen(link_str));
-  queue_event(g_event_queue, EVENT_TYPE_SID_START, true);
+  queue_event(g_event_queue, EVENT_TYPE_SID_START);
 
   app_log_info("app: start user event\n");
 }
@@ -408,7 +408,7 @@ void sl_app_trigger_sid_stop(char *link_str)
 {
   memset(cli_arg_str, 0, sizeof(cli_arg_str));
   memcpy(cli_arg_str, link_str, strlen(link_str));
-  queue_event(g_event_queue, EVENT_TYPE_SID_STOP, true);
+  queue_event(g_event_queue, EVENT_TYPE_SID_STOP);
 
   app_log_info("app: stop user event\n");
 }
@@ -420,7 +420,7 @@ void sl_app_trigger_sid_stop(char *link_str)
  ******************************************************************************/
 void sl_app_trigger_sid_deinit(void)
 {
-  queue_event(g_event_queue, EVENT_TYPE_SID_DEINIT, true);
+  queue_event(g_event_queue, EVENT_TYPE_SID_DEINIT);
   app_log_info("app: deinit user event\n");
 }
 
@@ -431,7 +431,7 @@ void sl_app_trigger_sid_deinit(void)
  ******************************************************************************/
 void sl_app_trigger_sid_get_css_dev_prof_id(void)
 {
-  queue_event(g_event_queue, EVENT_TYPE_SID_GET_CSS_DEV_PROF_ID, true);
+  queue_event(g_event_queue, EVENT_TYPE_SID_GET_CSS_DEV_PROF_ID);
   app_log_info("app: get css dev prof id user event\n");
 }
 
@@ -443,7 +443,7 @@ void sl_app_trigger_sid_get_css_dev_prof_id(void)
 void sl_app_trigger_sid_set_css_dev_prof_id(char *value)
 {
   cli_arg_uint8_t = *value;
-  queue_event(g_event_queue, EVENT_TYPE_SID_SET_CSS_DEV_PROF_ID, true);
+  queue_event(g_event_queue, EVENT_TYPE_SID_SET_CSS_DEV_PROF_ID);
 
   app_log_info("app: set css dev prof id user event\n");
 }
@@ -455,7 +455,7 @@ void sl_app_trigger_sid_set_css_dev_prof_id(char *value)
  ******************************************************************************/
 void sl_app_trigger_sid_get_fsk_dev_prof_id(void)
 {
-  queue_event(g_event_queue, EVENT_TYPE_SID_GET_FSK_DEV_PROF_ID, true);
+  queue_event(g_event_queue, EVENT_TYPE_SID_GET_FSK_DEV_PROF_ID);
   app_log_info("app: get fsk dev prof id user event\n");
 }
 
@@ -467,7 +467,7 @@ void sl_app_trigger_sid_get_fsk_dev_prof_id(void)
 void sl_app_trigger_sid_set_fsk_dev_prof_id(char *value)
 {
   cli_arg_uint8_t = *value;
-  queue_event(g_event_queue, EVENT_TYPE_SID_SET_FSK_DEV_PROF_ID, true);
+  queue_event(g_event_queue, EVENT_TYPE_SID_SET_FSK_DEV_PROF_ID);
 
   app_log_info("app: set fsk dev prof id user event\n");
 }
@@ -480,7 +480,7 @@ void sl_app_trigger_sid_set_fsk_dev_prof_id(char *value)
 void sl_app_trigger_sid_set_dev_prof_id(uint8_t profile_id)
 {
   cli_arg_uint8_t = profile_id;
-  queue_event(g_event_queue, EVENT_TYPE_SID_SET_DEV_PROF_ID, true);
+  queue_event(g_event_queue, EVENT_TYPE_SID_SET_DEV_PROF_ID);
 
   app_log_info("app: set dev prof id user event\n");
 }
@@ -492,7 +492,7 @@ void sl_app_trigger_sid_set_dev_prof_id(uint8_t profile_id)
  ******************************************************************************/
 void sl_app_trigger_sid_get_dev_prof_rx_win_cnt(void)
 {
-  queue_event(g_event_queue, EVENT_TYPE_SID_GET_DEV_PROF_RX_WIN_CNT, true);
+  queue_event(g_event_queue, EVENT_TYPE_SID_GET_DEV_PROF_RX_WIN_CNT);
   app_log_info("app: get dev prof rx win cnt user event\n");
 }
 
@@ -504,7 +504,7 @@ void sl_app_trigger_sid_get_dev_prof_rx_win_cnt(void)
 void sl_app_trigger_sid_set_dev_prof_rx_win_cnt(int16_t rx_win_cnt)
 {
   cli_arg_int16_t = rx_win_cnt;
-  queue_event(g_event_queue, EVENT_TYPE_SID_SET_DEV_PROF_RX_WIN_CNT, true);
+  queue_event(g_event_queue, EVENT_TYPE_SID_SET_DEV_PROF_RX_WIN_CNT);
 
   app_log_info("app: set dev prof rx win cnt user event\n");
 }
@@ -516,7 +516,7 @@ void sl_app_trigger_sid_set_dev_prof_rx_win_cnt(int16_t rx_win_cnt)
  ******************************************************************************/
 void sl_app_trigger_sid_get_dev_prof_rx_interv_ms(void)
 {
-  queue_event(g_event_queue, EVENT_TYPE_SID_GET_DEV_PROF_RX_INTERV_MS, true);
+  queue_event(g_event_queue, EVENT_TYPE_SID_GET_DEV_PROF_RX_INTERV_MS);
   app_log_info("app: get dev prof rx interv ms user event");
 }
 
@@ -528,7 +528,7 @@ void sl_app_trigger_sid_get_dev_prof_rx_interv_ms(void)
 void sl_app_trigger_sid_set_dev_prof_rx_interv_ms(uint16_t rx_interv_ms)
 {
   cli_arg_uint16_t = rx_interv_ms;
-  queue_event(g_event_queue, EVENT_TYPE_SID_SET_DEV_PROF_RX_INTERV_MS, true);
+  queue_event(g_event_queue, EVENT_TYPE_SID_SET_DEV_PROF_RX_INTERV_MS);
 
   app_log_info("app: set dev prof rx interv ms user event\n");
 }
@@ -540,7 +540,7 @@ void sl_app_trigger_sid_set_dev_prof_rx_interv_ms(uint16_t rx_interv_ms)
  ******************************************************************************/
 void sl_app_trigger_sid_get_dev_prof_wakeup_type(void)
 {
-  queue_event(g_event_queue, EVENT_TYPE_SID_GET_DEV_PROF_WAKEUP_TYPE, true);
+  queue_event(g_event_queue, EVENT_TYPE_SID_GET_DEV_PROF_WAKEUP_TYPE);
   app_log_info("app: get dev prof wakeup type user event\n");
 }
 
@@ -552,7 +552,7 @@ void sl_app_trigger_sid_get_dev_prof_wakeup_type(void)
 void sl_app_trigger_sid_set_dev_prof_wakeup_type(uint8_t wakeup_type)
 {
   cli_arg_uint8_t = wakeup_type;
-  queue_event(g_event_queue, EVENT_TYPE_SID_SET_DEV_PROF_WAKEUP_TYPE, true);
+  queue_event(g_event_queue, EVENT_TYPE_SID_SET_DEV_PROF_WAKEUP_TYPE);
 
   app_log_info("app: set dev prof wakeup type user event\n");
 }
@@ -564,7 +564,7 @@ void sl_app_trigger_sid_set_dev_prof_wakeup_type(uint8_t wakeup_type)
  ******************************************************************************/
 void sl_app_trigger_ble_connection_request(void)
 {
-  queue_event(g_event_queue, EVENT_TYPE_SID_BLE_CONNECTION_REQUEST, true);
+  queue_event(g_event_queue, EVENT_TYPE_SID_BLE_CONNECTION_REQUEST);
   app_log_info("app: ble connection request user event\n");
 }
 
@@ -575,7 +575,7 @@ void sl_app_trigger_ble_connection_request(void)
  ******************************************************************************/
 void sl_app_trigger_send_counter_update(void)
 {
-  queue_event(g_event_queue, EVENT_TYPE_SEND_COUNTER_UPDATE, true);
+  queue_event(g_event_queue, EVENT_TYPE_SEND_COUNTER_UPDATE);
   app_log_info("app: send counter update user event\n");
 }
 
@@ -586,7 +586,7 @@ void sl_app_trigger_send_counter_update(void)
  ******************************************************************************/
 void sl_app_trigger_factory_reset(void)
 {
-  queue_event(g_event_queue, EVENT_TYPE_FACTORY_RESET, true);
+  queue_event(g_event_queue, EVENT_TYPE_FACTORY_RESET);
   app_log_info("app: factory reset user event\n");
 }
 
@@ -598,7 +598,7 @@ void sl_app_trigger_factory_reset(void)
 void sl_app_trigger_send(uint32_t len)
 {
   cli_arg_uint32_t = len;
-  queue_event(g_event_queue, EVENT_TYPE_SID_SEND, true);
+  queue_event(g_event_queue, EVENT_TYPE_SID_SEND);
 
   app_log_info("app: send user event\n");
 }
@@ -610,7 +610,7 @@ void sl_app_trigger_send(uint32_t len)
  ******************************************************************************/
 void sl_app_trigger_get_time(void)
 {
-  queue_event(g_event_queue, EVENT_TYPE_GET_TIME, true);
+  queue_event(g_event_queue, EVENT_TYPE_GET_TIME);
   app_log_info("app: get time user event\n");
 }
 
@@ -621,7 +621,7 @@ void sl_app_trigger_get_time(void)
  ******************************************************************************/
 void sl_app_trigger_get_status(void)
 {
-  queue_event(g_event_queue, EVENT_TYPE_GET_STATUS, true);
+  queue_event(g_event_queue, EVENT_TYPE_GET_STATUS);
   app_log_info("app: get status user event\n");
 }
 
@@ -634,15 +634,15 @@ void sl_app_trigger_get_mtu(enum sid_link_type link_type)
 {
   switch (link_type) {
     case SID_LINK_TYPE_1:
-      queue_event(g_event_queue, EVENT_TYPE_GET_MTU_BLE, true);
+      queue_event(g_event_queue, EVENT_TYPE_GET_MTU_BLE);
       break;
 
     case SID_LINK_TYPE_2:
-      queue_event(g_event_queue, EVENT_TYPE_GET_MTU_FSK, true);
+      queue_event(g_event_queue, EVENT_TYPE_GET_MTU_FSK);
       break;
 
     case SID_LINK_TYPE_3:
-      queue_event(g_event_queue, EVENT_TYPE_GET_MTU_CSS, true);
+      queue_event(g_event_queue, EVENT_TYPE_GET_MTU_CSS);
       break;
 
     default:

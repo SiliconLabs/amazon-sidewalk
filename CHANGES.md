@@ -1,3 +1,10 @@
+v1.2.2
+------
+- Support for GSDK 4.3.2
+- xG24 CSP support
+- OOB SW components released
+- Bugfixes
+
 v1.2.1
 ------
 - Bugfix for manufacturing page generator

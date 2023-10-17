@@ -1,0 +1,23 @@
+id: "sidewalk_device_backup"
+label: "Sidewalk device backup"
+package: "Flex"
+description: "Provides Sidewalk device backup functions"
+category: Example|AWS IoT
+quality: production
+root_path: "component/sidewalk_device_backup"
+
+provides:
+  - name: "sidewalk_device_backup"
+source:
+  - path: "sl_sidewalk_device_backup.c"
+include:
+  - path: "."
+    file_list:
+    - "path": "sl_sidewalk_device_backup.h"
+    - "path": "sli_sidewalk_device_backup_certificate_common.h"
+
+#-------------- Template Contribution ----------------
+template_contribution:
+#---------------- Component Catalog ------------------
+  - name: component_catalog
+    value: sidewalk_device_backup

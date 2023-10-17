@@ -50,11 +50,6 @@
 #include "app_subghz_config.h"
 #endif
 
-#if defined(SIDEWALK_POWER_CONSUMPTION_WORKAROUND)
-#include "peripheral_sysrtc.h"
-#include "em_cmu.h"
-#endif
-
 // -----------------------------------------------------------------------------
 //                              Macros and Typedefs
 // -----------------------------------------------------------------------------
@@ -86,21 +81,9 @@ void app_init(void)
   // Initialize the Silabs system
   sl_system_init();
 
-#if defined(SIDEWALK_POWER_CONSUMPTION_WORKAROUND)
-  // Initialize the SYSRTC module, RAIL will use it internally.
-  // Pre-initialized by the system init by default but not if sleep timer is using BURTC as peripheral.
-  // BURTC is used as peripheral instead of SYSRTC because of a power
-  // manager issue found which cause higher power consumption.
-
-  sl_sysrtc_config_t sysrtc_config = SYSRTC_CONFIG_DEFAULT;
-  CMU_ClockEnable(cmuClock_SYSRTC, true);
-  sl_sysrtc_init(&sysrtc_config);
-  sl_sysrtc_enable();
-#endif
-
   app_button_press_enable();
 
-  app_log_info("app: sid_subghz application started");
+  app_log_info("app: application started");
   // Initialize the common PAL interfaces
   sid_error_t ret = sid_pal_common_init();
   if (ret != SID_ERROR_NONE) {

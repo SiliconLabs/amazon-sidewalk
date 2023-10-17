@@ -49,53 +49,63 @@
 // -----------------------------------------------------------------------------
 //                              Macros and Typedefs
 // -----------------------------------------------------------------------------
-#define TX_FIFO_SIZE                                256 // Any power of 2 from [64, 4096] on the EFR32
-#define RF_RANDOM_TIMES                             8
-#define RSSI_QUARTER_ORDER                          2
+#define TX_FIFO_SIZE                                (256) // Any power of 2 from [64, 4096] on the EFR32
+#define RF_RANDOM_TIMES                             (8)
+#define RSSI_QUARTER_ORDER                          (2)
 
-#define EFR32XGXX_PHR_CRC16_BYTES                   2
-#define EFR32XGXX_PHR_CRC32_BYTES                   4
-#define EFR32XGXX_PHR_FIELD_LEN_SHIFT_BITS          8
-#define EFR32XGXX_PHR_FIELD_CRC_SHIFT_BITS          4
-#define EFR32XGXX_PHR_FIELD_WHITENING_SHIFT_BITS    3
-#define EFR32XGXX_PHR_FIELD_MODESW_SHIFT_BITS       7
-#define EFR32XGXX_PHR_FIELD_LEN_HI_MASK             0x07
-#define EFR32XGXX_PHR_FIELD_LEN_LO_MASK             0xff
+#define EFR32XGXX_PHR_CRC16_BYTES                   (2)
+#define EFR32XGXX_PHR_CRC32_BYTES                   (4)
+#define EFR32XGXX_PHR_FIELD_LEN_SHIFT_BITS          (8)
+#define EFR32XGXX_PHR_FIELD_CRC_SHIFT_BITS          (4)
+#define EFR32XGXX_PHR_FIELD_WHITENING_SHIFT_BITS    (3)
+#define EFR32XGXX_PHR_FIELD_MODESW_SHIFT_BITS       (7)
+#define EFR32XGXX_PHR_FIELD_LEN_HI_MASK             (0x07)
+#define EFR32XGXX_PHR_FIELD_LEN_LO_MASK             (0xff)
 
-#define EFR32XGXX_RAIL_MAXPOWER                     20
+#define EFR32XGXX_RAIL_MAXPOWER                     (20)
 
-#define EFR32XGXX_RAIL_INVALID_IDX                  -1
-#define EFR32XGXX_RAIL_50KBPS_IDX                   0
-#define EFR32XGXX_RAIL_150KBPS_IDX                  1
-#define EFR32XGXX_RAIL_250KBPS_IDX                  2
+#define EFR32XGXX_RAIL_INVALID_IDX                  (-1)
+#define EFR32XGXX_RAIL_50KBPS_IDX                   (0)
+#define EFR32XGXX_RAIL_150KBPS_IDX                  (1)
+#define EFR32XGXX_RAIL_250KBPS_IDX                  (2)
 
-#define EFR32XGXX_SYNCWORD_BYTES                    8
+#define EFR32XGXX_SYNCWORD_BYTES                    (8)
 
-#define EFR32XGXX_CRC_16_TYPE                       0
-#define EFR32XGXX_CRC_32_TYPE                       1
-#define EFR32XGXX_CRC_BYTES_ZERO                    0
-#define EFR32XGXX_CRC_BYTES_ONE                     1
-#define EFR32XGXX_CRC_BYTES_TWO                     2
+#define EFR32XGXX_CRC_16_TYPE                       (0)
+#define EFR32XGXX_CRC_32_TYPE                       (1)
+#define EFR32XGXX_CRC_BYTES_ZERO                    (0)
+#define EFR32XGXX_CRC_BYTES_ONE                     (1)
+#define EFR32XGXX_CRC_BYTES_TWO                     (2)
 
-#define EFR32XGXX_MAX_PAYLOAD                       255
-#define EFR32XGXX_PHR_LOW_BYTE                      0
-#define EFR32XGXX_PHR_HIGH_BYTE                     1
-#define EFR32XGXX_PHR_ENABLE                        1
+#define EFR32XGXX_MAX_PAYLOAD                       (255)
+#define EFR32XGXX_PHR_LOW_BYTE                      (0)
+#define EFR32XGXX_PHR_HIGH_BYTE                     (1)
+#define EFR32XGXX_PHR_ENABLE                        (1)
 
-#define POLYNOMIAL_CRC16                            0x1021
-#define POLYNOMIAL_CRC32                            0x04C11DB7
+#define POLYNOMIAL_CRC16                            (0x1021)
+#define POLYNOMIAL_CRC32                            (0x04C11DB7)
+
+#if defined(SL_SIDEWALK_DMP_SUPPORTED)
+// Greater the priority value, lesser the priority
+#define EFR32XGXX_RX_PRIORITY                       (200)
+#define EFR32XGXX_TX_PRIORITY                       (100)
+#endif
 
 // -----------------------------------------------------------------------------
 //                          Static Function Declarations
 // -----------------------------------------------------------------------------
 static void radio_irq(RAIL_Handle_t rail_handle, RAIL_Events_t events);
 static inline uint32_t efr32xgxx_get_gfsk_crc_len_in_bytes(efr32xgxx_gfsk_crc_types_t crc_type);
+static inline void efr32xgxx_cancel_radio_timer(void);
 static void radio_cfg_changed_hander(RAIL_Handle_t rail_handle, const RAIL_ChannelConfigEntry_t *entry);
 static void efr32xgxx_set_radio_idle(void);
 static void efr32xgxx_rfready(RAIL_Handle_t rail_handle);
 static void efr32xgxx_event_notify(sid_pal_radio_events_t radio_event);
-static void radio_irq(RAIL_Handle_t rail_handle, RAIL_Events_t events);
 static void efr32xgxx_rx_timer_expired(RAIL_Handle_t rail_handle);
+static void efr32xgxx_tx_timer_expired(RAIL_Handle_t rail_handle);
+#if defined(SL_SIDEWALK_DMP_SUPPORTED)
+static void efr32xgxx_radio_yield(void);
+#endif
 
 // -----------------------------------------------------------------------------
 //                                Global Variables
@@ -106,20 +116,28 @@ extern const RAIL_ChannelConfig_t *efr32xgxx_channelConfigs[]; // PHY link
 //                                Static Variables
 // -----------------------------------------------------------------------------
 static RAIL_Handle_t g_rail_handle = NULL;
-static __ALIGNED(RAIL_FIFO_ALIGNMENT) uint8_t tx_fifo[TX_FIFO_SIZE];
-static int8_t last_set_tx_power_level = 0;
-static uint8_t preamble_detected = 0;
+static __ALIGNED(RAIL_FIFO_ALIGNMENT) uint8_t g_tx_fifo[TX_FIFO_SIZE] = { 0x00 };
+static int8_t g_last_set_tx_power_level = 0;
+static uint8_t g_preamble_detected = 0;
 static uint16_t g_channel = 0;
-static int8_t rf_profile = EFR32XGXX_RAIL_50KBPS_IDX;
-static bool platform_init_once = false;
-static bool radio_init_once = false;
-static bool tx_pwr_cfg_init_once = false;
-static sid_pal_radio_events_t last_radio_event = SID_PAL_RADIO_EVENT_UNKNOWN;
-static RAIL_Config_t rail_cfg = {   // Must never be const
-  .eventsCallback = &radio_irq,
-  .protocol = NULL,                 // For BLE, RAIL needs additional state memory
-  .scheduler = NULL,                // For MultiProtocol, additional scheduler memory
+static uint32_t g_old_br_in_bps = RADIO_FSK_BR_50KBPS;
+static int8_t g_rf_profile = EFR32XGXX_RAIL_50KBPS_IDX;
+static bool g_platform_init_once = false;
+static bool g_radio_init_once = false;
+static bool g_tx_pwr_cfg_init_once = false;
+static bool g_is_first_set_gfsk_mod_params = true;
+static sid_pal_radio_events_t g_last_radio_event = SID_PAL_RADIO_EVENT_UNKNOWN;
+static RAIL_Config_t g_rail_cfg = { .eventsCallback = &radio_irq };
+
+#if defined(SL_SIDEWALK_DMP_SUPPORTED)
+static uint16_t g_prev_channel = 0;
+// For multiprotocol versions of RAIL, this can be used to control how a receive or transmit operation is run.
+static RAIL_SchedulerInfo_t g_schedulerInfo = {
+  .priority = EFR32XGXX_TX_PRIORITY,
+  .slipTime = 0,        // This value is not relevant as upper layer controlls direct radio operations thourgh the sid_pal start_rx/tx.
+  .transactionTime = 0  // This value is not relevant as upper layer controlls direct radio operations thourgh the sid_pal start_rx/tx.
 };
+#endif
 
 // -----------------------------------------------------------------------------
 //                          Public Function Definitions
@@ -178,8 +196,8 @@ void efr32xgxx_event_handler(void)
 {
   const halo_drv_silabs_ctx_t *drv_ctx = efr32xgxx_get_drv_ctx();
 
-  if ((SID_PAL_RADIO_EVENT_UNKNOWN != last_radio_event)) {
-    drv_ctx->report_radio_event(last_radio_event);
+  if ((SID_PAL_RADIO_EVENT_UNKNOWN != g_last_radio_event)) {
+    drv_ctx->report_radio_event(g_last_radio_event);
   }
 }
 
@@ -234,11 +252,17 @@ uint16_t efr32xgxx_set_phr(uint8_t *hdr, uint8_t modesw, uint8_t crc, uint8_t wh
   return len;
 }
 
+/**************************************************************************//**
+ * Return RAIL handle object.
+ *****************************************************************************/
 RAIL_Handle_t efr32xgxx_get_railhandle(void)
 {
   return g_rail_handle;
 }
 
+/**************************************************************************//**
+ * Handle received packets.
+ *****************************************************************************/
 uint16_t efr32xgxx_get_rxpacket(uint8_t *phr, uint8_t *payload, int8_t *rssi, bool msb)
 {
   RAIL_RxPacketInfo_t     pktinfo;
@@ -246,12 +270,6 @@ uint16_t efr32xgxx_get_rxpacket(uint8_t *phr, uint8_t *payload, int8_t *rssi, bo
   RAIL_RxPacketHandle_t   pktHandle;
   uint16_t                len = 0;
   RAIL_Status_t           status;
-
-  pktHandle = RAIL_HoldRxPacket(g_rail_handle);
-  if (pktHandle == RAIL_RX_PACKET_HANDLE_INVALID) {
-    SID_PAL_LOG_ERROR("radio rx pkt hndl invalid");
-    goto ret;
-  }
 
   pktHandle = RAIL_GetRxPacketInfo(g_rail_handle, RAIL_RX_PACKET_HANDLE_OLDEST, &pktinfo);
   if (!(pktHandle != RAIL_RX_PACKET_HANDLE_INVALID)
@@ -295,61 +313,67 @@ uint16_t efr32xgxx_get_rxpacket(uint8_t *phr, uint8_t *payload, int8_t *rssi, bo
         | ((len >> EFR32XGXX_PHR_FIELD_LEN_SHIFT_BITS) & EFR32XGXX_PHR_FIELD_LEN_LO_MASK);
   *rssi = pktDetails.rssi;
 
-  status = RAIL_ReleaseRxPacket(g_rail_handle, pktHandle);
-  if (status != RAIL_STATUS_NO_ERROR) {
-    SID_PAL_LOG_ERROR("radio release rx pkt err: %d", status);
-    goto ret;
-  }
-
   ret:
   return len;
 }
 
+/**************************************************************************//**
+ * RAIL init.
+ *****************************************************************************/
 int32_t efr32xgxx_set_platform(void)
 {
   int32_t err = RADIO_ERROR_NONE;
 
-  if (platform_init_once) {
+  if (g_platform_init_once) {
     // Already initialized
     err = RADIO_ERROR_NONE;
     goto ret;
   }
 
-  g_rail_handle = RAIL_Init(&rail_cfg, &efr32xgxx_rfready);
+  g_rail_handle = RAIL_Init(&g_rail_cfg, &efr32xgxx_rfready);
   if (g_rail_handle == NULL) {
     SID_PAL_LOG_ERROR("radio rail init err");
     err = RADIO_ERROR_HARDWARE_ERROR;
     goto ret;
   }
-  while (!RAIL_IsInitialized()) ;
-  platform_init_once = true;
+
+  while (!RAIL_IsInitialized()) {
+    // Wait for RAIL init...
+  }
+
+  // Platform is initialized
+  g_platform_init_once = true;
 
   ret:
   RAIL_Idle(g_rail_handle, RAIL_IDLE, true);
-
   return err;
 }
 
+/**************************************************************************//**
+ * Radio calibration.
+ *****************************************************************************/
 int32_t efr32xgxx_set_radio_init_hard(void)
 {
   int32_t err = RADIO_ERROR_NONE;
   RAIL_Status_t status;
   RAIL_CalMask_t pending_calib;
 
-  if (radio_init_once) {
+  if (g_radio_init_once) {
     // Already calibrated
     err = RADIO_ERROR_NONE;
     goto ret;
   }
 
-  if (rf_profile == EFR32XGXX_RAIL_INVALID_IDX) {
-    SID_PAL_LOG_ERROR("radio wrong rf profile: %d", rf_profile);
+  if (g_rf_profile == EFR32XGXX_RAIL_INVALID_IDX) {
+    SID_PAL_LOG_ERROR("radio wrong rf profile: %d", g_rf_profile);
     err = RADIO_ERROR_HARDWARE_ERROR;
     goto ret;
   }
 
+  // Enable the PA calibration
   RAIL_EnablePaCal(true);
 
+  // Initialize RAIL calibration
   status = RAIL_ConfigCal(g_rail_handle, RAIL_CAL_ALL);
   if (status != RAIL_STATUS_NO_ERROR) {
     SID_PAL_LOG_ERROR("radio calibration cfg err: %d", status);
@@ -357,8 +381,10 @@ int32_t efr32xgxx_set_radio_init_hard(void)
     goto ret;
   }
 
+  // Return the current set of pending calibrations
   pending_calib = RAIL_GetPendingCal(g_rail_handle);
 
+  // VCO Temperature Calibration
   if (pending_calib & RAIL_CAL_TEMP_VCO) {
     status = RAIL_CalibrateTemp(g_rail_handle);
     if (status != RAIL_STATUS_NO_ERROR) {
@@ -368,21 +394,34 @@ int32_t efr32xgxx_set_radio_init_hard(void)
     }
   }
 
+  // Image Rejection Calibration (IRCAL)
   if (pending_calib & RAIL_CAL_ONETIME_IRCAL) {
-    status = RAIL_CalibrateIr(g_rail_handle, NULL);
-    if (status != RAIL_STATUS_NO_ERROR) {
-      SID_PAL_LOG_ERROR("radio ir calibration err: %d", status);
+    RAIL_AntennaSel_t rfPath = RAIL_ANTENNA_AUTO;
+    RAIL_Status_t retVal = RAIL_GetRfPath(g_rail_handle, &rfPath);
+    if (retVal == RAIL_STATUS_NO_ERROR) {
+      status = RAIL_CalibrateIrAlt(g_rail_handle, NULL, rfPath);
+      if (status != RAIL_STATUS_NO_ERROR) {
+        SID_PAL_LOG_ERROR("radio ir calibration err: %d", status);
+        err = RADIO_ERROR_HARDWARE_ERROR;
+        goto ret;
+      }
+    } else {
+      SID_PAL_LOG_ERROR("radio RF path err: %d", retVal);
       err = RADIO_ERROR_HARDWARE_ERROR;
       goto ret;
     }
   }
 
-  radio_init_once = true;
+  // Radio is initialized
+  g_radio_init_once = true;
 
   ret:
   return err;
 }
 
+/**************************************************************************//**
+ * Radio configuration.
+ *****************************************************************************/
 int32_t efr32xgxx_set_radio_init(void)
 {
   int32_t err = RADIO_ERROR_NONE;
@@ -394,7 +433,7 @@ int32_t efr32xgxx_set_radio_init(void)
     goto ret;
   }
 
-  RAIL_ConfigChannels(g_rail_handle, efr32xgxx_channelConfigs[rf_profile], &radio_cfg_changed_hander);
+  RAIL_ConfigChannels(g_rail_handle, efr32xgxx_channelConfigs[g_rf_profile], &radio_cfg_changed_hander);
 
   RAIL_Events_t events = RAIL_EVENT_CAL_NEEDED
                          | RAIL_EVENT_RX_PACKET_RECEIVED
@@ -407,6 +446,7 @@ int32_t efr32xgxx_set_radio_init(void)
                          | RAIL_EVENT_TX_UNDERFLOW
                          | RAIL_EVENT_RX_PREAMBLE_DETECT;
 
+  // Configure radio events
   status = RAIL_ConfigEvents(g_rail_handle, RAIL_EVENTS_ALL, events);
   if (status != RAIL_STATUS_NO_ERROR) {
     SID_PAL_LOG_ERROR("radio events cfg err: %d", status);
@@ -414,26 +454,7 @@ int32_t efr32xgxx_set_radio_init(void)
     goto ret;
   }
 
-  RAIL_StateTransitions_t railStateTransitions = {
-    .success = RAIL_RF_STATE_RX,
-    .error   = RAIL_RF_STATE_RX,
-  };
-
-  status = RAIL_SetRxTransitions(g_rail_handle, &railStateTransitions);
-  if (status != RAIL_STATUS_NO_ERROR) {
-    SID_PAL_LOG_ERROR("radio rx trans err: %d", status);
-    err = RADIO_ERROR_HARDWARE_ERROR;
-    goto ret;
-  }
-
-  status = RAIL_SetTxTransitions(g_rail_handle, &railStateTransitions);
-  if (status != RAIL_STATUS_NO_ERROR) {
-    SID_PAL_LOG_ERROR("radio tx trans err err: %d", status);
-    err = RADIO_ERROR_HARDWARE_ERROR;
-    goto ret;
-  }
-
-  if (!RAIL_SetTxFifo(g_rail_handle, tx_fifo, 0, TX_FIFO_SIZE)) {
+  if (!RAIL_SetTxFifo(g_rail_handle, g_tx_fifo, 0, TX_FIFO_SIZE)) {
     SID_PAL_LOG_ERROR("radio set tx fifo err");
     err = RADIO_ERROR_HARDWARE_ERROR;
     goto ret;
@@ -476,7 +497,7 @@ int32_t efr32xgxx_set_txpower(int8_t power)
   int32_t err = RADIO_ERROR_NONE;
   const halo_drv_silabs_ctx_t *drv_ctx = efr32xgxx_get_drv_ctx();
 
-  if (!tx_pwr_cfg_init_once) {
+  if (!g_tx_pwr_cfg_init_once) {
     status = RAIL_ConfigTxPower(g_rail_handle, &drv_ctx->config->tx_power_cfg);
     if (status != RAIL_STATUS_NO_ERROR) {
       SID_PAL_LOG_ERROR("radio PA init err: %d", status);
@@ -485,7 +506,7 @@ int32_t efr32xgxx_set_txpower(int8_t power)
     }
   }
 
-  if (power != last_set_tx_power_level) {
+  if (power != g_last_set_tx_power_level) {
     int8_t max_pwr;
 
     efr32xgxx_get_txpower(&max_pwr, NULL);
@@ -501,10 +522,10 @@ int32_t efr32xgxx_set_txpower(int8_t power)
       goto ret;
     }
 
-    last_set_tx_power_level = power;
+    g_last_set_tx_power_level = power;
   }
 
-  tx_pwr_cfg_init_once = true;
+  g_tx_pwr_cfg_init_once = true;
 
   ret:
   return err;
@@ -512,15 +533,21 @@ int32_t efr32xgxx_set_txpower(int8_t power)
 
 int32_t efr32xgxx_set_sleep(void)
 {
+#if defined(SL_SIDEWALK_DMP_SUPPORTED)
+  efr32xgxx_radio_yield();
+#else
   efr32xgxx_set_radio_idle();
-
+#endif
   return RADIO_ERROR_NONE;
 }
 
 int32_t efr32xgxx_set_standby(void)
 {
+#if defined(SL_SIDEWALK_DMP_SUPPORTED)
+  efr32xgxx_radio_yield();
+#else
   efr32xgxx_set_radio_idle();
-
+#endif
   return RADIO_ERROR_NONE;
 }
 
@@ -549,19 +576,23 @@ int32_t efr32xgxx_set_tx_payload(const uint8_t *buffer, uint8_t size, bool msb)
   return err;
 }
 
-static void efr32xgxx_tx_timer_expired(RAIL_Handle_t rail_handle)
-{
-  efr32xgxx_event_notify(SID_PAL_RADIO_EVENT_TX_TIMEOUT);
-  RAIL_Idle(rail_handle, RAIL_IDLE, true);
-}
-
 int32_t efr32xgxx_set_tx(const uint32_t timeout)
 {
   int32_t err = RADIO_ERROR_NONE;
 
+#if defined(SL_SIDEWALK_DMP_SUPPORTED)
+  efr32xgxx_cancel_radio_timer();
+#else
   efr32xgxx_set_radio_idle();
+#endif
 
+  // Start sending
+#if defined(SL_SIDEWALK_DMP_SUPPORTED)
+  g_schedulerInfo = (RAIL_SchedulerInfo_t) { .priority = EFR32XGXX_TX_PRIORITY }; // TX priority value shall be less than TX
+  RAIL_Status_t status = RAIL_StartTx(g_rail_handle, g_channel, RAIL_TX_OPTION_ALT_PREAMBLE_LEN, &g_schedulerInfo);
+#else
   RAIL_Status_t status = RAIL_StartTx(g_rail_handle, g_channel, RAIL_TX_OPTION_ALT_PREAMBLE_LEN, NULL);
+#endif
   if (status != RAIL_STATUS_NO_ERROR) {
     SID_PAL_LOG_ERROR("radio start sch tx err: %d", status);
     err = RADIO_ERROR_HARDWARE_ERROR;
@@ -587,16 +618,38 @@ int32_t efr32xgxx_set_rx(const uint32_t timeout)
   int32_t err = RADIO_ERROR_NONE;
   uint32_t rail_timeout = timeout;
 
-  preamble_detected = 0;
+  g_preamble_detected = 0;
 
+#if defined(SL_SIDEWALK_DMP_SUPPORTED)
+  // Check if channel has changed
+  // If we call RAIL_StartRx while not idle but with a different channel, any ongoing receive or transmit operation will be aborted
+  if (g_prev_channel != g_channel) {
+    efr32xgxx_set_radio_idle();
+  } else {
+    efr32xgxx_cancel_radio_timer();
+  }
+#else
   efr32xgxx_set_radio_idle();
+#endif
 
+#if defined(SL_SIDEWALK_DMP_SUPPORTED)
+  // Start backround RX
+  g_schedulerInfo = (RAIL_SchedulerInfo_t) { .priority = EFR32XGXX_RX_PRIORITY }; // RX priority value shall be greater than TX
+  RAIL_Status_t status = RAIL_StartRx(g_rail_handle, g_channel, &g_schedulerInfo);
+#else
+  // Start RX
   RAIL_Status_t status = RAIL_StartRx(g_rail_handle, g_channel, NULL);
+#endif
   if (status != RAIL_STATUS_NO_ERROR) {
     SID_PAL_LOG_ERROR("radio schedule rx err: %d", status);
     err = RADIO_ERROR_HARDWARE_ERROR;
     goto ret;
   }
+
+#if defined(SL_SIDEWALK_DMP_SUPPORTED)
+  // Update prev channel
+  g_prev_channel = g_channel;
+#endif
 
   if (rail_timeout) {
     RAIL_Status_t status = RAIL_SetTimer(g_rail_handle, rail_timeout, RAIL_TIME_DELAY, &efr32xgxx_rx_timer_expired);
@@ -611,11 +664,13 @@ int32_t efr32xgxx_set_rx(const uint32_t timeout)
   return err;
 }
 
+// This function is not supported.
 int32_t efr32xgxx_set_tx_cw(void)
 {
   return RADIO_ERROR_NOT_SUPPORTED;
 }
 
+// This function is not supported.
 int32_t efr32xgxx_set_tx_cpbl(void)
 {
   return RADIO_ERROR_NOT_SUPPORTED;
@@ -624,29 +679,30 @@ int32_t efr32xgxx_set_tx_cpbl(void)
 int32_t efr32xgxx_set_rf_freq(const uint32_t freq_in_hz)
 {
   // Compute channel from frequency
-  g_channel = (freq_in_hz - efr32xgxx_channelConfigs[rf_profile]->configs->baseFrequency) / efr32xgxx_channelConfigs[rf_profile]->configs->channelSpacing;
+  g_channel = (freq_in_hz - efr32xgxx_channelConfigs[g_rf_profile]->configs->baseFrequency) / efr32xgxx_channelConfigs[g_rf_profile]->configs->channelSpacing;
 
   return RADIO_ERROR_NONE;
 }
 
-/*
- * Todo : Silabs sdk not support functions.
- */
 int32_t efr32xgxx_set_gfsk_mod_params(const efr32xgxx_mod_params_gfsk_t *params)
 {
   int32_t err = RADIO_ERROR_NONE;
-  uint32_t old = params->br_in_bps;
 
-  if (params->br_in_bps != old) {
+  if (g_is_first_set_gfsk_mod_params) {
+    g_is_first_set_gfsk_mod_params = false;
+    goto ret;
+  }
+
+  if (params->br_in_bps != g_old_br_in_bps) {
     if (params->br_in_bps == RADIO_FSK_BR_50KBPS) {
-      rf_profile = EFR32XGXX_RAIL_50KBPS_IDX;
+      g_rf_profile = EFR32XGXX_RAIL_50KBPS_IDX;
     } else if (params->br_in_bps == RADIO_FSK_BR_150KBPS) {
-      rf_profile = EFR32XGXX_RAIL_150KBPS_IDX;
+      g_rf_profile = EFR32XGXX_RAIL_150KBPS_IDX;
     } else if (params->br_in_bps == RADIO_FSK_BR_250KBPS) {
-      rf_profile = EFR32XGXX_RAIL_250KBPS_IDX;
+      g_rf_profile = EFR32XGXX_RAIL_250KBPS_IDX;
     } else {
-      SID_PAL_LOG_ERROR("radio wrong rf profile: %d", rf_profile);
-      rf_profile = EFR32XGXX_RAIL_INVALID_IDX;
+      SID_PAL_LOG_ERROR("radio wrong rf profile: %d", g_rf_profile);
+      g_rf_profile = EFR32XGXX_RAIL_INVALID_IDX;
       err = RADIO_ERROR_HARDWARE_ERROR;
       goto ret;
     }
@@ -661,6 +717,8 @@ int32_t efr32xgxx_set_gfsk_mod_params(const efr32xgxx_mod_params_gfsk_t *params)
     err = RADIO_ERROR_HARDWARE_ERROR;
     goto ret;
   }
+
+  g_old_br_in_bps = params->br_in_bps;
 
   ret:
   return err;
@@ -686,8 +744,17 @@ int32_t efr32xgxx_get_rssi_inst(int16_t *rssi_in_dbm)
 {
   int16_t rssi_local;
   int32_t err = RADIO_ERROR_NONE;
+  bool wait;
 
-  if ((rssi_local = RAIL_GetRssi(g_rail_handle, true)) == RAIL_RSSI_INVALID) {
+  // 'wait' should never be set 'true' in multiprotocol as the wait time is not consistent,
+  // so scheduling a scheduler slot cannot be done accurately.
+#if defined(SL_SIDEWALK_DMP_SUPPORTED)
+  wait = false;
+#else
+  wait = true;
+#endif
+
+  if ((rssi_local = RAIL_GetRssi(g_rail_handle, wait)) == RAIL_RSSI_INVALID) {
     err = RADIO_ERROR_HARDWARE_ERROR;
     goto ret;
   }
@@ -750,6 +817,8 @@ int32_t efr32xgxx_get_random_numbers(uint32_t *numbers, unsigned int n)
 
 int32_t efr32xgxx_set_gfsk_sync_word(const uint8_t* sync_word, const uint8_t sync_word_len)
 {
+  (void)sync_word;
+  (void)sync_word_len;
   return RADIO_ERROR_NONE;
 }
 
@@ -777,27 +846,45 @@ static void radio_cfg_changed_hander(RAIL_Handle_t rail_handle, const RAIL_Chann
   (void)rail_handle;
   (void)entry;
 
-  efr32xgxx_set_txpower(last_set_tx_power_level);
+  efr32xgxx_set_txpower(g_last_set_tx_power_level);
 }
 
 static void efr32xgxx_set_radio_idle(void)
 {
-  if (RAIL_IsTimerRunning(g_rail_handle)) {
-    RAIL_CancelTimer(g_rail_handle);
-  }
-
+  efr32xgxx_cancel_radio_timer();
   RAIL_Idle(g_rail_handle, RAIL_IDLE, true);
 }
 
+#if defined(SL_SIDEWALK_DMP_SUPPORTED)
+static void efr32xgxx_radio_yield(void)
+{
+  efr32xgxx_cancel_radio_timer();
+  RAIL_YieldRadio(g_rail_handle);
+}
+#endif
+
+static inline void efr32xgxx_cancel_radio_timer(void)
+{
+  if (RAIL_IsTimerRunning(g_rail_handle)) {
+    RAIL_CancelTimer(g_rail_handle);
+  }
+}
+
+/**************************************************************************//**
+ * A callback that notifies the application
+ * when the radio is finished initializing
+ * and is ready for further configuration.
+ *****************************************************************************/
 static void efr32xgxx_rfready(RAIL_Handle_t rail_handle)
 {
+  (void)rail_handle;
 }
 
 static void efr32xgxx_event_notify(sid_pal_radio_events_t radio_event)
 {
   const halo_drv_silabs_ctx_t *drv_ctx = efr32xgxx_get_drv_ctx();
 
-  last_radio_event = radio_event;
+  g_last_radio_event = radio_event;
 
   drv_ctx->irq_handler();
 }
@@ -807,31 +894,9 @@ static void radio_irq(RAIL_Handle_t rail_handle, RAIL_Events_t events)
 {
   RAIL_Status_t status;
 
-  if (events & RAIL_EVENT_CAL_NEEDED) {
-    status = RAIL_Calibrate(rail_handle, NULL, RAIL_CAL_ALL_PENDING);
-    if (status != RAIL_STATUS_NO_ERROR) {
-      SID_PAL_LOG_ERROR("radio calibration err: %d", status);
-    }
-  }
-
-  // RX Events
-
-  if (events & (RAIL_EVENT_RX_FIFO_OVERFLOW | RAIL_EVENT_RX_PACKET_ABORTED | RAIL_EVENT_RX_FRAME_ERROR)) {
-    if (events & RAIL_EVENT_RX_FIFO_OVERFLOW) {
-      efr32xgxx_event_notify(SID_PAL_RADIO_EVENT_RX_ERROR);
-      SID_PAL_LOG_ERROR("radio rx fifo overflow");
-    }
-
-    if (events & RAIL_EVENT_RX_PACKET_ABORTED) {
-      efr32xgxx_event_notify(SID_PAL_RADIO_EVENT_RX_ERROR);
-      SID_PAL_LOG_ERROR("radio rx pkt abort");
-    }
-
-    if (events & RAIL_EVENT_RX_FRAME_ERROR) {
-      SID_PAL_LOG_ERROR("radio rx frame err");
-      efr32xgxx_event_notify(SID_PAL_RADIO_EVENT_RX_ERROR);
-    }
-  } else if (events & RAIL_EVENT_RX_PACKET_RECEIVED) {
+  //----------------- RX --------------------------
+  // Handle RX Events
+  if (events & RAIL_EVENT_RX_PACKET_RECEIVED) {
     halo_drv_silabs_ctx_t *drv_ctx = efr32xgxx_get_drv_ctx();
 
     sid_clock_now(SID_CLOCK_SOURCE_UPTIME, &drv_ctx->radio_rx_packet->rcv_tm, NULL);
@@ -843,7 +908,10 @@ static void radio_irq(RAIL_Handle_t rail_handle, RAIL_Events_t events)
       efr32xgxx_event_notify(SID_PAL_RADIO_EVENT_RX_ERROR);
     }
 
+#if !defined(SL_SIDEWALK_DMP_SUPPORTED)
     efr32xgxx_set_radio_idle();
+#endif
+
   } else if (events & RAIL_EVENT_RX_PREAMBLE_DETECT) {
     halo_drv_silabs_ctx_t *drv_ctx = efr32xgxx_get_drv_ctx();
 
@@ -855,26 +923,69 @@ static void radio_irq(RAIL_Handle_t rail_handle, RAIL_Events_t events)
       efr32xgxx_event_notify(SID_PAL_RADIO_EVENT_CS_DONE);
     }
 
-    preamble_detected = 1;
+    g_preamble_detected = 1;
+  } else if (events & (RAIL_EVENT_RX_FIFO_OVERFLOW | RAIL_EVENT_RX_PACKET_ABORTED | RAIL_EVENT_RX_FRAME_ERROR)) {
+    if (events & RAIL_EVENT_RX_FIFO_OVERFLOW) {
+      SID_PAL_LOG_ERROR("radio rx fifo overflow");
+      efr32xgxx_event_notify(SID_PAL_RADIO_EVENT_RX_ERROR);
+    }
+
+    if (events & RAIL_EVENT_RX_PACKET_ABORTED) {
+      SID_PAL_LOG_ERROR("radio rx pkt abort");
+      efr32xgxx_event_notify(SID_PAL_RADIO_EVENT_RX_ERROR);
+    }
+
+    if (events & RAIL_EVENT_RX_FRAME_ERROR) {
+      SID_PAL_LOG_ERROR("radio rx frame err");
+      efr32xgxx_event_notify(SID_PAL_RADIO_EVENT_RX_ERROR);
+    }
   }
 
-  // TX Events
-
+  //----------------- TX --------------------------
+  // Handle TX Events
   if (events & (RAIL_EVENT_TX_ABORTED | RAIL_EVENT_TX_BLOCKED | RAIL_EVENT_TX_UNDERFLOW)) {
-    efr32xgxx_event_notify(SID_PAL_RADIO_EVENT_TX_TIMEOUT);
-    efr32xgxx_set_radio_idle();
     SID_PAL_LOG_ERROR("radio tx err");
+    efr32xgxx_event_notify(SID_PAL_RADIO_EVENT_TX_TIMEOUT);
+#if defined(SL_SIDEWALK_DMP_SUPPORTED)
+    efr32xgxx_radio_yield();
+#else
+    efr32xgxx_set_radio_idle();
+#endif
   } else if (events & RAIL_EVENT_TX_PACKET_SENT) {
     efr32xgxx_event_notify(SID_PAL_RADIO_EVENT_TX_DONE);
+#if defined(SL_SIDEWALK_DMP_SUPPORTED)
+    efr32xgxx_radio_yield();
+#else
     efr32xgxx_set_radio_idle();
+#endif
   }
+
+  // Perform all calibrations when needed
+  if (events & RAIL_EVENT_CAL_NEEDED) {
+    status = RAIL_Calibrate(rail_handle, NULL, RAIL_CAL_ALL_PENDING);
+    if (status != RAIL_STATUS_NO_ERROR) {
+      SID_PAL_LOG_ERROR("radio calibration err: %d", status);
+    }
+  }
+}
+
+static void efr32xgxx_tx_timer_expired(RAIL_Handle_t rail_handle)
+{
+  (void)rail_handle;
+  efr32xgxx_event_notify(SID_PAL_RADIO_EVENT_TX_TIMEOUT);
+#if defined(SL_SIDEWALK_DMP_SUPPORTED)
+  efr32xgxx_radio_yield();
+#else
+  efr32xgxx_set_radio_idle();
+#endif
 }
 
 static void efr32xgxx_rx_timer_expired(RAIL_Handle_t rail_handle)
 {
+  (void)rail_handle;
   halo_drv_silabs_ctx_t *drv_ctx = efr32xgxx_get_drv_ctx();
 
-  if (preamble_detected == 0) {
+  if (!g_preamble_detected) {
     if (drv_ctx->cad_exit_mode == SID_PAL_RADIO_CAD_EXIT_MODE_CS_LBT) {
       // rx window was a listen before talk
       // channel is free so we can schedule tx
@@ -885,10 +996,15 @@ static void efr32xgxx_rx_timer_expired(RAIL_Handle_t rail_handle)
     }
     // for standard rx windows, report timeout event
     efr32xgxx_event_notify(SID_PAL_RADIO_EVENT_RX_TIMEOUT);
+#if defined(SL_SIDEWALK_DMP_SUPPORTED)
+    // cancel radio timer
+    efr32xgxx_cancel_radio_timer();
+#else
     // switch radio mode
-    RAIL_Idle(rail_handle, RAIL_IDLE, true);
+    efr32xgxx_set_radio_idle();
+#endif
   } else {
-    //preamble have been received since start of the rx window
-    //continue rx until RAIL_EVENT_RX_PACKET_RECEIVED event
+    // preamble have been received since start of the rx window
+    // continue rx until RAIL_EVENT_RX_PACKET_RECEIVED event
   }
 }

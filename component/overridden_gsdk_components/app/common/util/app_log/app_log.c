@@ -49,10 +49,10 @@ sl_iostream_t * app_log_iostream = NULL;
 // -----------------------------------------------------------------------------
 // Local variables
 
-#if APP_LOG_COUNTER_ENABLE == 1
+#if APP_LOG_ENABLE == 1 && APP_LOG_COUNTER_ENABLE == 1
 /// Counter for logging
 static uint32_t counter = 0;
-#endif // APP_LOG_COUNTER_ENABLE
+#endif // APP_LOG_ENABLE == 1 && APP_LOG_COUNTER_ENABLE == 1
 
 /// Simple filter status
 static bool level_filter_enabled = APP_LOG_LEVEL_FILTER_ENABLE;
@@ -77,7 +77,7 @@ static uint8_t level_mask =
 /***************************************************************************//**
  * Checking log level
  ******************************************************************************/
-bool _app_log_check_level(uint8_t level)
+bool app_log_check_level(uint8_t level)
 {
   bool ret = true;
   if (level_filter_enabled) {
@@ -196,7 +196,7 @@ void _app_log_status_string(sl_status_t sc)
  ******************************************************************************/
 SL_WEAK void _app_log_time()
 {
-  #if APP_LOG_TIME_ENABLE == 1
+  #if APP_LOG_ENABLE == 1 && APP_LOG_TIME_ENABLE == 1
   #ifdef SL_CATALOG_SLEEPTIMER_PRESENT
   uint32_t time_ms = (uint32_t)(sl_sleeptimer_get_tick_count64()
                                 * 1000
@@ -234,7 +234,7 @@ SL_WEAK void _app_log_time()
                  loc_time.wMilliseconds);
   #endif // defined(POSIX) && POSIX == 1
   #endif // HOST_TOOLCHAIN
-  #endif // APP_LOG_TIME_ENABLE
+  #endif // APP_LOG_ENABLE == 1 && APP_LOG_TIME_ENABLE == 1
 }
 
 /***************************************************************************//**
@@ -242,11 +242,11 @@ SL_WEAK void _app_log_time()
  ******************************************************************************/
 void _app_log_counter()
 {
-  #if APP_LOG_COUNTER_ENABLE == 1
+  #if APP_LOG_ENABLE == 1 && APP_LOG_COUNTER_ENABLE == 1
   app_log_append(APP_LOG_COUNTER_FORMAT
                  APP_LOG_SEPARATOR,
                  counter++);
-  #endif // APP_LOG_COUNTER_ENABLE
+  #endif // APP_LOG_ENABLE == 1 && APP_LOG_COUNTER_ENABLE == 1
 }
 
 /******************************************************************************

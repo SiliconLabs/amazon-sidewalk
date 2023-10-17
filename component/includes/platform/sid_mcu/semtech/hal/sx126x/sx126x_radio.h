@@ -82,7 +82,7 @@ typedef enum {
 #define US_IN_SEC                                   (1000000UL)
 #define US_IN_MSEC                                  (1000UL)
 #define US_TO_SEMTEC_TICKS(X)                       (((X) * SEMTECH_TUS_IN_MSEC)/US_IN_MSEC)
-#define SX126X_US_TO_SYMBOLS(time_in_us, bit_rate)  ((time_in_us * bit_rate)/US_IN_SEC)
+#define SX126X_US_TO_SYMBOLS(time_in_us, bit_rate)  ((uint64_t)((uint64_t)time_in_us * (uint64_t)bit_rate)/US_IN_SEC)
 #define SX126X_TUS_TO_US(X)                         ((X) * (US_IN_SEC / SEMTECH_TUS_IN_SEC))
 
 /*!

@@ -3,7 +3,7 @@
  * @brief Application logging interface
  *******************************************************************************
  * # License
- * <b>Copyright 2021 Silicon Laboratories Inc. www.silabs.com</b>
+ * <b>Copyright 2023 Silicon Laboratories Inc. www.silabs.com</b>
  *******************************************************************************
  *
  * SPDX-License-Identifier: Zlib
@@ -49,8 +49,8 @@ extern "C" {
 #define APP_LOG_LEVEL_DEBUG                4
 #define APP_LOG_LEVEL_COUNT                5
 
-#define APP_LOG_COUNTER_FORMAT             "%u"
-#define APP_LOG_TIME_FORMAT                "%u:%02u:%02u.%03u"
+#define APP_LOG_COUNTER_FORMAT             "%lu"
+#define APP_LOG_TIME_FORMAT                "%lu:%02lu:%02lu.%03lu"
 #define APP_LOG_TRACE_FORMAT               "%s:%d :%s: "
 #define APP_LOG_STATUS_FORMAT              "Status: %s = 0x%04x "
 #define APP_LOG_SEPARATOR                  " "
@@ -137,15 +137,14 @@ void _app_log_time();
  ******************************************************************************/
 void _app_log_counter();
 
+// -----------------------------------------------------------------------------
+// Public API functions
 /***************************************************************************//**
  * Checking log level
  * @param[in] level log level to check
  * @return true if the given level should be printed
  ******************************************************************************/
-bool _app_log_check_level(uint8_t level);
-
-// -----------------------------------------------------------------------------
-// Public API functions
+bool app_log_check_level(uint8_t level);
 
 /***************************************************************************//**
  * Enable or disable simple log level filter threshold
@@ -189,14 +188,22 @@ uint8_t app_log_filter_mask_get(void);
 // Logging macro definitions
 
 #if defined(APP_LOG_ENABLE) && APP_LOG_ENABLE
+#ifdef __GNUC__
+  #define _DISABLE_FORMAT_ZERO_LENGTH_WARNING _Pragma("GCC diagnostic ignored \"-Wformat-zero-length\"")
+  #define _ENABLE_FORMAT_ZERO_LENGTH_WARNING _Pragma("GCC diagnostic warning \"-Wformat-zero-length\"")
+#else
+  #define _DISABLE_FORMAT_ZERO_LENGTH_WARNING
+  #define _ENABLE_FORMAT_ZERO_LENGTH_WARNING
+#endif
 
-#define app_log_append(...)            \
-  sl_iostream_printf(app_log_iostream, \
-                     __VA_ARGS__)
+#define app_log_append(...)                          \
+  _DISABLE_FORMAT_ZERO_LENGTH_WARNING                \
+  sl_iostream_printf(app_log_iostream, __VA_ARGS__); \
+  _ENABLE_FORMAT_ZERO_LENGTH_WARNING
 
 #define app_log_append_level(level, ...) \
   do {                                   \
-    if (_app_log_check_level(level)) {   \
+    if (app_log_check_level(level)) {    \
       app_log_append(__VA_ARGS__);       \
     }                                    \
   } while (0)
@@ -307,7 +314,7 @@ uint8_t app_log_filter_mask_get(void);
 
 #define app_log_level(level, ...)      \
   do {                                 \
-    if (_app_log_check_level(level)) { \
+    if (app_log_check_level(level)) { \
       _app_log_print_color(level);     \
       _app_log_time();                 \
       _app_log_counter();              \
@@ -320,7 +327,7 @@ uint8_t app_log_filter_mask_get(void);
 
 #define app_log_status_level_f(level, sc, ...)                  \
   do {                                                          \
-    if (!(sc == SL_STATUS_OK) && _app_log_check_level(level)) { \
+    if (!(sc == SL_STATUS_OK) && app_log_check_level(level)) { \
       _app_log_print_color(level);                              \
       _app_log_time();                                          \
       _app_log_counter();                                       \
@@ -349,17 +356,84 @@ uint8_t app_log_filter_mask_get(void);
 
 #define app_log_hexdump_level_s(level, separator, p_data, len) \
   do {                                                         \
-    if (_app_log_check_level(level)) {                         \
-      uint8_t *tmp = (uint8_t *)p_data;                        \
-      for (uint32_t i = 0; i < len; i++) {                     \
+    if (app_log_check_level(level)) {                          \
+      for (uint32_t i = 0; i < (uint32_t)len; i++) {           \
         if (i > 0) {                                           \
           app_log_append(separator);                           \
         }                                                      \
         app_log_append(APP_LOG_HEXDUMP_PREFIX);                \
         app_log_append(APP_LOG_HEXDUMP_FORMAT,                 \
-                       (int) tmp[i]);                          \
+                       (int) ((uint8_t *)p_data)[i]);          \
       }                                                        \
     }                                                          \
+  } while (0)
+
+#define app_log_hexdump_reverse_level_s(level, separator, p_data, len) \
+  do {                                                                 \
+    if (app_log_check_level(level)) {                                  \
+      for (uint32_t i = ((uint32_t)len) - 1;; i--) {                   \
+        app_log_append(APP_LOG_HEXDUMP_PREFIX);                        \
+        app_log_append(APP_LOG_HEXDUMP_FORMAT,                         \
+                       (int) ((uint8_t *)p_data)[i]);                  \
+        if (i > 0) {                                                   \
+          app_log_append(separator);                                   \
+        } else {                                                       \
+          break;                                                       \
+        }                                                              \
+      }                                                                \
+    }                                                                  \
+  } while (0)
+
+#define app_log_array_dump_level_s(level, separator, p_data, len, format) \
+  do {                                                                    \
+    if (app_log_check_level(level)) {                                     \
+      for (uint32_t i = 0; i < (uint32_t)len; i++) {                      \
+        if (i > 0) {                                                      \
+          app_log_append(separator);                                      \
+        }                                                                 \
+        app_log_append(format, p_data[i]);                                \
+      }                                                                   \
+    }                                                                     \
+  } while (0)
+
+#define app_log_array_dump_reverse_level_s(level, separator, p_data, len, format) \
+  do {                                                                            \
+    if (app_log_check_level(level)) {                                             \
+      for (uint32_t i = 0; i < (uint32_t)len; i++) {                              \
+        if (i > 0) {                                                              \
+          app_log_append(separator);                                              \
+        }                                                                         \
+        app_log_append(format, p_data[(uint32_t)len - i - 1]);                    \
+      }                                                                           \
+    }                                                                             \
+  } while (0)
+
+#define app_log_custom_array_dump_level_s(level, separator, array, array_len, array_data_type, iterator_ptr, format, ...) \
+  do {                                                                                                                    \
+    if (app_log_check_level(level)) {                                                                                     \
+      array_data_type *iterator_ptr = (array_data_type *)array;                                                           \
+      for (uint32_t i = 0; i < (uint32_t)array_len; i++) {                                                                \
+        if (i > 0) {                                                                                                      \
+          app_log_append(separator);                                                                                      \
+        }                                                                                                                 \
+        app_log_append(format, __VA_ARGS__);                                                                              \
+        iterator_ptr++;                                                                                                   \
+      }                                                                                                                   \
+    }                                                                                                                     \
+  } while (0)
+
+#define app_log_custom_array_dump_reverse_level_s(level, separator, array, array_len, array_data_type, iterator_ptr, format, ...) \
+  do {                                                                                                                            \
+    if (app_log_check_level(level)) {                                                                                             \
+      array_data_type *iterator_ptr = (array_data_type *)(&array + 1) - 1;                                                        \
+      for (uint32_t i = 0; i < (uint32_t)array_len; i++) {                                                                        \
+        if (i > 0) {                                                                                                              \
+          app_log_append(separator);                                                                                              \
+        }                                                                                                                         \
+        app_log_append(format, __VA_ARGS__);                                                                                      \
+        iterator_ptr--;                                                                                                           \
+      }                                                                                                                           \
+    }                                                                                                                             \
   } while (0)
 
 #else // APP_LOG_ENABLE
@@ -367,16 +441,22 @@ uint8_t app_log_filter_mask_get(void);
 #define app_log(...)
 #define app_log_level(level, ...)
 #define app_log_hexdump_level_s(level, separator, p_data, len)
+#define app_log_hexdump_reverse_level_s(level, separator, p_data, len)
+#define app_log_print_trace()
 #define app_log_status(sc) (void)sc
 #define app_log_status_f(sc, ...) (void)sc
 #define app_log_status_level(level, sc) (void)sc
 #define app_log_status_level_f(level, sc, ...) (void)sc
 #define app_log_append(...)
 #define app_log_append_level(level, ...)
+#define app_log_array_dump_level_s(level, separator, p_data, len, format)
+#define app_log_array_dump_reverse_level_s(level, separator, p_data, len, format)
+#define app_log_custom_array_dump_level_s(level, separator, array, array_len, array_data_type, iterator_ptr, format, ...)
+#define app_log_custom_array_dump_reverse_level_s(level, separator, array, array_len, array_data_type, iterator_ptr, format, ...)
 
 #endif // APP_LOG_ENABLE
 
-#define app_log_nl()  app_log_append(APP_LOG_NEW_LINE)
+#define app_log_nl()          app_log_append(APP_LOG_NEW_LINE)
 
 #define app_log_append_debug(...)           \
   app_log_append_level(APP_LOG_LEVEL_DEBUG, \
@@ -397,6 +477,12 @@ uint8_t app_log_filter_mask_get(void);
 #define app_log_append_critical(...)           \
   app_log_append_level(APP_LOG_LEVEL_CRITICAL, \
                        __VA_ARGS__)
+
+#define app_log_nl_debug()    app_log_append_debug(APP_LOG_NEW_LINE)
+#define app_log_nl_info()     app_log_append_info(APP_LOG_NEW_LINE)
+#define app_log_nl_warning()  app_log_append_warning(APP_LOG_NEW_LINE)
+#define app_log_nl_error()    app_log_append_error(APP_LOG_NEW_LINE)
+#define app_log_nl_critical() app_log_append_critical(APP_LOG_NEW_LINE)
 
 #define app_log_debug(...)           \
   app_log_level(APP_LOG_LEVEL_DEBUG, \
@@ -497,6 +583,186 @@ uint8_t app_log_filter_mask_get(void);
 
 #define app_log_hexdump_critical_s(separator, p_data, len) \
   app_log_hexdump_level_s(APP_LOG_LEVEL_CRITICAL, separator, p_data, len)
+
+#define app_log_hexdump_reverse_level(level, p_data, len)    \
+  app_log_hexdump_reverse_level_s(level,                     \
+                                  APP_LOG_HEXDUMP_SEPARATOR, \
+                                  p_data,                    \
+                                  len)
+
+#define app_log_hexdump_reverse_debug(p_data, len) \
+  app_log_hexdump_reverse_level(APP_LOG_LEVEL_DEBUG, p_data, len)
+
+#define app_log_hexdump_reverse_info(p_data, len) \
+  app_log_hexdump_reverse_level(APP_LOG_LEVEL_INFO, p_data, len)
+
+#define app_log_hexdump_reverse_warning(p_data, len) \
+  app_log_hexdump_reverse_level(APP_LOG_LEVEL_WARNING, p_data, len)
+
+#define app_log_hexdump_reverse_error(p_data, len) \
+  app_log_hexdump_reverse_level(APP_LOG_LEVEL_ERROR, p_data, len)
+
+#define app_log_hexdump_reverse_critical(p_data, len) \
+  app_log_hexdump_reverse_level(APP_LOG_LEVEL_CRITICAL, p_data, len)
+
+#define app_log_hexdump_reverse_debug_s(separator, p_data, len) \
+  app_log_hexdump_reverse_level_s(APP_LOG_LEVEL_DEBUG, separator, p_data, len)
+
+#define app_log_hexdump_reverse_info_s(separator, p_data, len) \
+  app_log_hexdump_reverse_level_s(APP_LOG_LEVEL_INFO, separator, p_data, len)
+
+#define app_log_hexdump_reverse_warning_s(separator, p_data, len) \
+  app_log_hexdump_reverse_level_s(APP_LOG_LEVEL_WARNING, separator, p_data, len)
+
+#define app_log_hexdump_reverse_error_s(separator, p_data, len) \
+  app_log_hexdump_reverse_level_s(APP_LOG_LEVEL_ERROR, separator, p_data, len)
+
+#define app_log_hexdump_reverse_critical_s(separator, p_data, len) \
+  app_log_hexdump_reverse_level_s(APP_LOG_LEVEL_CRITICAL, separator, p_data, len)
+
+// ARRAY DUMP
+#define app_log_array_dump_level(level, p_data, len, format) \
+  app_log_array_dump_level_s(level,                          \
+                             APP_LOG_ARRAY_DUMP_SEPARATOR    \
+                             p_data,                         \
+                             len,                            \
+                             format)
+
+#define app_log_array_dump_debug(p_data, len, format)                \
+  app_log_array_dump_level(APP_LOG_LEVEL_DEBUG, p_data, len, format) \
+
+#define app_log_array_dump_info(p_data, len, format)                \
+  app_log_array_dump_level(APP_LOG_LEVEL_INFO, p_data, len, format) \
+
+#define app_log_array_dump_warning(p_data, len, format)                \
+  app_log_array_dump_level(APP_LOG_LEVEL_WARNING, p_data, len, format) \
+
+#define app_log_array_dump_error(p_data, len, format)                \
+  app_log_array_dump_level(APP_LOG_LEVEL_ERROR, p_data, len, format) \
+
+#define app_log_array_dump_critical(p_data, len, format)                \
+  app_log_array_dump_level(APP_LOG_LEVEL_CRITICAL, p_data, len, format) \
+
+#define app_log_array_dump_debug_s(separator, p_data, len, format)     \
+  app_log_array_dump_level_s(APP_LOG_LEVEL_DEBUG, p_data, len, format) \
+
+#define app_log_array_dump_info_s(separator, p_data, len, format)     \
+  app_log_array_dump_level_s(APP_LOG_LEVEL_INFO, p_data, len, format) \
+
+#define app_log_array_dump_warning_s(separator, p_data, len, format)     \
+  app_log_array_dump_level_s(APP_LOG_LEVEL_WARNING, p_data, len, format) \
+
+#define app_log_array_dump_error_s(separator, p_data, len, format)     \
+  app_log_array_dump_level_s(APP_LOG_LEVEL_ERROR, p_data, len, format) \
+
+#define app_log_array_dump_critical_s(separator, p_data, len, format)     \
+  app_log_array_dump_level_s(APP_LOG_LEVEL_CRITICAL, p_data, len, format) \
+
+// ARRAY DUMP - REVERSE
+#define app_log_array_dump_reverse_level(level, p_data, len, format) \
+  app_log_array_dump_reverse_level_s(level,                          \
+                                     APP_LOG_ARRAY_DUMP_SEPARATOR,   \
+                                     p_data,                         \
+                                     len,                            \
+                                     format)
+
+#define app_log_array_dump_reverse_debug(p_data, len, format)                \
+  app_log_array_dump_reverse_level(APP_LOG_LEVEL_DEBUG, p_data, len, format) \
+
+#define app_log_array_dump_reverse_info(p_data, len, format)                \
+  app_log_array_dump_reverse_level(APP_LOG_LEVEL_INFO, p_data, len, format) \
+
+#define app_log_array_dump_reverse_warning(p_data, len, format)                \
+  app_log_array_dump_reverse_level(APP_LOG_LEVEL_WARNING, p_data, len, format) \
+
+#define app_log_array_dump_reverse_error(p_data, len, format)                \
+  app_log_array_dump_reverse_level(APP_LOG_LEVEL_ERROR, p_data, len, format) \
+
+#define app_log_array_dump_reverse_critical(p_data, len, format)                \
+  app_log_array_dump_reverse_level(APP_LOG_LEVEL_CRITICAL, p_data, len, format) \
+
+#define app_log_array_dump_reverse_debug_s(separator, p_data, len, format)     \
+  app_log_array_dump_reverse_level_s(APP_LOG_LEVEL_DEBUG, p_data, len, format) \
+
+#define app_log_array_dump_reverse_info_s(separator, p_data, len, format)     \
+  app_log_array_dump_reverse_level_s(APP_LOG_LEVEL_INFO, p_data, len, format) \
+
+#define app_log_array_dump_reverse_warning_s(separator, p_data, len, format)     \
+  app_log_array_dump_reverse_level_s(APP_LOG_LEVEL_WARNING, p_data, len, format) \
+
+#define app_log_array_dump_reverse_error_s(separator, p_data, len, format)     \
+  app_log_array_dump_reverse_level_s(APP_LOG_LEVEL_ERROR, p_data, len, format) \
+
+#define app_log_array_dump_reverse_critical_s(separator, p_data, len, format)     \
+  app_log_array_dump_reverse_level_s(APP_LOG_LEVEL_CRITICAL, p_data, len, format) \
+
+// CUSTOM ARRAY DUMP
+#define app_log_custom_array_dump_level(level, array, array_len, array_data_type, iterator_ptr, format, ...) \
+  app_log_custom_array_dump_level_s(level, APP_LOG_CUSTOM_ARRAY_DUMP_SEPARATOR, array, array_len, array_data_type, iterator_ptr, format, __VA_ARGS__)
+
+#define app_log_custom_array_dump_debug(array, array_len, array_data_type, iterator_ptr, format, ...) \
+  app_log_custom_array_dump_level(APP_LOG_LEVEL_DEBUG, array, array_len, array_data_type, iterator_ptr, format, __VA_ARGS__)
+
+#define app_log_custom_array_dump_info(array, array_len, array_data_type, iterator_ptr, format, ...) \
+  app_log_custom_array_dump_level(APP_LOG_LEVEL_INFO, array, array_len, array_data_type, iterator_ptr, format, __VA_ARGS__)
+
+#define app_log_custom_array_dump_warning(array, array_len, array_data_type, iterator_ptr, format, ...) \
+  app_log_custom_array_dump_level(APP_LOG_LEVEL_WARNING, array, array_len, array_data_type, iterator_ptr, format, __VA_ARGS__)
+
+#define app_log_custom_array_dump_error(array, array_len, array_data_type, iterator_ptr, format, ...) \
+  app_log_custom_array_dump_level(APP_LOG_LEVEL_ERROR, array, array_len, array_data_type, iterator_ptr, format, __VA_ARGS__)
+
+#define app_log_custom_array_dump_critical(array, array_len, array_data_type, iterator_ptr, format, ...) \
+  app_log_custom_array_dump_level(APP_LOG_LEVEL_CRITICAL, array, array_len, array_data_type, iterator_ptr, format, __VA_ARGS__)
+
+#define app_log_custom_array_dump_debug_s(separator, array, array_len, array_data_type, iterator_ptr, format, ...) \
+  app_log_custom_array_dump_level_s(APP_LOG_LEVEL_DEBUG, separator, array, array_len, array_data_type, iterator_ptr, format, __VA_ARGS__)
+
+#define app_log_custom_array_dump_info_s(separator, array, array_len, array_data_type, iterator_ptr, format, ...) \
+  app_log_custom_array_dump_level_s(APP_LOG_LEVEL_INFO, separator, array, array_len, array_data_type, iterator_ptr, format, __VA_ARGS__)
+
+#define app_log_custom_array_dump_warning_s(separator, array, array_len, array_data_type, iterator_ptr, format, ...) \
+  app_log_custom_array_dump_level_s(APP_LOG_LEVEL_WARNING, separator, array, array_len, array_data_type, iterator_ptr, format, __VA_ARGS__)
+
+#define app_log_custom_array_dump_error_s(separator, array, array_len, array_data_type, iterator_ptr, format, ...) \
+  app_log_custom_array_dump_level_s(APP_LOG_LEVEL_ERROR, separator, array, array_len, array_data_type, iterator_ptr, format, __VA_ARGS__)
+
+#define app_log_custom_array_dump_critical_s(separator, array, array_len, array_data_type, iterator_ptr, format, ...) \
+  app_log_custom_array_dump_level_s(APP_LOG_LEVEL_CRITICAL, separator, array, array_len, array_data_type, iterator_ptr, format, __VA_ARGS__)
+
+// CUSTOM ARRAY DUMP - REVERSE
+#define app_log_custom_array_dump_reverse_level(level, array, array_len, array_data_type, iterator_ptr, format, ...) \
+  app_log_custom_array_dump_reverse_level_s(level, APP_LOG_CUSTOM_ARRAY_DUMP_SEPARATOR, array, array_len, array_data_type, iterator_ptr, format, __VA_ARGS__)
+
+#define app_log_custom_array_dump_reverse_debug(array, array_len, array_data_type, iterator_ptr, format, ...) \
+  app_log_custom_array_dump_reverse_level(APP_LOG_LEVEL_DEBUG, array, array_len, array_data_type, iterator_ptr, format, __VA_ARGS__)
+
+#define app_log_custom_array_dump_reverse_info(array, array_len, array_data_type, iterator_ptr, format, ...) \
+  app_log_custom_array_dump_reverse_level(APP_LOG_LEVEL_INFO, array, array_len, array_data_type, iterator_ptr, format, __VA_ARGS__)
+
+#define app_log_custom_array_dump_reverse_warning(array, array_len, array_data_type, iterator_ptr, format, ...) \
+  app_log_custom_array_dump_reverse_level(APP_LOG_LEVEL_WARNING, array, array_len, array_data_type, iterator_ptr, format, __VA_ARGS__)
+
+#define app_log_custom_array_dump_reverse_error(array, array_len, array_data_type, iterator_ptr, format, ...) \
+  app_log_custom_array_dump_reverse_level(APP_LOG_LEVEL_ERROR, array, array_len, array_data_type, iterator_ptr, format, __VA_ARGS__)
+
+#define app_log_custom_array_dump_reverse_critical(array, array_len, array_data_type, iterator_ptr, format, ...) \
+  app_log_custom_array_dump_reverse_level(APP_LOG_LEVEL_CRITICAL, array, array_len, array_data_type, iterator_ptr, format, __VA_ARGS__)
+
+#define app_log_custom_array_dump_reverse_debug_s(separator, array, array_len, array_data_type, iterator_ptr, format, ...) \
+  app_log_custom_array_dump_reverse_level_s(APP_LOG_LEVEL_DEBUG, separator, array, array_len, array_data_type, iterator_ptr, format, __VA_ARGS__)
+
+#define app_log_custom_array_dump_reverse_info_s(separator, array, array_len, array_data_type, iterator_ptr, format, ...) \
+  app_log_custom_array_dump_reverse_level_s(APP_LOG_LEVEL_INFO, separator, array, array_len, array_data_type, iterator_ptr, format, __VA_ARGS__)
+
+#define app_log_custom_array_dump_reverse_warning_s(separator, array, array_len, array_data_type, iterator_ptr, format, ...) \
+  app_log_custom_array_dump_reverse_level_s(APP_LOG_LEVEL_WARNING, separator, array, array_len, array_data_type, iterator_ptr, format, __VA_ARGS__)
+
+#define app_log_custom_array_dump_reverse_error_s(separator, array, array_len, array_data_type, iterator_ptr, format, ...) \
+  app_log_custom_array_dump_reverse_level_s(APP_LOG_LEVEL_ERROR, separator, array, array_len, array_data_type, iterator_ptr, format, __VA_ARGS__)
+
+#define app_log_custom_array_dump_reverse_critical_s(separator, array, array_len, array_data_type, iterator_ptr, format, ...) \
+  app_log_custom_array_dump_reverse_level_s(APP_LOG_LEVEL_CRITICAL, separator, array, array_len, array_data_type, iterator_ptr, format, __VA_ARGS__)
 
 #ifdef __cplusplus
 }

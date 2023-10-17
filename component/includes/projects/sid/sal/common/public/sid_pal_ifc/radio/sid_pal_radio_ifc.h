@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 Amazon.com, Inc. or its affiliates. All rights reserved.
+ * Copyright 2020-2023 Amazon.com, Inc. or its affiliates. All rights reserved.
  *
  * AMAZON PROPRIETARY/CONFIDENTIAL
  *
@@ -17,16 +17,12 @@
 
 /** @file sid_pal_radio_ifc.h
  *
- * @defgroup sid_pal_lib_radio sid Radio interface
+ * @defgroup sid_pal_radio_ifc SID Sub-Ghz Radio interface
  * @{
  * @ingroup sid_pal_ifc
  *
- * @details     Provides radio interface to be implemented by platform
+ * @details Provides Sub-Ghz radio interface to be implemented by platform
  */
-
-#ifdef __cplusplus
-extern "C" {
-#endif
 
 #include <sid_pal_radio_lora_defs.h>
 #include <sid_pal_radio_fsk_defs.h>
@@ -35,6 +31,10 @@ extern "C" {
 
 #include <stdint.h>
 #include <stdbool.h>
+
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 #define SID_PAL_RADIO_RX_PAYLOAD_MAX_SIZE 255
 
@@ -104,7 +104,7 @@ typedef enum sid_pal_radio_data_rate {
     SID_PAL_RADIO_DATA_RATE_150KBPS   = 4,
     SID_PAL_RADIO_DATA_RATE_250KBPS   = 5,
     SID_PAL_RADIO_DATA_RATE_12_5KBPS  = 6,
-    SID_PAL_RADIO_DATA_RATE_CUSTOM    = 7,
+    SID_PAL_RADIO_DATA_RATE_CUSTOM   = 7,
     SID_PAL_RADIO_DATA_RATE_MAX_NUM   = SID_PAL_RADIO_DATA_RATE_CUSTOM, // 0 is not a valid data rate
 } sid_pal_radio_data_rate_t;
 
@@ -733,4 +733,4 @@ int32_t sid_pal_radio_set_fsk_crc_polynomial(uint16_t crc_polynomial, uint16_t c
 
 /** @} */
 
-#endif
+#endif /* SID_PAL_RADIO_IFC_H */

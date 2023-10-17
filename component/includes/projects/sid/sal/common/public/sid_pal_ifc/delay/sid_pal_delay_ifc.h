@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 - 2023 Amazon.com, Inc. or its affiliates. All rights reserved.
+ * Copyright 2020-2023 Amazon.com, Inc. or its affiliates. All rights reserved.
  *
  * AMAZON PROPRIETARY/CONFIDENTIAL
  *
@@ -17,11 +17,11 @@
 
 /** @file
  *
- * @defgroup sid_pal_lib_delay sid delay interface
+ * @defgroup sid_pal_delay_ifc SID delay interface
  * @{
  * @ingroup sid_pal_ifc
  *
- * @details     Provides a way for protocol to delay
+ * @details Provides a way for Sub-Ghz protocol to control delay
  */
 #include <stdint.h>
 
@@ -40,7 +40,6 @@ extern "C" {
  * @retval none
  */
 void sid_pal_delay_us(uint32_t delay);
-
 
 /**
  * Implements a delay function using RTOS API call.
@@ -65,4 +64,4 @@ void sid_pal_scheduler_delay_ms(uint32_t delay);
 
 /** @} */
 
-#endif
+#endif /* SID_PAL_DELAY_IFC_H */

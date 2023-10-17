@@ -67,7 +67,7 @@ void main_task(void *context);
 /*******************************************************************************
  * Issue a queue event
  ******************************************************************************/
-void queue_event(QueueHandle_t queue, enum event_type event, bool in_isr);
+void queue_event(QueueHandle_t queue, enum event_type event);
 
 #ifdef __cplusplus
 }

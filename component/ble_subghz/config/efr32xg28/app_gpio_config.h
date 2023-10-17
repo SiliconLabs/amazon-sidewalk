@@ -47,24 +47,24 @@ extern "C" {
 //                              Macros and Typedefs
 // -----------------------------------------------------------------------------
 
-// BUSY on PD03
+// BUSY on PB05
 // Used to indicate the status of internal state machine
 #define SL_BUSY_PIN                              5
 #define SL_BUSY_PORT                             gpioPortB
 
-// ANT_SW on PD02
+// ANT_SW on PB04
 // External antenna switch to control antenna switch to RECEIVE or
 // TRANSMIT.
 #define SL_ANTSW_PIN                             4
 #define SL_ANTSW_PORT                            gpioPortB
 
-// DIO1 on PA05
+// DIO1 on PD11
 // IRQ line from sx126x chip
 // See sx126x datasheet for IRQs list.
 #define SL_DIO_PIN                               11
 #define SL_DIO_PORT                              gpioPortD
 
-// SX NRESET on PA06
+// SX NRESET on PD12
 // Factory reset pin. Will be followed by standard calibration procedure
 // and previous context will be lost.
 #define SL_NRESET_PIN                            12

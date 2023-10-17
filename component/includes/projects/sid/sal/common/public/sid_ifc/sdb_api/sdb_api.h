@@ -15,6 +15,8 @@
 #ifndef SDB_API_H
 #define SDB_API_H
 
+/// @cond sid_ifc_internal_en
+
 /** @file
  *
  * @defgroup SIDEBAND_API Sideband API
@@ -358,5 +360,7 @@ sid_error_t sdb_get_status(struct sdb_handle *handle, enum sdb_link_status *curr
 #endif
 
 /** @} */
+
+/// @endcond
 
 #endif

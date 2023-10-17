@@ -2,9 +2,9 @@ Amazon Sidewalk Content License
 
 ©2023 Amazon.com, Inc. or its affiliates (collectively, ìAmazonî). All Rights Reserved.
 
-These materials are licensed to you as "AWS Content" under the AWS Intellectual Property License (https://urldefense.com/v3/__https://aws.amazon.com/legal/aws-ip-license-terms/__;!!N30Cs7Jr!SlOiN5RayPIwg6qVtfCnt6g83zTb_IB-6FEQqEfEruq-fJA4JtXtuY40vwjFqyTajXjJpAZHlh61GypWbOGQ$ ) (the ìIP Licenseî) and made available to you solely in connection with the developer program for Amazon Sidewalk and related services (such AWS Content, ìAmazon Sidewalk Contentî).
+These materials are licensed to you as "AWS Content" under the AWS Intellectual Property License (https://aws.amazon.com/legal/aws-ip-license-terms/ ) (the ìIP Licenseî) and made available to you solely in connection with the developer program for Amazon Sidewalk and related services (such AWS Content, ìAmazon Sidewalk Contentî).
 
-Capitalized terms not defined in this file have the meanings given to them in the AWS Customer Agreement (https://urldefense.com/v3/__https://aws.amazon.com/agreement/__;!!N30Cs7Jr!SlOiN5RayPIwg6qVtfCnt6g83zTb_IB-6FEQqEfEruq-fJA4JtXtuY40vwjFqyTajXjJpAZHlh61GwXBMkhK$ ) or the Service Terms (https://urldefense.com/v3/__https://aws.amazon.com/service-terms/__;!!N30Cs7Jr!SlOiN5RayPIwg6qVtfCnt6g83zTb_IB-6FEQqEfEruq-fJA4JtXtuY40vwjFqyTajXjJpAZHlh61G3hXOgW5$ ), including any documentation referenced or incorporated therein (collectively, the ìAgreementî).
+Capitalized terms not defined in this file have the meanings given to them in the AWS Customer Agreement (https://aws.amazon.com/agreement/ ) or the Service Terms (https://aws.amazon.com/service-terms/ ), including any documentation referenced or incorporated therein (collectively, the ìAgreementî).
 
 In addition to the terms and conditions of the IP License, the following terms and conditions ("Additional Terms," and collectively with the IP License, the "Terms") apply to the Amazon Sidewalk Content. In the event of a conflict between the IP License and these Additional Terms, the IP License will control.
 
@@ -33,3 +33,4 @@ THE AMAZON SIDEWALK CONTENT AND THE EXTERNAL DEPENDENCIES ARE PROVIDED BY AMAZON
 You will defend, indemnify, and hold harmless Amazon, its affiliates, and licensors against any and all claims, losses, and damages arising out of or relating to your distribution of the Amazon Sidewalk Content or External Dependencies in breach of the Terms.
 
 If you do not agree to the Terms, you may not use any file in this package.
+

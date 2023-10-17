@@ -1,0 +1,26 @@
+id: "sidewalk_qr_code"
+label: "QR Code"
+package: "Flex"
+description: "Provides Sidewalk QR code functions"
+category: Example|AWS IoT
+quality: production
+root_path: "component/sidewalk_qr_code"
+
+provides:
+  - name: "sidewalk_qr_code"
+requires:
+  - name: "sidewalk_utils"
+source:
+  - path: "qrcodegen.c"
+  - path: "sl_sidewalk_qr_code.c"
+include:
+  - path: "."
+    file_list:
+    - "path": "qrcodegen.h"
+    - "path": "sli_sidewalk_qr_code.h"
+
+#-------------- Template Contribution ----------------
+template_contribution:
+#---------------- Component Catalog ------------------
+  - name: component_catalog
+    value: sidewalk_qr_code

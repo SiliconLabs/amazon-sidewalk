@@ -41,9 +41,6 @@
 #include <sid_pal_assert_ifc.h>
 #include <sid_pal_critical_region_ifc.h>
 
-#include <FreeRTOS.h>
-#include <task.h>
-
 #include <stdatomic.h>
 #include <em_core.h>
 

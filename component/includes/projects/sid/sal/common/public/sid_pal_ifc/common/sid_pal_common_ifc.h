@@ -1,5 +1,5 @@
 /*
- * Copyright 2022 Amazon.com, Inc. or its affiliates. All rights reserved.
+ * Copyright 2022-2023 Amazon.com, Inc. or its affiliates. All rights reserved.
  *
  * AMAZON PROPRIETARY/CONFIDENTIAL
  *
@@ -17,7 +17,7 @@
 
 /** @file
  *
- * @defgroup sid_pal_lib_common sid common interface
+ * @defgroup sid_pal_common_ifc SID common interface
  * @{
  * @ingroup sid_pal_ifc
  *
@@ -30,7 +30,7 @@ extern "C" {
 #endif
 
 /**
- * Implements a platform generic initialisation function.
+ * Implements a platform generic initialization function.
  *
  * This function is only implemented on platforms that require additional vendor
  * specific initialization routines. It provides a generic entry point to the

@@ -59,73 +59,92 @@
 // -----------------------------------------------------------------------------
 //                          Public Function Definitions
 // -----------------------------------------------------------------------------
-sid_pal_radio_data_rate_t
-sid_pal_radio_lora_mod_params_to_data_rate(const sid_pal_radio_lora_modulation_params_t *mod_params)
+sid_pal_radio_data_rate_t sid_pal_radio_lora_mod_params_to_data_rate(const sid_pal_radio_lora_modulation_params_t *mod_params)
 {
+  (void)mod_params;
   return SID_PAL_RADIO_DATA_RATE_INVALID;
 }
 
 int32_t sid_pal_radio_set_lora_sync_word(uint16_t sync_word)
 {
+  (void)sync_word;
   return RADIO_ERROR_NONE;
 }
 
 int32_t sid_pal_radio_set_lora_symbol_timeout(uint8_t num_of_symbols)
 {
+  (void)num_of_symbols;
   return RADIO_ERROR_NONE;
 }
 
 int32_t sid_pal_radio_set_lora_modulation_params(const sid_pal_radio_lora_modulation_params_t *mod_params)
 {
+  (void)mod_params;
   return RADIO_ERROR_NONE;
 }
 
 int32_t sid_pal_radio_set_lora_packet_params(const sid_pal_radio_lora_packet_params_t *packet_params)
 {
+  (void)packet_params;
   return RADIO_ERROR_NONE;
 }
 
 int32_t sid_pal_radio_set_lora_cad_params(const sid_pal_radio_lora_cad_params_t *cad_params)
 {
+  (void)cad_params;
   return RADIO_ERROR_NONE;
 }
 
 uint32_t sid_pal_radio_lora_time_on_air(const sid_pal_radio_lora_modulation_params_t *mod_params,
-                                        const sid_pal_radio_lora_packet_params_t *packet_params, uint8_t packet_len)
+                                        const sid_pal_radio_lora_packet_params_t *packet_params,
+                                        uint8_t packet_len)
 {
+  (void)mod_params;
+  (void)packet_params;
+  (void)packet_len;
   return RADIO_ERROR_NONE;
 }
 
 uint32_t sid_pal_radio_get_lora_symbol_timeout_us(sid_pal_radio_lora_modulation_params_t *mod_params, uint8_t number_of_symbol)
 {
-  return 0;
+  (void)mod_params;
+  (void)number_of_symbol;
+  return RADIO_ERROR_NONE;
 }
 
 uint32_t sid_pal_radio_get_lora_tx_process_delay(void)
 {
-  return 0;
+  return RADIO_ERROR_NONE;
 }
 
 int32_t sid_pal_radio_lora_start_cad(void)
 {
-  return 0;
+  return RADIO_ERROR_NONE;
 }
 
 int32_t sid_pal_radio_lora_data_rate_to_mod_params(sid_pal_radio_lora_modulation_params_t *mod_params,
-                                                   sid_pal_radio_data_rate_t data_rate, uint8_t li_enable)
+                                                   sid_pal_radio_data_rate_t data_rate,
+                                                   uint8_t li_enable)
 {
+  (void)mod_params;
+  (void)data_rate;
+  (void)li_enable;
   return RADIO_ERROR_NONE;
 }
 
 uint32_t sid_pal_radio_lora_get_lora_number_of_symbols(const sid_pal_radio_lora_modulation_params_t *mod_params,
                                                        uint32_t delay_micro_sec)
 {
-  return 0;
+  (void)mod_params;
+  (void)delay_micro_sec;
+  return RADIO_ERROR_NONE;
 }
 
 uint32_t sid_pal_radio_lora_cad_duration(uint8_t symbol, const sid_pal_radio_lora_modulation_params_t *mod_params)
 {
-  return 0;
+  (void)symbol;
+  (void)mod_params;
+  return RADIO_ERROR_NONE;
 }
 
 // -----------------------------------------------------------------------------

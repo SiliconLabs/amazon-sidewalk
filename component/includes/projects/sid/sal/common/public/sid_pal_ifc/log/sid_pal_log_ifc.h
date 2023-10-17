@@ -17,18 +17,18 @@
 
 /** @file
  *
- * @defgroup sid_pal_timers SID Timer API
+ * @defgroup sid_pal_log_ifc SID log Interface
  * @{
  *
- * @details Interface for timers for sidewalk SDK
+ * @details Interface for log for sidewalk SDK
  */
+
+#include <stdint.h>
+#include <stdbool.h>
 
 #ifdef __cplusplus
 extern "C" {
 #endif
-
-#include <stdint.h>
-#include <stdbool.h>
 
 typedef enum
 {
@@ -58,11 +58,15 @@ void sid_pal_log(sid_pal_log_severity_t severity, uint32_t num_args, const char*
 /**
  * The function returns current logging level. Implemented in sid_log_control
  *
+ * @retval log severity level
+ *
  */
 sid_pal_log_severity_t sid_log_control_get_current_log_level();
 
 /**
  * Flush log function
+ *
+ * The function flushes the log buffers to the output interface
  */
 void sid_pal_log_flush(void);
 
@@ -72,6 +76,8 @@ void sid_pal_log_flush(void);
  * copied correctly in order for pushing then at a later time.
  *
  * For platforms that do not use deferred logging, this can remain unimplemented.
+ *
+ * @retval string pointer to the string that has to be copied
  */
 char const *sid_pal_log_push_str(char *string);
 
@@ -104,7 +110,7 @@ struct sid_pal_log_buffer {
  *
  * @param[in] log_buffer Pointer to log buffer descriptor
  *
- * @return true if log strings were copied into log_buffer, false otherwise
+ * @retval true if log strings were copied into log_buffer, false otherwise
  */
 bool sid_pal_log_get_log_buffer(struct sid_pal_log_buffer *const log_buffer);
 
@@ -188,4 +194,6 @@ void sid_pal_hexdump(sid_pal_log_severity_t severity, const void *address, int l
 }
 #endif
 
-#endif
+/** @} */
+
+#endif /* SID_PAL_LOG_IFC_H */

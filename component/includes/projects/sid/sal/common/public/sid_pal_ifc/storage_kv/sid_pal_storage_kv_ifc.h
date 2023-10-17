@@ -17,7 +17,7 @@
 
 /** @file
  *
- * @defgroup sid_pal_storage_kv sid persistent storage interface for key mapped values
+ * @defgroup sid_pal_storage_kv_ifc SID persistent storage interface for key mapped values
  * @{
  * @ingroup sid_pal_ifc
  *

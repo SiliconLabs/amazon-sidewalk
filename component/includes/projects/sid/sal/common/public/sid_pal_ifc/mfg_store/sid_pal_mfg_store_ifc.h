@@ -18,20 +18,20 @@
 
 /** @file
  *
- * @defgroup sid_pal_lib_mfg_store sid Manufacturing Store interface
+ * @defgroup sid_pal_mfg_store_ifc SID Manufacturing Store interface
  * @{
  * @ingroup sid_pal_ifc
  *
- * @details     Provides manufacturing store interface to be implemented by platform
+ * @details  Provides manufacturing store interface to be implemented by platform
  */
-
-#ifdef __cplusplus
-extern "C" {
-#endif
 
 #include <stdbool.h>
 #include <stddef.h>
 #include <stdint.h>
+
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 /*
  * The current version of the MFG storage. The version is stored during generating MFG.
@@ -182,7 +182,7 @@ void sid_pal_mfg_store_init(sid_pal_mfg_store_region_t mfg_store_region);
  *  can only be erased in large chunks (pages), this interface only supports
  *  erasing the entire manufacturing store.
  *
- *  NOTE: This function is only supported for diagnostic builds.
+ *  @note This function is only supported for diagnostic builds.
  *
  *  @return  0 on success, negative value on failure.
  */
@@ -190,9 +190,9 @@ int32_t sid_pal_mfg_store_erase(void);
 
 /** Check if the manufacturing store is empty.
  *
- *  NOTE: This function is only supported for diagnostic builds.
+ *  @note This function is only supported for diagnostic builds.
  *
- * @return  true if the entire manufacturing store is empty,
+ * @retval  true if the entire manufacturing store is empty,
  *          such as just after an erase.
  */
 bool sid_pal_mfg_store_is_empty(void);
@@ -206,7 +206,7 @@ bool sid_pal_mfg_store_is_empty(void);
  *  @param[in]  length Length of the value in bytes. Use values from
  *                     sid_pal_mfg_store_value_size_t here.
  *
- *  @return  0 on success, negative value on failure.
+ *  @retval  0 on success, negative value on failure.
  */
 int32_t sid_pal_mfg_store_write(uint16_t value, const uint8_t *buffer, uint16_t length);
 
@@ -231,7 +231,7 @@ void sid_pal_mfg_store_read(uint16_t value, uint8_t *buffer, uint16_t length);
  *                     sid_pal_mfg_store_value_t or application defined values
  *                     here.
  *
- *  @return  Length of the value in bytes for the tag that is requested on success,
+ *  @retval  Length of the value in bytes for the tag that is requested on success,
  *           0 on failure (not found)
  */
 uint16_t sid_pal_mfg_store_get_length_for_value(uint16_t value);
@@ -239,11 +239,11 @@ uint16_t sid_pal_mfg_store_get_length_for_value(uint16_t value);
 
 /** Check if the manufacturing store supports TLV based storage.
  *
- *  NOTE: This function only indicates that the platform supports TLV,
+ *  @note This function only indicates that the platform supports TLV,
  *        but the device may have storage with fixed offsets that was
  *        flashed during production.
  *
- *  @return  true if the manufacturing store supports TLV based storage
+ *  @retval  true if the manufacturing store supports TLV based storage
  */
 bool sid_pal_mfg_store_is_tlv_support(void);
 
@@ -255,7 +255,7 @@ bool sid_pal_mfg_store_is_tlv_support(void);
  *  in mfg store. This API retrieves the value by reading the
  *  address at which the version is stored.
  *
- *  @return   version of mfg store.
+ *  @retval   version of mfg store.
  */
 uint32_t sid_pal_mfg_store_get_version(void);
 
@@ -264,7 +264,7 @@ uint32_t sid_pal_mfg_store_get_version(void);
  *
  *  @param[out] dev_id The device ID
  *
- *  @return true if the device ID could be found
+ *  @retval true if the device ID could be found
  */
 bool sid_pal_mfg_store_dev_id_get(uint8_t dev_id[SID_PAL_MFG_STORE_DEVID_SIZE]);
 
@@ -273,7 +273,7 @@ bool sid_pal_mfg_store_dev_id_get(uint8_t dev_id[SID_PAL_MFG_STORE_DEVID_SIZE]);
  *
  *  @param[out] serial_num The device serial number
  *
- *  @return true if the device serial number could be found
+ *  @retval true if the device serial number could be found
  */
 bool sid_pal_mfg_store_serial_num_get(uint8_t serial_num[SID_PAL_MFG_STORE_SERIAL_NUM_SIZE]);
 
@@ -298,4 +298,4 @@ void sid_pal_mfg_store_app_pub_key_get(uint8_t app_pub[SID_PAL_MFG_STORE_APP_PUB
 
 /** @} */
 
-#endif
+#endif /* SID_PAL_MFG_STORE_IFC_H */

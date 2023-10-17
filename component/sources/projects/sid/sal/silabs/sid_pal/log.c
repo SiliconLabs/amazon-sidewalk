@@ -38,22 +38,33 @@
 // -----------------------------------------------------------------------------
 //                                   Includes
 // -----------------------------------------------------------------------------
-#include "em_cmu.h"
-#include <sid_pal_log_ifc.h>
-#include "app_log.h"
 #include <stdbool.h>
+#include "app_log.h"
+#include "sid_clock_ifc.h"
+#include "app_log_config.h"   // APP_LOG_ENABLE
+#include "sid_pal_log_ifc.h"  // SID_PAL_LOG_ENABLED
+#if defined(SID_PAL_LOG_ENABLED) && defined(APP_LOG_ENABLE)
+  #if (SID_PAL_LOG_ENABLED != APP_LOG_ENABLE)
+    #warning "The value of SID_PAL_LOG_ENABLED is going to be overwritten with APP_LOG_ENABLE!"
+  #endif
+  #undef SID_PAL_LOG_ENABLED
+  #define SID_PAL_LOG_ENABLED APP_LOG_ENABLE  // SID_PAL_LOG_ENABLED is overridden with the general GSDK macro APP_LOG_ENABLE
+#else
+  #error "For logging capabilities SID_PAL_LOG_ENABLED and APP_LOG_ENABLE should be defined."
+#endif
 
-#include <sid_clock_ifc.h>
-#pragma message "Please note! The Sidewalk APIs from the file sid_clock_ifc.h might not be backward compatible in the future."
-
-#include <sid_pal_uptime_ifc.h>
-#include <stdarg.h>
-#include "printf.h"
+#if SID_PAL_LOG_ENABLED
+  #include <printf.h>
+  #include <stdarg.h>
+  #pragma message "Please note! The Sidewalk APIs from the file sid_clock_ifc.h might not be backward compatible in the future."
+#endif
 
 // -----------------------------------------------------------------------------
 //                              Macros and Typedefs
 // -----------------------------------------------------------------------------
-#define SLI_LOG_MAX_BUFFER_CHAR  256
+#if SID_PAL_LOG_ENABLED
+  #define SLI_LOG_MAX_BUFFER_CHAR (256)
+#endif
 
 // -----------------------------------------------------------------------------
 //                          Static Function Declarations
@@ -70,8 +81,6 @@
 // -----------------------------------------------------------------------------
 //                          Public Function Definitions
 // -----------------------------------------------------------------------------
-uint64_t silabs_get_rail_time_64(void);
-
 void sid_pal_log_flush(void)
 {
   // Our platform logging functionality does not need flushing
@@ -94,6 +103,7 @@ void sid_pal_log(sid_pal_log_severity_t severity,
                  const char * fmt,
                  ...)
 {
+#if SID_PAL_LOG_ENABLED
   (void)num_args;
   char buffer[SLI_LOG_MAX_BUFFER_CHAR];
 
@@ -106,16 +116,27 @@ void sid_pal_log(sid_pal_log_severity_t severity,
     case SID_PAL_LOG_SEVERITY_ERROR:
       app_log_error(buffer);
       break;
+
     case SID_PAL_LOG_SEVERITY_WARNING:
       app_log_warning(buffer);
       break;
+
     case SID_PAL_LOG_SEVERITY_INFO:
       app_log_info(buffer);
       break;
+
     case SID_PAL_LOG_SEVERITY_DEBUG:
       app_log_debug(buffer);
       break;
+
+    default:
+      break;
   }
+#else
+  (void)severity;
+  (void)num_args;
+  (void)fmt;
+#endif
 }
 
 bool sid_pal_log_get_log_buffer(struct sid_pal_log_buffer *const log_buffer)
@@ -146,6 +167,10 @@ void sid_pal_hexdump(sid_pal_log_severity_t severity, const void *address, int l
       SID_PAL_LOG(severity, "%s", SID_PAL_LOG_PUSH_STR(hex_buf));
     }
   }
+#else
+  (void)severity;
+  (void)address;
+  (void)length;
 #endif
 }
 
@@ -166,7 +191,3 @@ void _app_log_time()
 {
   app_log_append("[%08lu]" APP_LOG_SEPARATOR, get_time_now());
 }
-
-// -----------------------------------------------------------------------------
-//                          Static Function Definitions
-// -----------------------------------------------------------------------------

@@ -1,5 +1,5 @@
 /*
- * Copyright 2020-2022 Amazon.com, Inc. or its affiliates. All rights reserved.
+ * Copyright 2020-2023 Amazon.com, Inc. or its affiliates. All rights reserved.
  *
  * AMAZON PROPRIETARY/CONFIDENTIAL
  *
@@ -14,6 +14,8 @@
 
 #ifndef SID_API_H
 #define SID_API_H
+
+/// @cond sid_ifc_ep_en
 
 /** @file
  *
@@ -694,5 +696,7 @@ sid_error_t sid_get_time(struct sid_handle *handle, enum sid_time_format format,
 #endif
 
 /** @} */
+
+/// @endcond
 
 #endif

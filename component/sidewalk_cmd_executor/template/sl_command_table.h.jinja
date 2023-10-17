@@ -1,0 +1,92 @@
+/***************************************************************************//**
+ * @file sl_command_table.h
+ * @brief Declarations of relevant command structs for cli framework.
+ * @version x.y.z
+ *******************************************************************************
+ * # License
+ * <b>Copyright 2022 Silicon Laboratories Inc. www.silabs.com</b>
+ *******************************************************************************
+ *
+ * SPDX-License-Identifier: Zlib
+ *
+ * The licensor of this software is Silicon Laboratories Inc.
+ *
+ * This software is provided 'as-is', without any express or implied
+ * warranty. In no event will the authors be held liable for any damages
+ * arising from the use of this software.
+ *
+ * Permission is granted to anyone to use this software for any purpose,
+ * including commercial applications, and to alter it and redistribute it
+ * freely, subject to the following restrictions:
+ *
+ * 1. The origin of this software must not be misrepresented; you must not
+ *    claim that you wrote the original software. If you use this software
+ *    in a product, an acknowledgment in the product documentation would be
+ *    appreciated but is not required.
+ * 2. Altered source versions must be plainly marked as such, and must not be
+ *    misrepresented as being the original software.
+ * 3. This notice may not be removed or altered from any source distribution.
+ *
+ ******************************************************************************/
+
+#ifndef SL_COMMAND_TABLE_H
+#define SL_COMMAND_TABLE_H
+
+/*******************************************************************************
+ *****************************   TEMPLATED FILE   ******************************
+ ******************************************************************************/
+
+{# Input validation -#}
+{# Validate that names and handlers are defined -#}
+{%- for command in sidewalk_command -%}
+  {%- if not command.name -%}
+    {{ raise("Missing command name for sidewalk_command entry") }}
+  {%- endif -%}
+  {%- if not command.handler -%}
+    {{ raise("Missing handler for sidewalk_command entry") }}
+  {%- endif -%}
+{%- endfor -%}
+{%- for group in cli_group -%}
+  {%- if not group.name -%}
+    {{ raise("Missing group name for cli_group entry") }}
+  {%- endif -%}
+{%- endfor -%}
+{# Validate argument types -#}
+{%- set types = ['uint8', 'uint16', 'uint32', 'int8', 'int16', 'int32', 'string', 'hex', 'uint8opt', 'uint16opt', 'uint32opt', 'int8opt', 'int16opt', 'int32opt', 'stringopt', 'hexopt', 'additional', 'wildcard'] -%}
+{%- for command in sidewalk_command -%}
+  {%- for arg in command.argument -%}
+    {%- if not arg.type %}
+      {{ raise("Argument must have type specifyer") }}
+    {%- endif -%}
+    {%- if arg.type.lower() not in types -%}
+      {{ raise("Invalid argument type \'{}\'. Argument type must be one of: {}".format(arg.type.lower(), ", ".join(types))) }}
+    {%- endif -%}
+  {%- endfor -%}
+{%- endfor -%}
+
+{#- Check if any command or group is provided.
+    If not, do nothing but print out comment indicating this in file #}
+{%- if sidewalk_command or cli_group -%}
+
+// Provide function declarations
+{%- for command in sidewalk_command %}
+bool {{ command.handler }}(void *payload, size_t payload_size);
+{%- endfor %}
+
+typedef bool (*sl_sidewalk_command_callback_t)(void* payload, size_t payload_size);
+
+typedef struct {
+  char * command;
+  sl_sidewalk_command_callback_t callback;
+} sl_sidewalk_command_t;
+
+// Create command enumerator
+typedef enum {{ '{' }}
+{#- List command enum values -#}
+{%- for enum in sidewalk_command %}
+  {{ enum.index }} = {{loop.index - 1}},
+{%- endfor %}
+  SIDEWALK_COMMAND_ID_END
+{{ '}' }} sl_sidewalk_command_id_t;
+{% endif %}
+#endif // SL_COMMAND_TABLE_H

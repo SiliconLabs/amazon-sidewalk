@@ -27,7 +27,7 @@ requires:
   - name: "sleeptimer"
   - name: "simple_button"
 
-template_contribution: 
+template_contribution:
   - name: cli_command
     value:
       group: button

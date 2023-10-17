@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 Amazon.com, Inc. or its affiliates. All rights reserved.
+ * Copyright 2020-2023 Amazon.com, Inc. or its affiliates. All rights reserved.
  *
  * AMAZON PROPRIETARY/CONFIDENTIAL
  *
@@ -17,11 +17,11 @@
 
 /** @file
  *
- * @defgroup sid_pal_lib_swi sid Software Interrupt (SWI) interface
+ * @defgroup sid_pal_swi_ifc SID Software Interrupt (SWI) interface
  * @{
  * @ingroup sid_pal_ifc
  *
- * @details     Provides SWI interface to be implemented by platform
+ * @details  Provides SWI interface to be implemented by platform
  */
 #include <sid_error.h>
 

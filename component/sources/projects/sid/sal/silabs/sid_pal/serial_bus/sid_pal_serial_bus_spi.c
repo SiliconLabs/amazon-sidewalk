@@ -128,6 +128,10 @@ sid_error_t sid_pal_serial_bus_efr32_spi_create(const struct sid_pal_serial_bus_
   sid_pal_gpio_pull_mode(SL_PIN_NSS, SID_PAL_GPIO_PULL_UP);
   sid_pal_gpio_set_direction(SL_PIN_NSS, SID_PAL_GPIO_DIRECTION_OUTPUT);
 
+  // Set ANT_SW pin to logical 1, as DIO2 pin is used for antenna switch instead
+  sid_pal_gpio_set_direction(SL_PIN_ANTSW, SID_PAL_GPIO_DIRECTION_OUTPUT);
+  sid_pal_gpio_pull_mode(SL_PIN_ANTSW, SID_PAL_GPIO_PULL_UP);
+
   const struct sid_pal_serial_bus_efr32_spi_config *config = (struct sid_pal_serial_bus_efr32_spi_config *)cfg;
   bus.config = *config;
 

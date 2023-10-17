@@ -1,7 +1,16 @@
 id: app_log
 label: Log
 package: platform
-description: Component that provides logging functionality.
+description: >
+  The Log component provides the logging functionality at different levels:
+  1) INFO
+  2) DEBUG
+  3) ERROR
+  4) WARNING
+  5) CRITICAL
+  stream type and stream instance are configurable options, the default stream type is
+  UART and stream instance is VCOM. Other configuration options include log level,
+  logging color, log timing and more.
 category: Application|Utility
 quality: production
 root_path: component/overridden_gsdk_components/app/common/util/app_log

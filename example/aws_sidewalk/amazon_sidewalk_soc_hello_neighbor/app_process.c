@@ -73,9 +73,8 @@
  *
  * @param[in] queue The queue handle which will be used ofr the event
  * @param[in] event The event to be sent
- * @param[in] isr If the Queue is used from ISR then it is handled inside.
  ******************************************************************************/
-static void queue_event(QueueHandle_t queue, enum event_type event, bool in_isr);
+static void queue_event(QueueHandle_t queue, enum event_type event);
 
 /*******************************************************************************
  * Function to send updated counter
@@ -192,8 +191,6 @@ static void toggle_connection_request(app_context_t *context);
 
 // Queue for sending events
 static QueueHandle_t g_event_queue;
-// uint8_t type arguments
-static uint8_t cli_arg_uint8_t;
 #if defined(SL_BLE_SUPPORTED)
 // button send update request
 static bool button_send_update_req;
@@ -421,6 +418,7 @@ void app_button_press_cb(uint8_t button, uint8_t duration)
       app_trigger_connect_and_send();
     }
 #else /* All others target others than KG100S */
+    (void)duration;
     app_trigger_link_switch();
 #endif /* !defined(SL_CATALOG_BTN1_PRESENT) */
   } else { // PB1
@@ -473,42 +471,42 @@ static void toggle_connection_request(app_context_t *context)
 
 void app_trigger_switching_to_default_link(void)
 {
-  queue_event(g_event_queue, EVENT_TYPE_REGISTERED, true);
+  queue_event(g_event_queue, EVENT_TYPE_REGISTERED);
 
   app_log_info("app: initialising default link");
 }
 
 void app_trigger_link_switch(void)
 {
-  queue_event(g_event_queue, EVENT_TYPE_LINK_SWITCH, true);
+  queue_event(g_event_queue, EVENT_TYPE_LINK_SWITCH);
 
   app_log_info("app: link switch user event");
 }
 
 void app_trigger_send_counter_update(void)
 {
-  queue_event(g_event_queue, EVENT_TYPE_SEND_COUNTER_UPDATE, true);
+  queue_event(g_event_queue, EVENT_TYPE_SEND_COUNTER_UPDATE);
 
   app_log_info("app: send counter update user event");
 }
 
 void app_trigger_factory_reset(void)
 {
-  queue_event(g_event_queue, EVENT_TYPE_FACTORY_RESET, true);
+  queue_event(g_event_queue, EVENT_TYPE_FACTORY_RESET);
 
   app_log_info("app: factory reset user event");
 }
 
 void app_trigger_get_time(void)
 {
-  queue_event(g_event_queue, EVENT_TYPE_GET_TIME, true);
+  queue_event(g_event_queue, EVENT_TYPE_GET_TIME);
 
   app_log_info("app: get time user event");
 }
 
 void app_trigger_get_mtu(void)
 {
-  queue_event(g_event_queue, EVENT_TYPE_GET_MTU, true);
+  queue_event(g_event_queue, EVENT_TYPE_GET_MTU);
 
   app_log_info("app: get mtu user event");
 }
@@ -516,7 +514,7 @@ void app_trigger_get_mtu(void)
 #if defined(SL_BLE_SUPPORTED)
 void app_trigger_connection_request(void)
 {
-  queue_event(g_event_queue, EVENT_TYPE_CONNECTION_REQUEST, true);
+  queue_event(g_event_queue, EVENT_TYPE_CONNECTION_REQUEST);
 
   app_log_info("app: connection request user event");
 }
@@ -526,11 +524,10 @@ void app_trigger_connection_request(void)
 //                          Static Function Definitions
 // -----------------------------------------------------------------------------
 static void queue_event(QueueHandle_t queue,
-                        enum event_type event,
-                        bool in_isr)
+                        enum event_type event)
 {
   // Check if queue_event was called from ISR
-  if (in_isr) {
+  if ((bool)xPortIsInsideInterrupt()) {
     BaseType_t task_woken = pdFALSE;
 
     xQueueSendFromISR(queue, &event, &task_woken);
@@ -543,9 +540,10 @@ static void queue_event(QueueHandle_t queue,
 static void on_sidewalk_event(bool in_isr,
                               void *context)
 {
+  UNUSED(in_isr);
   app_context_t *app_context = (app_context_t *)context;
   // Issue sidewalk event to the queue
-  queue_event(app_context->event_queue, EVENT_TYPE_SIDEWALK, in_isr);
+  queue_event(app_context->event_queue, EVENT_TYPE_SIDEWALK);
 }
 
 static void on_sidewalk_msg_received(const struct sid_msg_desc *msg_desc,

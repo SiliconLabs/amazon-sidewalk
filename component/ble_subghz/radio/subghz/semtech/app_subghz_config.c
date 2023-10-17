@@ -157,11 +157,7 @@ const radio_sx126x_device_config_t radio_sx1262_cfg = {
   .gpio_power                 = SL_PIN_NRESET,
   .gpio_int1                  = SL_PIN_DIO,
   .gpio_radio_busy            = SL_PIN_BUSY,
-#ifndef MODULE_KG100S
-  .gpio_rf_sw_ena             = SL_PIN_ANTSW,
-#else
-  .gpio_rf_sw_ena             = HALO_GPIO_NOT_CONNECTED,
-#endif
+  .gpio_rf_sw_ena             = HALO_GPIO_NOT_CONNECTED, // As DIO2 is configured to drive the RF switch, ANT_SW pin is redundant and can be set to logical 1
   .gpio_tx_bypass             = HALO_GPIO_NOT_CONNECTED,
   .pa_cfg_callback            = radio_sx1262_pa_cfg,
   .trim_cap_val_callback      = radio_sx1262_get_trim_cap_val,

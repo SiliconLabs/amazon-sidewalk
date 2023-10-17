@@ -53,19 +53,19 @@ extern "C" {
 #define SL_BUSY_PIN                              3
 #define SL_BUSY_PORT                             gpioPortD
 
-// ANT_SW on PD02
+// ANT_SW on PA03
 // External antenna switch to control antenna switch to RECEIVE or
 // TRANSMIT.
 #define SL_ANTSW_PIN                             3
 #define SL_ANTSW_PORT                            gpioPortA
 
-// DIO1 on PA05
+// DIO1 on PA00
 // IRQ line from sx126x chip
 // See sx126x datasheet for IRQs list.
 #define SL_DIO_PIN                               0
 #define SL_DIO_PORT                              gpioPortA
 
-// SX NRESET on PA06
+// SX NRESET on PD02
 // Factory reset pin. Will be followed by standard calibration procedure
 // and previous context will be lost.
 #define SL_NRESET_PIN                            2

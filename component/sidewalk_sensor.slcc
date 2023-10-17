@@ -1,0 +1,34 @@
+id: "sidewalk_sensor"
+label: "Sidewalk sensor"
+package: "Flex"
+description: "Provides Sidewalk utility functions"
+category: Example|AWS IoT
+quality: production
+root_path: "component/sidewalk_sensor"
+
+provides:
+  - name: "sidewalk_sensor"
+source:
+  - path: "sl_sidewalk_sensor.c"
+include:
+  - path: "."
+    file_list:
+    - "path": "sl_sidewalk_sensor.h"
+    - "path": "sl_sidewalk_sensor_types.h"
+
+requires:
+  - name: "board_control"
+  - name: "sidewalk_sender"
+  - name: "sidewalk_utils"
+
+#-------------- Template Contribution ----------------
+template_contribution:
+#---------------- Component Catalog ------------------
+  - name: component_catalog
+    value: sidewalk_sensor
+#---------------- Event handler ----------------------
+  - name: event_handler
+    value:
+      event: service_init
+      include: sl_sidewalk_sensor.h
+      handler: sl_sidewalk_sensor_init

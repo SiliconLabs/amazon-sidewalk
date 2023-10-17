@@ -1,0 +1,36 @@
+id: "sidewalk_display"
+label: "Sidewalk display"
+package: "Flex"
+description: "Provides Sidewalk display functions"
+category: Example|AWS IoT
+quality: production
+root_path: "component/sidewalk_display"
+
+source:
+  - path: "sl_sidewalk_display.c"
+include:
+  - path: "."
+    file_list:
+    - "path": "sl_sidewalk_display.h"
+    - "path": "sl_sidewalk_display_types.h"
+config_file:
+  - path: "config/sl_sidewalk_display_config.h"
+
+provides:
+  - name: "sidewalk_display"
+requires:
+  - name: "board_control"
+  - name: "glib"
+  - name: "dmd_memlcd"
+  - name: "sidewalk_utils"
+#-------------- Template Contribution ----------------
+template_contribution:
+#---------------- Component Catalog ------------------
+  - name: component_catalog
+    value: sidewalk_display
+    #---------------- Event handler ----------------------
+  - name: event_handler
+    value:
+      event: service_init
+      include: sl_sidewalk_display.h
+      handler: sl_sidewalk_display_init

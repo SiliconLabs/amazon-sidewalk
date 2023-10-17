@@ -35,9 +35,9 @@
  *
  ******************************************************************************/
 
-//==============================================
-// BLE adapter only supports legacy advertising
-//==============================================
+//========================================================
+//===== BLE adapter only supports legacy advertising =====
+//========================================================
 
 // -----------------------------------------------------------------------------
 //                                   Includes
@@ -86,12 +86,12 @@
 #define SL_BT_ADV_DATA_TYPE_FLAGS                       ((uint8_t) 0x01)
 #define SL_BT_ADV_DATA_TYPE_COMPLETE_16BIT_UUIDS        ((uint8_t) 0x03)
 #define SL_BT_ADV_DATA_TYPE_COMPLETE_LOCAL_NAME         ((uint8_t) 0x09)
-#define SL_BT_ADV_DATA_TYPE_CONNECTION_INTERVAL_RANGE   ((uint8_t) 0x12)
 #define SL_BT_ADV_DATA_TYPE_MANUFACTURER_DATA           ((uint8_t) 0xFF)
 #define SL_BT_GATTS_TRAN_TYPE_INVALID                   ((uint32_t) 0x00)
 #define SL_BT_GATTS_TRAN_TYPE_READ                      ((uint32_t) 0x01)
 #define SL_BT_GATTS_TRAN_TYPE_WRITE                     ((uint32_t) 0x02)
 #define SL_BT_GATTS_TRAN_TYPE_PREP_WRITE                ((uint32_t) 0x03)
+
 // Macro to set a uint16_t data item to advertisement data
 #define SL_BT_PRV_SET_ADV_DATA_UINT16(ptr, value) \
   do {                                            \
@@ -191,13 +191,8 @@ static bool is_kernel_started = false;
 static bool is_adv_active = false;
 // Indicate whether BLE advertising is slow or fast
 static bool is_fast_adv_active = true;
-
-#if SL_BT_CONFIG_USER_ADVERTISERS == 1
 // The advertising set handle allocated from Bluetooth stack
 static uint8_t advertising_set_handle = SL_BT_INVALID_ADVERTISING_SET_HANDLE;
-#else
-#warning "The maximum number of advertising sets for user advertisers is limited to one!"
-#endif
 
 // Static random address used for advertisers
 // This static random Bluetooth address is used by all advertisers that specify the
@@ -291,7 +286,7 @@ static void ble_connection_cb_fnc(uint16_t conn_id,
                                   bd_addr *bt_addr)
 {
   if (bt_addr != NULL) {
-    SID_PAL_LOG_INFO("BLE State: %sCONNECTED\n", connected ? "" : "DIS");
+    SID_PAL_LOG_INFO("Sidewalk BLE State: %sCONNECTED\n", connected ? "" : "DIS");
     ctx.conn_id = conn_id;
     ctx.is_connected = connected;
     memcpy(ctx.bt_addr, bt_addr->addr, BLE_ADDR_MAX_LEN);
@@ -438,12 +433,12 @@ static uint16_t sl_ble_evaluate_permissions(uint16_t xPermissions)
 static sid_error_t ble_adapter_init(const sid_ble_config_t *cfg)
 {
   if (!cfg) {
-    SID_PAL_LOG_ERROR("Missing BLE configuration");
+    SID_PAL_LOG_ERROR("Missing Sidewalk BLE configuration");
     is_bluetooth_started = false;
     return SID_ERROR_INVALID_ARGS;
   }
 
-  SID_PAL_LOG_INFO("BLE initialization...");
+  SID_PAL_LOG_INFO("Sidewalk BLE initialization is in progress");
 
   // Save BLE configuration
   ctx.cfg = cfg;
@@ -452,7 +447,7 @@ static sid_error_t ble_adapter_init(const sid_ble_config_t *cfg)
   // Allocate memory dinamically for BLE profile
   ble_profile = (sid_pal_ble_profile_config_t *)sl_malloc(ctx.cfg->num_profile * sizeof(sid_pal_ble_profile_config_t));
   if (!ble_profile) {
-    SID_PAL_LOG_ERROR("Memory allocation failed for BLE profile");
+    SID_PAL_LOG_ERROR("Memory allocation failed for Sidewalk BLE profile");
     return SID_ERROR_GENERIC;
   } else {
     // Allocate memory dinamically for BLE characteristics and descriptors based on config file
@@ -462,7 +457,7 @@ static sid_error_t ble_adapter_init(const sid_ble_config_t *cfg)
       if (!ble_profile[i].current_characteristic_handle) {
         sl_free(ble_profile);
         ble_profile = NULL;
-        SID_PAL_LOG_ERROR("Memory allocation failed for BLE characteristic");
+        SID_PAL_LOG_ERROR("Memory allocation failed for Sidewalk BLE characteristic");
         return SID_ERROR_GENERIC;
       } else {
         ble_profile[i].current_descriptor_handle = (uint16_t *)sl_malloc(ctx.cfg->profile[i].desc_count * sizeof(uint16_t));
@@ -471,7 +466,7 @@ static sid_error_t ble_adapter_init(const sid_ble_config_t *cfg)
           ble_profile[i].current_characteristic_handle = NULL;
           sl_free(ble_profile);
           ble_profile = NULL;
-          SID_PAL_LOG_ERROR("Memory allocation failed for BLE descriptor");
+          SID_PAL_LOG_ERROR("Memory allocation failed for Sidewalk BLE descriptor");
           return SID_ERROR_GENERIC;
         }
       }
@@ -488,8 +483,9 @@ static sid_error_t ble_adapter_init(const sid_ble_config_t *cfg)
   if (!is_bluetooth_started && is_kernel_started) {
     sl_status = sl_bt_system_start_bluetooth();
   } else {
-    SID_PAL_LOG_ERROR("Bluetooth stack is already started (%s) or kernel is not started yet (%s)",
-                      is_bluetooth_started ? "true" : "false", is_kernel_started ? "true" : "false");
+    SID_PAL_LOG_ERROR("Sidewalk BLE start request is failed due to:%s%s",
+                      is_bluetooth_started ? " Sidewalk BLE stack has already started." : "",
+                      !is_kernel_started ? " Kernel has not started yet." : "");
     is_bluetooth_started = false;
     return SID_ERROR_GENERIC;
   }
@@ -500,7 +496,7 @@ static sid_error_t ble_adapter_init(const sid_ble_config_t *cfg)
     size_t OutputDataLen = 0;
     sl_status = sl_bt_system_get_random_data(sizeof(DummyData), sizeof(DummyData), &OutputDataLen, &DummyData);
   } else {
-    SID_PAL_LOG_ERROR("BLE stack is not ready");
+    SID_PAL_LOG_ERROR("Sidewalk BLE stack is not ready");
     is_bluetooth_started = false;
     return SID_ERROR_GENERIC;
   }
@@ -548,11 +544,11 @@ static sid_error_t ble_adapter_init(const sid_ble_config_t *cfg)
     is_bluetooth_started = true;
   } else {
     sl_ble_free_resources();
-    sl_ble_init_failed("BLE stack has failed to start");
+    sl_ble_init_failed("Sidewalk BLE stack has failed to start");
     return SID_ERROR_GENERIC;
   }
 
-  SID_PAL_LOG_INFO("BLE init success");
+  SID_PAL_LOG_INFO("Sidewalk BLE initialization is successfully completed");
 
   return SID_ERROR_NONE;
 }
@@ -1240,7 +1236,7 @@ static sid_error_t ble_adapter_stop_advertisement(void)
 static sid_error_t ble_adapter_send_data(sid_ble_cfg_service_identifier_t id, uint8_t *data, uint16_t length)
 {
   if (!ctx.is_connected) {
-    SID_PAL_LOG_ERROR("BLE is not connected");
+    SID_PAL_LOG_ERROR("Sidewalk BLE is not connected");
     return SID_ERROR_PORT_NOT_OPEN;
   }
 
@@ -1308,7 +1304,7 @@ static sid_error_t ble_adapter_set_callback(const sid_pal_ble_adapter_callbacks_
 static sid_error_t ble_adapter_disconnect(void)
 {
   if (!ctx.is_connected) {
-    SID_PAL_LOG_INFO("BLE not connected");
+    SID_PAL_LOG_INFO("Sidewalk BLE is not connected");
     return SID_ERROR_NONE;
   }
 
@@ -1348,7 +1344,8 @@ static void sl_ble_adapter_on_system_boot(sl_bt_evt_system_boot_t *event)
 {
   // Unused parameter
   (void)event;
-  SID_PAL_LOG_INFO("Kernel is started");
+  // Print boot message
+  SID_PAL_LOG_INFO("Sidewalk BLE stack is booted: v%d.%d.%d-b%d\n", event->major, event->minor, event->patch, event->build);
 
   // Nothing to do, because kernel is already started and ble_adapter_init() will take care of the initial configuration
 }

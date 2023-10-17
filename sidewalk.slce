@@ -2,10 +2,10 @@ id: sidewalk
 label: Sidewalk
 description: >
   Sidewalk extension for Gecko SDK Suite
-version: "1.2.1"
+version: "1.2.2"
 sdk:
   id: gecko_sdk
-  version: "4.3.1"
+  version: "4.3.2"
 component_path:
   - path: component
   - path: component/overridden_gsdk_components/app/common/component

@@ -277,25 +277,25 @@ void main_task(void *context)
 
         case EVENT_TYPE_SID_INIT:
           if (init_sidewalk(app_context, cli_arg_str) != SL_STATUS_OK) {
-            goto error;
+            app_log_error("app: stack init failed!\n");
           }
           break;
 
         case EVENT_TYPE_SID_START:
           if (start_sidewalk(app_context, cli_arg_str) != SL_STATUS_OK) {
-            goto error;
+            app_log_error("app: stack start failed!\n");
           }
           break;
 
         case EVENT_TYPE_SID_STOP:
           if (stop_sidewalk(app_context, cli_arg_str) != SL_STATUS_OK) {
-            goto error;
+            app_log_error("app: stack stop failed!\n");
           }
           break;
 
         case EVENT_TYPE_SID_DEINIT:
           if (deinit_sidewalk(app_context) != SL_STATUS_OK) {
-            goto error;
+            app_log_error("app: stack deinit failed!\n");
           }
           break;
 
@@ -374,16 +374,8 @@ void main_task(void *context)
     }
   }
 
-  error:
-// If error happens deinit sidewalk
-  if (app_context->sidewalk_handle != NULL) {
-    sid_stop(app_context->sidewalk_handle, SID_LINK_TYPE_ANY);
-    sid_deinit(app_context->sidewalk_handle);
-    app_context->sidewalk_handle = NULL;
-  }
-
+  //should never reach here
   app_log_error("app: fatal error\n");
-
   vTaskDelete(NULL);
 }
 
@@ -392,13 +384,12 @@ void main_task(void *context)
  *
  * @param[in] queue The queue handle which will be used ofr the event
  * @param[in] event The event to be sent
- * @param[in] isr If the Queue is used from ISR then it is handled inside.
  * @returns None
  ******************************************************************************/
-void queue_event(QueueHandle_t queue, enum event_type event, bool in_isr)
+void queue_event(QueueHandle_t queue, enum event_type event)
 {
   // Check if queue_event was called from ISR
-  if (in_isr) {
+  if ((bool)xPortIsInsideInterrupt()) {
     BaseType_t task_woken = pdFALSE;
 
     xQueueSendFromISR(queue, &event, &task_woken);
@@ -432,9 +423,10 @@ void sl_button_on_change(const sl_button_t *handle)
 
 static void on_sidewalk_event(bool in_isr, void *context)
 {
+  UNUSED(in_isr);
   app_context_t *app_context = (app_context_t *)context;
   // Issue sidewalk event to the queue
-  queue_event(app_context->event_queue, EVENT_TYPE_SIDEWALK, in_isr);
+  queue_event(app_context->event_queue, EVENT_TYPE_SIDEWALK);
 }
 
 static void on_sidewalk_msg_received(const struct sid_msg_desc *msg_desc,
@@ -648,17 +640,25 @@ static sl_status_t init_sidewalk(app_context_t *app_context, char *link_str)
   app_context->ble_connection_status = false;
 #endif
 
-  sid_error_t ret = sid_init(&app_context->sid_cfg, &app_context->sidewalk_handle);
-  if (ret != SID_ERROR_NONE) {
-    app_log_error("app: failed to initialize sidewalk stack: %d\n", ret);
-    app_context->sidewalk_handle = NULL;
-    app_context->sid_cfg.link_mask = 0;
+  struct sid_handle *tmp_sidewalk_handle;
 
-    return SL_STATUS_FAIL;
-  } else {
-    app_log_info("app: sidewalk stack initialized\n");
-    current_init_link = app_context->sid_cfg.link_mask;
+  sid_error_t ret = sid_init(&app_context->sid_cfg, &tmp_sidewalk_handle);
+  if (ret != SID_ERROR_NONE) {
+    if( ret != SID_ERROR_ALREADY_INITIALIZED) {
+      //reset context sidewalk_handle
+      app_context->sidewalk_handle = NULL;
+      app_context->sid_cfg.link_mask = 0;
+      app_log_error("app: failed to initialize sidewalk stack: %d\n", ret);
+    } else{
+      //here we want to preserve the context sidewalk_handle from previous initialized link
+      app_log_error("app: a stack is already initialized\n");
+    }
+      return SL_STATUS_FAIL;
   }
+    app_log_info("app: sidewalk stack initialized\n");
+    //update the  context sidewalk_handle with the one returned by sid_init
+    app_context->sidewalk_handle = tmp_sidewalk_handle;
+    current_init_link = app_context->sid_cfg.link_mask;
 
   return SL_STATUS_OK;
 }

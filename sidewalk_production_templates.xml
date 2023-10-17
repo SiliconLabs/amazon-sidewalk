@@ -1,6 +1,6 @@
 <?xml version='1.0' encoding='ASCII'?>
 <model:MDescriptors xmlns:model="http://www.silabs.com/ss/Studio.ecore">
-  <descriptors name="amazon_sidewalk_soc_hello_neighbor" label="Amazon Sidewalk - SoC Bluetooth Sub-GHz Hello Neighbor" description="The Hello Neighbor sample application leverages the Amazon Sidewalk protocol to connect to the cloud using a either of the 3 radio layer, depending on board and configuration. The application connects to AWS and send or receive messages on button push.">
+  <descriptors name="amazon_sidewalk_soc_hello_neighbor" label="Amazon Sidewalk - SoC Hello Neighbor" description="The Hello Neighbor sample application leverages the Amazon Sidewalk protocol to connect to the cloud using a either of the 3 radio layer, depending on board and configuration. The application connects to AWS and send or receive messages on button push.">
     <properties key="namespace" value="template.uc"/>
     <properties key="keywords" value="universal\ configurator"/>
     <properties key="solutionReferenceId" value="example.aws_sidewalk.amazon_sidewalk_soc_hello_neighbor.amazon_sidewalk_soc_hello_neighbor_family_efr32xg21.slcp"/>
@@ -15,14 +15,14 @@
     <properties key="stockConfigCompatibility" value="com.silabs.ss.framework.project.toolchain.core.default"/>
     <properties key="filters" value="Device\ Type|SoC Ecosystem|Amazon Project\ Difficulty|Beginner Wireless\ Technology|Bluetooth Wireless\ Technology|Sidewalk"/>
   </descriptors>
-  <descriptors name="amazon_sidewalk_soc_hello_neighbor" label="Amazon Sidewalk - SoC Bluetooth Sub-GHz Hello Neighbor" description="The Hello Neighbor sample application leverages the Amazon Sidewalk protocol to connect to the cloud using a either of the 3 radio layer, depending on board and configuration. The application connects to AWS and send or receive messages on button push.">
+  <descriptors name="amazon_sidewalk_soc_hello_neighbor" label="Amazon Sidewalk - SoC Hello Neighbor" description="The Hello Neighbor sample application leverages the Amazon Sidewalk protocol to connect to the cloud using a either of the 3 radio layer, depending on board and configuration. The application connects to AWS and send or receive messages on button push.">
     <properties key="namespace" value="template.uc"/>
     <properties key="keywords" value="universal\ configurator"/>
     <properties key="solutionReferenceId" value="example.aws_sidewalk.amazon_sidewalk_soc_hello_neighbor.amazon_sidewalk_soc_hello_neighbor_family_efr32xg24.slcp"/>
     <properties key="projectFilePaths" value="example/aws_sidewalk/amazon_sidewalk_soc_hello_neighbor/amazon_sidewalk_soc_hello_neighbor_family_efr32xg24.slcp"/>
     <properties key="readmeFiles" value="documentation/example/amazon_sidewalk_soc_hello_neighbor/readme.md"/>
-    <properties key="boardCompatibility" value="brd4186b brd4186c brd4187b brd4187c brd4198a brd4198b brd4199b brd4406a brd4411a com.silabs.board.none"/>
-    <properties key="partCompatibility" value=".*efr32mg24b020f1536im48.* .*efr32mg24b010f1536im48.* .*efr32mg24b220f1536im48.* .*efr32mg24b210f1536im48.*"/>
+    <properties key="boardCompatibility" value="brd4115a brd4115b brd4186b brd4186c brd4187b brd4187c brd4198a com.silabs.board.none"/>
+    <properties key="partCompatibility" value=".*efr32mg24b020f1536im48.* .*efr32mg24b010f1536im48.* .*efr32mg24b220f1536im48.* .*efr32mg24b210f1536im48.* .*efr32bg24b410f1536ij42.* .*efr32bg24b310f1536ij42.*"/>
     <properties key="ideCompatibility" value="iar-embedded-workbench makefile-ide simplicity-ide visual-studio-code"/>
     <properties key="toolchainCompatibility" value="gcc"/>
     <properties key="category" value="Example|AWS IoT"/>
@@ -30,14 +30,14 @@
     <properties key="stockConfigCompatibility" value="com.silabs.ss.framework.project.toolchain.core.default"/>
     <properties key="filters" value="Device\ Type|SoC Ecosystem|Amazon Project\ Difficulty|Beginner Wireless\ Technology|Bluetooth Wireless\ Technology|Sidewalk"/>
   </descriptors>
-  <descriptors name="amazon_sidewalk_soc_hello_neighbor" label="Amazon Sidewalk - SoC Bluetooth Sub-GHz Hello Neighbor" description="The Hello Neighbor sample application leverages the Amazon Sidewalk protocol to connect to the cloud using a either of the 3 radio layer, depending on board and configuration. The application connects to AWS and send or receive messages on button push.">
+  <descriptors name="amazon_sidewalk_soc_hello_neighbor" label="Amazon Sidewalk - SoC Hello Neighbor" description="The Hello Neighbor sample application leverages the Amazon Sidewalk protocol to connect to the cloud using a either of the 3 radio layer, depending on board and configuration. The application connects to AWS and send or receive messages on button push.">
     <properties key="namespace" value="template.uc"/>
     <properties key="keywords" value="universal\ configurator"/>
     <properties key="solutionReferenceId" value="example.aws_sidewalk.amazon_sidewalk_soc_hello_neighbor.amazon_sidewalk_soc_hello_neighbor_family_efr32xg28.slcp"/>
     <properties key="projectFilePaths" value="example/aws_sidewalk/amazon_sidewalk_soc_hello_neighbor/amazon_sidewalk_soc_hello_neighbor_family_efr32xg28.slcp"/>
     <properties key="readmeFiles" value="documentation/example/amazon_sidewalk_soc_hello_neighbor/readme.md"/>
     <properties key="boardCompatibility" value="brd2705a brd4400a brd4400b brd4400c brd4401a brd4401b brd4401c com.silabs.board.none"/>
-    <properties key="partCompatibility" value=".*efr32zg28b312f1024im48.* .*efr32zg28b312f1024im68.* .*efr32fg28b321f1024im68.* .*efr32zg28b322f1024im68.* .*efr32fg28b312f1024im68.* .*efr32fg28b311f1024im68.*"/>
+    <properties key="partCompatibility" value=".*efr32zg28b312f1024im48.* .*efr32zg28b312f1024im68.* .*efr32fg28b321f1024im68.* .*efr32zg28b322f1024im68.* .*efr32fg28b312f1024im68.* .*efr32fg28b311f1024im68.* .*efr32sg28.*"/>
     <properties key="ideCompatibility" value="iar-embedded-workbench makefile-ide simplicity-ide visual-studio-code"/>
     <properties key="toolchainCompatibility" value="gcc"/>
     <properties key="category" value="Example|AWS IoT"/>
@@ -45,7 +45,7 @@
     <properties key="stockConfigCompatibility" value="com.silabs.ss.framework.project.toolchain.core.default"/>
     <properties key="filters" value="Device\ Type|SoC Ecosystem|Amazon Project\ Difficulty|Beginner Wireless\ Technology|Bluetooth Wireless\ Technology|Sidewalk"/>
   </descriptors>
-  <descriptors name="amazon_sidewalk_soc_hello_neighbor" label="Amazon Sidewalk - SoC Bluetooth Sub-GHz Hello Neighbor" description="The Hello Neighbor sample application leverages the Amazon Sidewalk protocol to connect to the cloud using a either of the 3 radio layer, depending on board and configuration. The application connects to AWS and send or receive messages on button push.">
+  <descriptors name="amazon_sidewalk_soc_hello_neighbor" label="Amazon Sidewalk - SoC Hello Neighbor" description="The Hello Neighbor sample application leverages the Amazon Sidewalk protocol to connect to the cloud using a either of the 3 radio layer, depending on board and configuration. The application connects to AWS and send or receive messages on button push.">
     <properties key="namespace" value="template.uc"/>
     <properties key="keywords" value="universal\ configurator"/>
     <properties key="solutionReferenceId" value="example.aws_sidewalk.amazon_sidewalk_soc_hello_neighbor.amazon_sidewalk_soc_hello_neighbor_kg100s.slcp"/>
@@ -60,14 +60,14 @@
     <properties key="stockConfigCompatibility" value="com.silabs.ss.framework.project.toolchain.core.default"/>
     <properties key="filters" value="Device\ Type|SoC Ecosystem|Amazon Project\ Difficulty|Beginner Wireless\ Technology|Bluetooth Wireless\ Technology|Sidewalk"/>
   </descriptors>
-  <descriptors name="amazon_sidewalk_soc_hello_neighbor" label="Amazon Sidewalk - SoC Bluetooth Sub-GHz Hello Neighbor" description="The Hello Neighbor sample application leverages the Amazon Sidewalk protocol to connect to the cloud using a either of the 3 radio layer, depending on board and configuration. The application connects to AWS and send or receive messages on button push.">
+  <descriptors name="amazon_sidewalk_soc_hello_neighbor" label="Amazon Sidewalk - SoC Hello Neighbor" description="The Hello Neighbor sample application leverages the Amazon Sidewalk protocol to connect to the cloud using a either of the 3 radio layer, depending on board and configuration. The application connects to AWS and send or receive messages on button push.">
     <properties key="namespace" value="template.uc"/>
     <properties key="keywords" value="universal\ configurator"/>
     <properties key="solutionReferenceId" value="example.aws_sidewalk.amazon_sidewalk_soc_hello_neighbor.amazon_sidewalk_soc_hello_neighbor_family_efr32xg23.slcp"/>
     <properties key="projectFilePaths" value="example/aws_sidewalk/amazon_sidewalk_soc_hello_neighbor/amazon_sidewalk_soc_hello_neighbor_family_efr32xg23.slcp"/>
     <properties key="readmeFiles" value="documentation/example/amazon_sidewalk_soc_hello_neighbor/readme.md"/>
     <properties key="boardCompatibility" value="brd2600a brd4204c brd4204d brd4210a brd4263c brd4264c com.silabs.board.none"/>
-    <properties key="partCompatibility" value=".*efr32zg23b010f512im48.* .*efr32zg23b010f512im48.* .*efr32zg23b020f512im48.* .*efr32fg23b010f512im48.* .*efr32fg23b020f512im48.*"/>
+    <properties key="partCompatibility" value=".*efr32zg23b010f512im48.* .*efr32zg23b010f512im48.* .*efr32zg23b020f512im48.* .*efr32fg23b010f512im48.* .*efr32fg23b020f512im48.* .*efr32sg23.*"/>
     <properties key="ideCompatibility" value="iar-embedded-workbench makefile-ide simplicity-ide visual-studio-code"/>
     <properties key="toolchainCompatibility" value="gcc"/>
     <properties key="category" value="Example|AWS IoT"/>
@@ -111,8 +111,8 @@
     <properties key="solutionReferenceId" value="example.aws_sidewalk.amazon_sidewalk_soc_cli.amazon_sidewalk_soc_cli_family_efr32xg24.slcp"/>
     <properties key="projectFilePaths" value="example/aws_sidewalk/amazon_sidewalk_soc_cli/amazon_sidewalk_soc_cli_family_efr32xg24.slcp"/>
     <properties key="readmeFiles" value="documentation/example/amazon_sidewalk_soc_bt_subghz_cli/readme.md"/>
-    <properties key="boardCompatibility" value="brd4186b brd4186c brd4187b brd4187c brd4198a brd4198b brd4199b brd4406a brd4411a com.silabs.board.none"/>
-    <properties key="partCompatibility" value=".*efr32mg24b020f1536im48.* .*efr32mg24b010f1536im48.* .*efr32mg24b220f1536im48.* .*efr32mg24b210f1536im48.*"/>
+    <properties key="boardCompatibility" value="brd4115a brd4115b brd4186b brd4186c brd4187b brd4187c brd4198a com.silabs.board.none"/>
+    <properties key="partCompatibility" value=".*efr32mg24b020f1536im48.* .*efr32mg24b010f1536im48.* .*efr32mg24b220f1536im48.* .*efr32mg24b210f1536im48.* .*efr32bg24b410f1536ij42.* .*efr32bg24b310f1536ij42.*"/>
     <properties key="ideCompatibility" value="iar-embedded-workbench makefile-ide simplicity-ide visual-studio-code"/>
     <properties key="toolchainCompatibility" value="gcc"/>
     <properties key="category" value="Example|AWS IoT"/>

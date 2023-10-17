@@ -40,6 +40,7 @@
 // -----------------------------------------------------------------------------
 #include <string.h>
 #include <sid_pal_uptime_ifc.h>
+#include <sid_pal_assert_ifc.h>
 #include <sl_sleeptimer.h>
 #include <sid_time_ops.h>
 
@@ -75,6 +76,8 @@
  */
 sid_error_t sid_pal_uptime_now(struct sid_timespec * time)
 {
+  SID_PAL_ASSERT(time != NULL);
+
   uint64_t ticks = sl_sleeptimer_get_tick_count64();
   uint32_t ticks_per_sec = sl_sleeptimer_get_timer_frequency();
   uint64_t secs = ticks / ticks_per_sec;

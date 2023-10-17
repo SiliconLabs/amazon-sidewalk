@@ -1,5 +1,5 @@
 /*
- * Copyright 2021-2022 Amazon.com, Inc. or its affiliates. All rights reserved.
+ * Copyright 2021-2023 Amazon.com, Inc. or its affiliates. All rights reserved.
  *
  * AMAZON PROPRIETARY/CONFIDENTIAL
  *
@@ -14,6 +14,16 @@
 
 #ifndef SID_900_CFG_H
 #define SID_900_CFG_H
+
+/// @cond sid_ifc_ep_en
+
+/** @file
+ *
+ * @defgroup SIDEWALK_API Sidewalk API
+ * @brief API for communicating with the Sidewalk network
+ * @{
+ * @ingroup  SIDEWALK_API
+ */
 
 /**
  * Describes the profile type of the device
@@ -136,5 +146,9 @@ struct sid_sub_ghz_links_config {
     bool enable_link_metrics;
     struct sid_link_type_2_registration_config registration_config;
 };
+
+/** @} */
+
+/// @endcond
 
 #endif /* SID_900_CFG_H */

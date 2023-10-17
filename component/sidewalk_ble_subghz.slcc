@@ -178,9 +178,6 @@ include:
   - path: "includes/projects/sid/apps/sdk/silabs/efr32xg21/common/mfg_store_app_values/include/export"
     file_list:
     - path: "mfg_store_app_values.h"
-  - path: "includes/projects/sid/apps/sdk/silabs/efr32xg21/ace/sdk/include/ace"
-    file_list:
-    - path: "bt_hal_manager_types.h"
   - path: "includes/projects/sid/sal/silabs/sid_pal/include/"
     file_list:
     - path: "gpio.h"
@@ -228,9 +225,6 @@ include:
     - sl_sidewalk_radio_ble
     file_list:
     - path: "ble_adapter.h"
-  - path: "includes/platform/sid_mcu/silabs/hal/sid_hal"
-    file_list:
-    - path: "include/sid_hal_log.h"
   - path: "includes/projects/sid/sal/common/public/sid_pal_ifc/common"
     file_list:
     - path: "sid_pal_common_ifc.h"
@@ -291,7 +285,6 @@ recommends:
     condition: [device_supports_bluetooth]
   - id: bluetooth_on_demand_start
     condition: [device_supports_bluetooth]
-
 
 template_contribution:
 #---------------- Component Catalog ------------------

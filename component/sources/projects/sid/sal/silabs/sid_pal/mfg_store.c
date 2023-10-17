@@ -195,13 +195,17 @@ uint16_t sid_pal_mfg_store_get_length_for_value(uint16_t value)
  ******************************************************************************/
 int32_t sid_pal_mfg_store_erase(void)
 {
-    #if defined(HALO_ENABLE_DIAGNOSTICS) && HALO_ENABLE_DIAGNOSTICS
+#if defined(HALO_ENABLE_DIAGNOSTICS) && HALO_ENABLE_DIAGNOSTICS
   Ecode_t status = 0;
   status = nvm3_eraseAll(mfg_nvm3_handle);
   return (int32_t) status;
-    #else
+#else
+#if defined(SL_SID_DDP_FEATURE_ON) && SL_SID_DDP_FEATURE_ON
+  return 0;
+#else
   return -1;
-    #endif
+#endif /* SL_SID_DDP_FEATURE_ON */
+#endif /* HALO_ENABLE_DIAGNOSTICS */
 }
 
 /*******************************************************************************
