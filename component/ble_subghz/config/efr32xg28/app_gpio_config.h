@@ -40,7 +40,7 @@ extern "C" {
 // -----------------------------------------------------------------------------
 
 #if !defined(SL_RADIO_NATIVE)
-#include "sl_spidrv_eusart_exp_config.h"
+#include "sl_spidrv_exp_config.h"
 #endif
 
 // -----------------------------------------------------------------------------
@@ -74,8 +74,8 @@ extern "C" {
 #define SL_SX_CS_PIN                             10
 #define SL_SX_CS_PORT                            gpioPortD
 #else
-#define SL_SX_CS_PIN                             SL_SPIDRV_EUSART_EXP_CS_PIN
-#define SL_SX_CS_PORT                            SL_SPIDRV_EUSART_EXP_CS_PORT
+#define SL_SX_CS_PIN                             SL_SPIDRV_EXP_CS_PIN
+#define SL_SX_CS_PORT                            SL_SPIDRV_EXP_CS_PORT
 #endif
 
 #ifdef __cplusplus

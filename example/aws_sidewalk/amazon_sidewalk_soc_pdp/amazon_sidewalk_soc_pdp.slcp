@@ -1,0 +1,63 @@
+project_name: amazon_sidewalk_soc_pdp
+package: amazon_bluetooth
+quality: production
+label: "Amazon Sidewalk - Production Device Provisioner (PDP)"
+description: "The PDP application is a tool used in production to prosivion Amazon Sidewalk devices and leverage the Secure Vault feature. The application is hosted in RAM. It is meant to be used in conjunction with the Python Production scripts."
+category: Example|AWS IoT
+readme:
+  - path: ../../../documentation/example/amazon_sidewalk_soc_pdp/readme.md
+source:
+  - path: main.c
+  - path: app_init.c
+  - path: app_process.c
+include:
+  - path: .
+    file_list:
+    - path: app_init.h
+    - path: app_process.h
+sdk_extension:
+  - id: sidewalk
+    version: 2.0.0
+component:
+  - id: "device_init"
+  - id: "sidewalk_pdp"
+    from: sidewalk
+  - id: "sidewalk_pdp_ram_linker"
+    from: sidewalk
+  - id: "sl_system"
+  - id: "iostream_rtt"
+  - id: "iostream_retarget_stdio"
+  - id: app_assert
+  - id: app_log
+  - id: sleeptimer
+define:
+  - name: "SL_SID_PDP_RX_BUF_SIZE"
+    value: "896"
+  - name: "SL_SID_PDP_TX_BUF_SIZE"
+    value: "256"
+configuration:
+  - name: "SL_STACK_SIZE"
+    value: "4096"
+  - name: "SL_HEAP_SIZE"
+    value: "64"
+  - name: "APP_LOG_ENABLE"
+    value: "0"
+toolchain_settings:
+  - option: linkerfile
+    value: autogen/linkerfile_ram.ld
+    condition:
+    - sidewalk_pdp_ram_linker
+
+tag:
+  - hardware:rf:band:2400|900
+  - hardware:device:sdid:200|210|215|220|235
+
+filter:
+  - name: "Wireless Technology"
+    value: ["Sidewalk", "Bluetooth"]
+  - name: "Ecosystem"
+    value: ["Amazon"]
+  - name: "Device Type"
+    value: ["SoC"]
+  - name: "Project Difficulty"
+    value: ["Advanced"]

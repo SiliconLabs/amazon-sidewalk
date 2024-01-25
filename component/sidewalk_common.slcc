@@ -8,6 +8,7 @@ root_path: "component"
 
 config_file:
   - path: sidewalk_common/config/sl_sidewalk_common_config.h
+  - path: sidewalk_common/config/sl_sidewalk_properties.h
 
 provides:
   - name: "sidewalk_common"
@@ -21,10 +22,6 @@ provides:
     condition:
       - device_generic_family_efr32xg24
       - spidrv
-  - name: sl_sidewalk_radio_external
-    condition:
-      - device_generic_family_efr32xg24
-      - spidrv_eusart
 #######################################
 # FAMILIES WITH NATIVE SUBGHZ RADIO
 #######################################
@@ -32,6 +29,9 @@ provides:
     condition:
       - device_generic_family_efr32xg23
       - device_has_radio_subghz
+  - name: sl_sidewalk_radio_native
+    condition:
+      - device_generic_family_efr32xg25
   - name: sl_sidewalk_radio_native
     condition:
       - device_generic_family_efr32xg28
@@ -52,7 +52,14 @@ provides:
       - device_generic_family_efr32xg28
       - device_supports_bluetooth
 
+requires:
+  - name: "sidewalk_pal"
+
 define:
+  - name: DUAL_LINK_SUPPORT
+    value: 1
+    condition:
+      - sl_sidewalk_radio_external
   - name: REGION_US915
     condition:
       - sl_sidewalk_radio_native
@@ -87,22 +94,69 @@ define:
   - name: SL_TEMPERATURE_SENSOR_EXTERNAL
     condition:
       - si70xx_driver
+  - name: BUFFER_SIZE_UP
+    value: 8192
+    condition:
+      - iostream_rtt
+  - name: SEGGER_RTT_PRINTF_BUFFER_SIZE
+    value: 256
+    condition:
+      - iostream_rtt
+  - name: SL_SIDEWALK_RTT_PRESENT
+    condition:
+      - iostream_rtt
 
 library:
   - path: "ble_subghz/lib/sl_lib_ble_subghz.a"
+    condition:
+      - sl_sidewalk_radio_ble
+      - sl_sidewalk_radio_native
     unless:
       - efr32mg24a010f768im40
       - efr32mg24a010f768im48
       - efr32mg24a020f768im40
-  - path: "ble_subghz/lib/sl_lib_ble.a"
+      - brd2600a
+      - sidewalk_dmp_support
+  - path: "ble_subghz/lib/sl_lib_ble_subghz.a"
     condition:
+      - sl_sidewalk_radio_ble
+      - sl_sidewalk_radio_external
+    unless:
       - efr32mg24a010f768im40
-  - path: "ble_subghz/lib/sl_lib_ble.a"
-    condition:
       - efr32mg24a010f768im48
+      - efr32mg24a020f768im40
+      - brd2600a
+      - sidewalk_dmp_support
   - path: "ble_subghz/lib/sl_lib_ble.a"
     condition:
-      - efr32mg24a020f768im40
+      - sl_sidewalk_radio_ble
+    unless:
+      - sl_sidewalk_radio_native
+      - brd2600a
+      - sidewalk_dmp_support
+  - path: "ble_subghz/lib/sl_lib_ble.a"
+    condition:
+      - sl_sidewalk_radio_ble
+    unless:
+      - sl_sidewalk_radio_external
+      - brd2600a
+      - sidewalk_dmp_support
+  - path: "ble_subghz/lib/sl_lib_subghz.a"
+    condition:
+      - sl_sidewalk_radio_native
+    unless:
+      - sl_sidewalk_radio_ble
+  - path: "ble_subghz/lib/sl_lib_subghz.a"
+    condition:
+      - sl_sidewalk_radio_external
+    unless:
+      - sl_sidewalk_radio_ble
+  - path: "ble_subghz/lib/sl_lib_subghz.a"
+    condition:
+      - brd2600a
+  - path: "ble_subghz/lib/sl_lib_subghz.a"
+    condition:
+      - sidewalk_dmp_support
   - path: "ble_subghz/lib/sl_lib_radio_sx126x.a"
     condition:
       - sl_sidewalk_radio_external
@@ -116,6 +170,22 @@ toolchain_settings:
     value: -fno-strict-aliasing
   - option: gcc_compiler_option
     value: -mabi=aapcs
+  - option: gcc_compiler_option
+    value: -mcpu=cortex-m33
+  - option: gcc_compiler_option
+    value: -mthumb
+  - option: gcc_compiler_option
+    value: -mfloat-abi=hard
+  - option: gcc_compiler_option
+    value: -mfpu=fpv5-sp-d16
+  - option: gcc_compiler_option
+    value: -ffunction-sections
+  - option: gcc_compiler_option
+    value: -fdata-sections
+  - option: gcc_compiler_option
+    value: -fno-builtin
+  - option: gcc_compiler_option
+    value: -fdiagnostics-color=always
 
 template_contribution:
 #---------------- Component Catalog ------------------

@@ -37,16 +37,18 @@ extern "C" {
 //                              Macros and Typedefs
 // -----------------------------------------------------------------------------
 
-#define LINK_STRING_SIZE          (20U)
-#define REGION_STRING_SIZE        (20U)
-#define STATE_STRING_SIZE         (20U)
-#define TIME_STRING_SIZE          (30U)
-#define MAC_STRING_SIZE           (30U)
-#define AUTOCONNECT_STRING_SIZE   (20U)
-#define FREQ_STRING_SIZE          (20U)
-#define MTU_STRING_SIZE           (10U)
-#define DEVICE_PROFILE_ID_SIZE    (5U)
-#define POWER_PROFILE_SIZE        (1U)
+#define LINK_STRING_SIZE                (20U)
+#define REGION_STRING_SIZE              (20U)
+#define STATE_STRING_SIZE               (20U)
+#define TIME_STRING_SIZE                (30U)
+#define MAC_STRING_SIZE                 (30U)
+#define FREQ_STRING_SIZE                (20U)
+#define MTU_STRING_SIZE                 (10U)
+#define DEVICE_PROFILE_ID_SIZE          (5U)
+#define POWER_PROFILE_SIZE              (1U)
+#define LINK_CONNECTION_POLICY_SIZE     (10U)
+#define MULTI_LINK_POLICY_SIZE          (10U)
+#define AUTO_CONNECT_PARAMS_STRING_SIZE (64U)
 
 typedef enum {
   app_settings_domain_sidewalk      = 0x00,
@@ -108,6 +110,9 @@ typedef struct {
   struct sid_status current_status;
   struct sid_device_profile device_profile;
   size_t mtu;
+  enum sid_link_connection_policy link_connection_policy;
+  enum sid_link_multi_link_policy multi_link_policy;
+  struct sid_link_auto_connect_params auto_connect_params[SID_LINK_TYPE_MAX_IDX];
 } app_setting_cli_queue_t;
 
 typedef struct {
@@ -116,7 +121,9 @@ typedef struct {
   char region[REGION_STRING_SIZE + 1];
   char state[STATE_STRING_SIZE + 1];
   char time[TIME_STRING_SIZE + 1];
-  char auto_connect[AUTOCONNECT_STRING_SIZE + 1];
+  char link_connection_policy[LINK_CONNECTION_POLICY_SIZE + 1];
+  char multi_link_policy[MULTI_LINK_POLICY_SIZE + 1];
+  struct sid_link_auto_connect_params auto_connect_params[SID_LINK_TYPE_MAX_IDX];
 } app_settings_sidewalk_t;
 
 typedef struct {
@@ -253,30 +260,6 @@ sl_status_t sl_app_settings_get_time(char *value_str,
                                      const sl_sidewalk_cli_util_entry_t *entry);
 
 /*******************************************************************************
- * sl_app_settings_get_autoconnect
- *
- * @param[in] value_str
- * @param[in] key_str
- * @param[in] entry
- * @returns sl_status_t
- ******************************************************************************/
-sl_status_t sl_app_settings_get_autoconnect(char *value_str,
-                                            const char *key_str,
-                                            const sl_sidewalk_cli_util_entry_t *entry);
-
-/*******************************************************************************
- * sl_app_settings_set_autoconnect
- *
- * @param[in] value_str
- * @param[in] key_str
- * @param[in] entry
- * @returns sl_status_t
- ******************************************************************************/
-sl_status_t sl_app_settings_set_autoconnect(const char *value_str,
-                                            const char *key_str,
-                                            const sl_sidewalk_cli_util_entry_t *entry);
-
-/*******************************************************************************
  * sl_app_settings_get_frequency
  *
  * @param[in] value_str
@@ -335,6 +318,78 @@ sl_status_t sl_app_settings_get_rssi(char *value_str,
 sl_status_t sl_app_settings_get_snr(char *value_str,
                                     const char *key_str,
                                     const sl_sidewalk_cli_util_entry_t *entry);
+
+/*******************************************************************************
+ * sl_app_settings_set_link_connection_policy
+ *
+ * @param[in] value_str
+ * @param[in] key_str
+ * @param[in] entry
+ * @returns sl_status_t
+ ******************************************************************************/
+sl_status_t sl_app_settings_set_link_connection_policy(const char *value_str,
+                                                       const char *key_str,
+                                                       const sl_sidewalk_cli_util_entry_t *entry);
+
+/*******************************************************************************
+ * sl_app_settings_get_link_connection_policy
+ *
+ * @param[in] value_str
+ * @param[in] key_str
+ * @param[in] entry
+ * @returns sl_status_t
+ ******************************************************************************/
+sl_status_t sl_app_settings_get_link_connection_policy(char *value_str,
+                                                       const char *key_str,
+                                                       const sl_sidewalk_cli_util_entry_t *entry);
+
+/*******************************************************************************
+ * sl_app_settings_set_multi_link_policy
+ *
+ * @param[in] value_str
+ * @param[in] key_str
+ * @param[in] entry
+ * @returns sl_status_t
+ ******************************************************************************/
+sl_status_t sl_app_settings_set_multi_link_policy(const char *value_str,
+                                                  const char *key_str,
+                                                  const sl_sidewalk_cli_util_entry_t *entry);
+
+/*******************************************************************************
+ * sl_app_settings_get_multi_link_policy
+ *
+ * @param[in] value_str
+ * @param[in] key_str
+ * @param[in] entry
+ * @returns sl_status_t
+ ******************************************************************************/
+sl_status_t sl_app_settings_get_multi_link_policy(char *value_str,
+                                                  const char *key_str,
+                                                  const sl_sidewalk_cli_util_entry_t *entry);
+
+/*******************************************************************************
+ * sl_app_settings_set_auto_connect_params
+ *
+ * @param[in] value_str
+ * @param[in] key_str
+ * @param[in] entry
+ * @returns sl_status_t
+ ******************************************************************************/
+sl_status_t sl_app_settings_set_auto_connect_params(const char *value_str,
+                                                    const char *key_str,
+                                                    const sl_sidewalk_cli_util_entry_t *entry);
+
+/*******************************************************************************
+ * sl_app_settings_get_auto_connect_params
+ *
+ * @param[in] value_str
+ * @param[in] key_str
+ * @param[in] entry
+ * @returns sl_status_t
+ ******************************************************************************/
+sl_status_t sl_app_settings_get_auto_connect_params(char *value_str,
+                                                    const char *key_str,
+                                                    const sl_sidewalk_cli_util_entry_t *entry);
 
 /*******************************************************************************
  * sl_app_settings_get_mtu_ble

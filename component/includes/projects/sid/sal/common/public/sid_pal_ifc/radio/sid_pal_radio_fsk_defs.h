@@ -127,8 +127,10 @@ enum sid_pal_radio_fsk_header_type {
 typedef struct sid_pal_radio_fsk_modulation_params {
     uint32_t bit_rate;
     uint32_t freq_dev;
+    enum sid_pal_radio_fsk_header_type header_type; // fsk header type
     uint8_t mod_shaping;
     uint8_t bandwidth;
+    uint8_t custom_rate_idx; // rate index if the data rate is custom
 } sid_pal_radio_fsk_modulation_params_t;
 
 /** Sidewalk phy fsk packet parameters*/
@@ -175,9 +177,9 @@ typedef struct {
 
 /** Sidewalk Phy received FSK packet status*/
 typedef struct sid_pal_radio_fsk_rx_packet_status {
-    uint8_t rx_status;
     int8_t rssi_avg;
     int8_t rssi_sync;
+    int8_t snr;
 } sid_pal_radio_fsk_rx_packet_status_t;
 
 /** Sidewalk phy fsk configuration handle*/

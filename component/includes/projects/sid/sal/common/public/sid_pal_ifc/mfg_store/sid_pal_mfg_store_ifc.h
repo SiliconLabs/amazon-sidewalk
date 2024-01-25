@@ -93,8 +93,8 @@ typedef enum {
      * Applications may use identifiers outside of that range.
      */
     SID_PAL_MFG_STORE_CORE_VALUE_MAX = 4000,
-    /* The value 0xFFFF is reserved for internal use */
-    SID_PAL_MFG_STORE_VALUE_MAX = (UINT16_MAX - 1),
+    /* The value 0x6FFF is reserved for internal use */
+    SID_PAL_MFG_STORE_VALUE_MAX = 0x6FFE,
 } sid_pal_mfg_store_value_t;
 
 
@@ -176,6 +176,10 @@ typedef struct {
  */
 void sid_pal_mfg_store_init(sid_pal_mfg_store_region_t mfg_store_region);
 
+/** Deinitialize previously initialized mfg region.
+ *
+ */
+void sid_pal_mfg_store_deinit(void);
 
 /** Erase the manufacturing store.
  *  Because the manufacturing store is backed by flash memory, and flash memory

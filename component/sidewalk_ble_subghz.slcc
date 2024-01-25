@@ -9,16 +9,24 @@ root_path: "component"
 provides:
   - name: "sidewalk_ble_subghz"
 source:
+  - path: "sources/platform/sid_mcu/semtech/hal/sx126x/sx126x_hal.c"
+    condition:
+      - sl_sidewalk_radio_external
+  - path: "sources/platform/sid_mcu/semtech/hal/sx126x/sx126x_radio_fsk.c"
+    condition:
+      - sl_sidewalk_radio_external
+  - path: "sources/platform/sid_mcu/semtech/hal/sx126x/sx126x_radio_lora.c"
+    condition:
+      - sl_sidewalk_radio_external
+  - path: "sources/platform/sid_mcu/semtech/hal/sx126x/sx126x_radio.c"
+    condition:
+      - sl_sidewalk_radio_external
   - path: "sources/projects/sid/sal/silabs/sid_pal/ble_adapter/ble_adapter.c"
     condition:
       - sl_sidewalk_radio_ble
   - path: "sources/projects/sid/sal/silabs/sid_pal/serial_bus/sid_pal_serial_bus_spi.c"
     condition:
       - spidrv
-      - sl_sidewalk_radio_external
-  - path: "sources/projects/sid/sal/silabs/sid_pal/serial_bus/sid_pal_serial_bus_spi.c"
-    condition:
-      - spidrv_eusart
       - sl_sidewalk_radio_external
   - path: "sources/projects/sid/sal/silabs/sid_pal/efr32xgxx_radio/silabs/efr32xgxx.c"
     condition:
@@ -42,7 +50,6 @@ source:
   - path: "sources/projects/sid/sal/silabs/sid_pal/nvm3_manager.c"
   - path: "sources/projects/sid/sal/silabs/sid_pal/sid_pal_crypto_ifc.c"
   - path: "sources/projects/sid/sal/silabs/sid_pal/storage_kv.c"
-  - path: "sources/projects/sid/sal/silabs/sid_pal/swi.c"
   - path: "sources/projects/sid/sal/silabs/sid_pal/temperature.c"
   - path: "sources/projects/sid/sal/silabs/sid_pal/timer.c"
   - path: "sources/projects/sid/sal/silabs/sid_pal/uptime.c"
@@ -61,9 +68,17 @@ source:
   - path: "sources/phys/xg28/efr32xgxx_railcfg.c"
     condition:
     - device_generic_family_efr32xg28
+    unless:
+    - device_family_efr32sg28
+  - path: "sources/phys/sg28/efr32xgxx_railcfg.c"
+    condition:
+    - device_family_efr32sg28
   - path: "sources/phys/xg23/efr32xgxx_railcfg.c"
     condition:
     - device_generic_family_efr32xg23
+  - path: "sources/phys/xg25/efr32xgxx_railcfg.c"
+    condition:
+    - device_generic_family_efr32xg25
 
 template_file:
   - path: /ble_subghz/app_gpio_config.c.jinja
@@ -103,6 +118,9 @@ config_file:
   - path: ble_subghz/config/efr32xg23/app_gpio_config.h
     condition:
       - device_generic_family_efr32xg23
+  - path: ble_subghz/config/efr32xg25/app_gpio_config.h
+    condition:
+      - device_generic_family_efr32xg25
 
 include:
   - path: "includes/projects/sid/sal/common/public/sid_ifc/sid_ble_cfg"
@@ -197,13 +215,13 @@ include:
   - path: "includes/projects/sid/sal/common/internal/sid_clock_ifc"
     file_list:
     - path: "sid_clock_ifc.h"
-  - path: "includes/platform/sid_mcu/semtech/hal/sx126x"
+  - path: "includes/platform/sid_mcu/semtech/hal/sx126x/include"
     condition:
     - sl_sidewalk_radio_external
     file_list:
     - path: "sx126x_config.h"
     - path: "sx126x_radio.h"
-  - path: "includes/platform/sid_mcu/semtech/hal/sx126x/semtech"
+  - path: "includes/platform/sid_mcu/semtech/hal/sx126x/include/semtech"
     condition:
     - sl_sidewalk_radio_external
     file_list:
@@ -220,6 +238,9 @@ include:
   - path: "includes/projects/sid/sal/silabs/sid_pal/interfaces/timer_types"
     file_list:
     - path: "sid_pal_timer_types.h"
+  - path: "includes/projects/sid/sal/silabs/sid_pal/interfaces/platform_init_types"
+    file_list:
+    - path: "sid_pal_platform_init_types.h"
   - path: "includes/projects/sid/sal/silabs/sid_pal/ble_adapter/include"
     condition:
     - sl_sidewalk_radio_ble
@@ -233,9 +254,6 @@ include:
     - path: "sid_pal_serial_bus_efr32_spi_config.h"
       condition:
         - spidrv
-    - path: "sid_pal_serial_bus_efr32_spi_config.h"
-      condition:
-        - spidrv_eusart
   - path: "includes/projects/sid/sal/common/public/sid_pal_ifc/serial_bus_ifc"
     file_list:
     - path: "sid_pal_serial_bus_ifc.h"
@@ -256,6 +274,9 @@ define:
   - name: EFR32XG23
     condition:
       - device_generic_family_efr32xg23
+  - name: EFR32XG25
+    condition:
+      - device_generic_family_efr32xg25
   - name: MODULE_KG100S
     value: 2
     condition:
@@ -274,8 +295,6 @@ recommends:
   - id: bluetooth_feature_gatt
     condition: [device_supports_bluetooth]
   - id: bluetooth_feature_system
-    condition: [device_supports_bluetooth]
-  - id: bluetooth_feature_advertiser
     condition: [device_supports_bluetooth]
   - id: bluetooth_feature_connection
     condition: [device_supports_bluetooth]

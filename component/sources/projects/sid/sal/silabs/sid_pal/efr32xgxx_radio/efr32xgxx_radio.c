@@ -61,7 +61,7 @@ extern void efr32xgxx_radio_irq_process(void);
 //                          Static Function Declarations
 // -----------------------------------------------------------------------------
 static int32_t radio_efr32xgxx_platform_init(void);
-static int32_t sid_pal_radio_get_tx_power_range(int8_t *max_tx_power, int8_t *min_tx_power);
+static int32_t radio_efr32xgxx_get_tx_power_range(int8_t *max_tx_power, int8_t *min_tx_power);
 // -----------------------------------------------------------------------------
 //                                Global Variables
 // -----------------------------------------------------------------------------
@@ -121,8 +121,8 @@ int32_t sid_pal_radio_irq_process(void)
 int32_t sid_pal_radio_set_frequency(uint32_t freq)
 {
   int32_t err = RADIO_ERROR_NONE;
-  if(drv_ctx.regional_radio_param.param_region == RADIO_REGION_NA) {
-    if((freq < SIDEWALK_FSK_US_START_FREQUENCY) || (freq > SIDEWALK_FSK_US_END_FREQUENCY)) {
+  if (drv_ctx.regional_radio_param.param_region == RADIO_REGION_NA) {
+    if ((freq < SIDEWALK_FSK_US_START_FREQUENCY) || (freq > SIDEWALK_FSK_US_END_FREQUENCY)) {
       //invalid frequency
       return RADIO_ERROR_INVALID_PARAMS;
     }
@@ -142,23 +142,23 @@ int32_t sid_pal_radio_set_frequency(uint32_t freq)
 int32_t sid_pal_radio_get_max_tx_power(sid_pal_radio_data_rate_t data_rate, int8_t *tx_power)
 {
   int32_t err = RADIO_ERROR_NONE;
-  int8_t radio_max = 0 , radio_min = 0;
+  int8_t radio_max = 0, radio_min = 0;
 
   if (data_rate < SID_PAL_RADIO_DATA_RATE_50KBPS || data_rate > SID_PAL_RADIO_DATA_RATE_250KBPS) {
     err = RADIO_ERROR_INVALID_PARAMS;
     goto ret;
   }
   //get capable power range of the radio
-  if (sid_pal_radio_get_tx_power_range(&radio_max, &radio_min) != RADIO_ERROR_NONE) {
-     err = RADIO_ERROR_HARDWARE_ERROR;
-     goto ret;
+  if (radio_efr32xgxx_get_tx_power_range(&radio_max, &radio_min) != RADIO_ERROR_NONE) {
+    err = RADIO_ERROR_HARDWARE_ERROR;
+    goto ret;
   }
   (void) radio_min;
   *tx_power = radio_max;
 
   int8_t region_max = drv_ctx.regional_radio_param.max_tx_power[data_rate - 1];
   //region param is below the max capacity of radio
-  if(region_max < radio_max) {
+  if (region_max < radio_max) {
     *tx_power = region_max;
   }
 
@@ -171,33 +171,33 @@ int32_t sid_pal_radio_set_tx_power(int8_t power)
   int8_t max = 0, min = 0;
   int32_t err = RADIO_ERROR_NONE;
 
-  if(sid_pal_radio_get_tx_power_range(&max, &min) != RADIO_ERROR_NONE) {
+  if (radio_efr32xgxx_get_tx_power_range(&max, &min) != RADIO_ERROR_NONE) {
     err = RADIO_ERROR_HARDWARE_ERROR;
     goto ret;
   }
   if (power < min) {
-    SID_PAL_LOG_WARNING("tx power config is below of the allowed range [%d, %d] configured: %d dBm. Value will be capped.", min, max, power);
+    SID_PAL_LOG_WARNING("pal: tx pow is below of allowed range [%d, %d] set to %d dBm (capped)", min, max, power);
     power = min;
   }
   if (power > max) {
-    SID_PAL_LOG_WARNING("tx power config is above of the allowed range [%d, %d] configured: %d dBm. Value will be capped.", min, max, power);
+    SID_PAL_LOG_WARNING("pal: tx pow is above of allowed range [%d, %d] set to %d dBm (capped)", min, max, power);
     power = max;
   }
   if (power != g_tx_power) {
-      if (efr32xgxx_set_txpower(power) != RADIO_ERROR_NONE) {
-        err = RADIO_ERROR_HARDWARE_ERROR;
-        goto ret;
-      }
-      g_tx_power = power;
+    if (efr32xgxx_set_txpower(power) != RADIO_ERROR_NONE) {
+      err = RADIO_ERROR_HARDWARE_ERROR;
+      goto ret;
+    }
+    g_tx_power = power;
   }
 
- ret:
+  ret:
   return err;
 }
 
 /* TODO: SIDEWALK-889
  * implement sleep_ms period
-*/
+ */
 int32_t sid_pal_radio_sleep(uint32_t sleep_ms)
 {
   (void)sleep_ms;
@@ -330,7 +330,7 @@ int16_t sid_pal_radio_rssi(void)
   int16_t rssi;
 
   if (efr32xgxx_get_rssi_inst(&rssi) != RADIO_ERROR_NONE) {
-    SID_PAL_LOG_ERROR("could not get rssi");
+    SID_PAL_LOG_ERROR("pal: could not get rssi");
     rssi = INT16_MAX;
   }
 
@@ -355,7 +355,7 @@ int32_t sid_pal_radio_is_channel_free(uint32_t freq, int16_t threshold, uint32_t
   }
 
   if (delay_us < EFR32XGXX_MIN_CHANNEL_FREE_DELAY_US) {
-    SID_PAL_LOG_WARNING("min ch free delay raised (req: %ld, min: %ld)", delay_us, EFR32XGXX_MIN_CHANNEL_FREE_DELAY_US);
+    SID_PAL_LOG_WARNING("pal: min ch free delay raised (req: %ld, min: %ld)", delay_us, EFR32XGXX_MIN_CHANNEL_FREE_DELAY_US);
     delay_us = EFR32XGXX_MIN_CHANNEL_FREE_DELAY_US;
   }
 
@@ -461,12 +461,12 @@ int32_t sid_pal_radio_get_chan_noise(uint32_t freq, int16_t *noise)
     // Try to acquire valid rssi value
     sid_pal_delay_us(EFR32XGXX_MIN_CHANNEL_NOISE_DELAY_US);
     rssi = sid_pal_radio_rssi();
-    if(rssi == INT16_MAX) {
+    if (rssi == INT16_MAX) {
       // invalid acquisition
       err = RADIO_ERROR_HARDWARE_ERROR;
       goto ret;
     }
-      *noise += rssi;
+    *noise += rssi;
   }
 
   *noise /= EFR32XGXX_RADIO_NOISE_SAMPLE_SIZE;
@@ -476,7 +476,7 @@ int32_t sid_pal_radio_get_chan_noise(uint32_t freq, int16_t *noise)
     goto ret;
   }
 
-ret:
+  ret:
   return err;
 }
 
@@ -552,6 +552,11 @@ int32_t sid_pal_radio_init(sid_pal_radio_event_notify_t notify, sid_pal_radio_ir
   return err;
 }
 
+int32_t sid_pal_radio_deinit(void)
+{
+  return RADIO_ERROR_NONE;
+}
+
 // -----------------------------------------------------------------------------
 //                          Static Function Definitions
 // -----------------------------------------------------------------------------
@@ -573,7 +578,7 @@ static int32_t radio_efr32xgxx_platform_init(void)
   return err;
 }
 
-static int32_t sid_pal_radio_get_tx_power_range(int8_t *max_tx_power, int8_t *min_tx_power)
+static int32_t radio_efr32xgxx_get_tx_power_range(int8_t *max_tx_power, int8_t *min_tx_power)
 {
   efr32xgxx_get_txpower(max_tx_power, min_tx_power);
 

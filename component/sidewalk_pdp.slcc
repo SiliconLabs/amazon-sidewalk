@@ -1,0 +1,96 @@
+id: "sidewalk_pdp"
+label: "pdp production device provisioner"
+package: "Flex"
+description: "Production device provisioner API"
+category: PDP
+quality: evaluation
+root_path: "component"
+
+provides:
+  - name: "sidewalk_pdp"
+include:
+  - path: "sidewalk_pdp"
+    file_list:
+    - path: "sl_sidewalk_pdp_common.h"
+  - path: "sidewalk_pdp"
+    file_list:
+    - path: "sl_sidewalk_pdp_parser.h"
+  - path: "sidewalk_pdp"
+    file_list:
+    - path: "sl_sidewalk_pdp_priv_key_prov.h"
+  - path: "sidewalk_pdp"
+    file_list:
+    - path: "sl_sidewalk_pdp_on_dev_cert_gen.h"
+  - path: "includes/projects/sid/sal/common/public/sid_ifc/sid_on_dev_cert"
+    file_list:
+    - path: "sid_on_dev_cert.h"
+  - path: "includes/projects/sid/sal/common/public/sid_ifc/sid_error"
+    file_list:
+    - path: "sid_error.h"
+    - path: "sall_app_error.h"
+  - path: "includes/projects/sid/sal/common/public/sid_pal_ifc/mfg_store"
+    file_list:
+    - path: "sid_pal_mfg_store_ifc.h"
+  - path: "includes/projects/sid/sal/common/public/sid_pal_ifc/crypto"
+    file_list:
+    - path: "sid_pal_crypto_ifc.h"
+  - path: "includes/projects/sid/sal/common/public/sid_pal_ifc/log"
+    file_list:
+    - path: "sid_pal_log_ifc.h"
+  - path: "includes/projects/sid/sal/silabs/sid_pal/include/"
+    file_list:
+    - path: "nvm3_manager.h"
+  - path: "includes/projects/sid/sal/common/public/sid_pal_ifc/assert"
+    file_list:
+    - path: "sid_pal_assert_ifc.h"
+  - path: "includes/projects/sid/sal/common/internal/sid_clock_ifc"
+    file_list:
+    - path: "sid_clock_ifc.h"
+  - path: "includes/projects/sid/sal/common/internal/sid_time_ops/include"
+    file_list:
+    - path: "sid_time_ops.h"
+    - path: "sid_time_types.h"
+  - path: "includes/projects/sid/sal/common/public/sid_pal_ifc/uptime"
+    file_list:
+    - path: "sid_pal_uptime_ifc.h"
+  - path: "includes/projects/sid/sal/common/public/sid_pal_ifc/critical_region"
+    file_list:
+    - path: "sid_pal_critical_region_ifc.h"
+  - path: "includes/projects/sid/sal/common/public/sid_pal_ifc/uptime"
+    file_list:
+    - path: "sid_pal_uptime_ifc.h"
+source:
+  - path: "sidewalk_pdp/sl_sidewalk_pdp_parser.c"
+  - path: "sidewalk_pdp/sl_sidewalk_pdp_priv_key_prov.c"
+  - path: "sidewalk_pdp/sl_sidewalk_pdp_on_dev_cert_gen.c"
+  - path: "sources/projects/sid/sal/silabs/sid_pal/mfg_store.c"
+  - path: "sources/projects/sid/sal/silabs/sid_pal/sid_pal_crypto_ifc.c"
+  - path: "sources/projects/sid/sal/silabs/sid_pal/log.c"
+  - path: "sources/projects/sid/sal/silabs/sid_pal/nvm3_manager.c"
+  - path: "sources/projects/sid/sal/silabs/sid_pal/assert.c"
+  - path: "sources/projects/sid/sal/silabs/sid_pal/critical_region.c"
+  - path: "sources/projects/sid/sal/silabs/sid_pal/uptime.c"
+library:
+  - path: "ble_subghz/lib/pdp_sidlib/libsid_on_dev_cert.a"
+  - path: "ble_subghz/lib/pdp_sidlib/libsid_clock.a"
+  - path: "ble_subghz/lib/pdp_sidlib/libsid_time_ops.a"
+  - path: "ble_subghz/lib/pdp_sidlib/libsid_log_control.a"
+requires:
+  - name: "nvm3_default"
+  - name: "psa_crypto"
+  - name: "psa_crypto_ecc_secp256r1"
+  - name: "psa_driver"
+  - name: "psa_its"
+  - name: "psa_crypto_eddsa"
+  - name: "psa_crypto_ecdsa"
+  - name: "psa_crypto_sha256"
+define:
+  - name: "NVM3_DEFAULT_NVM_SIZE"
+    value: "24576"
+  - name: "SL_SID_PDP_FEATURE_ON"
+    value: "1"
+
+template_contribution:
+#---------------- Component Catalog ------------------
+  - name: component_catalog
+    value: sidewalk_pdp

@@ -1,0 +1,20 @@
+id: "sidewalk_pal"
+label: "Sidewalk PAL"
+package: "Flex"
+description: "Provides peripheral abstraction functions to sidewalk applications"
+category: Example|AWS IoT
+quality: production
+root_path: "component/sidewalk_pal"
+
+provides:
+  - name: "sidewalk_pal"
+source:
+  - path: "sl_sidewalk_pal_swi.c"
+config_file:
+  - path: "config/sl_sidewalk_pal_config.h"
+
+#-------------- Template Contribution ----------------
+template_contribution:
+#---------------- Component Catalog ------------------
+  - name: component_catalog
+    value: sidewalk_pal

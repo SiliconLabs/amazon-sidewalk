@@ -42,22 +42,22 @@ The list of available commands is output on the console with the associated help
 
 | Command | Description | Example |
 |---|---|---|
-| sid init \<link\> | Initialize Sidewalk stack for the selected communication link (fsk/css/ble). This function can only be called once. You have to use deinit to call it again. | > sid init fsk |
-| sid start \<link\> | Start Sidewalk stack for the selected communication link (fsk/css/ble). | > sid start fsk |
-| sid stop \<link\> | Stop Sidewalk stack for the selected communication link (fsk/css/ble). | > sid stop fsk |
+| sid init \<link(s)\> | Initialize Sidewalk stack for the selected communication link or links (ble/fsk/css). This function can only be called once. You have to use deinit to call it again. | > sid init ble+fsk |
+| sid start \<link(s)\> | Start Sidewalk stack for the selected communication link (ble/fsk/css). | > sid start ble+fsk+css |
+| sid stop \<link(s)\> | Stop Sidewalk stack for the selected communication link (ble/fsk/css). | > sid stop ble+fsk |
 | sid deinit | Deinitialize Sidewalk stack. | > sid deinit |
 | sid reset | Deregisters the Sidewalk device and restores settings to factory defaults. | > sid reset |
 | sid bleconnect | Initiate BLE connection request. | > sid bleconnect |
-| sid send \<message_type\> \<payload\> | Send a custom message to the cloud (Message types get/set/notify/response). | > sid send notify "my custom payload" |
+| sid send \<message_type\> \<payload\> [\<link(s)\>] | Send a custom message to the cloud (Message types get/set/notify/response). Link (ble/fsk/css) is only for auto connect mode. | > sid send notify ascii_encoded_payload ble+fsk+css |
 
 To start and switch between links, the command sequence is as follows:
 
-1. `sid init <your link>`
-2. `sid start <your link>`
-3. `sid stop <your link>`
+1. `sid init <your link(s)>`
+2. `sid start <your link(s)>`
+3. `sid stop <your link(s)>`
 4. `sid deinit`
 
-Only one link can be initialized and started at any time. You have to stop and deinitialize the current link before you can start a new one.
+Multiple links can be initialized and started. You have to stop and deinitialize the current link before you can start a new one.
 
 The `reset` command is used to unregister your device with the cloud. It can only be called on a registered AND time synced device. To unregister, the device needs to send a message to the cloud, so it needs to be synchronized with AWS.
 
@@ -87,6 +87,9 @@ Settings in the *sidewalk* section are directly related to the Sidewalk general 
 | sidewalk.region | R | string | US | Regulatory domain for Sidewalk |
 | sidewalk.state | R | string | READY<br>NOT READY<br>SECURE CHANNEL READY | Device state |
 | sidewalk.time | R | string | "1350808426.972536238" | Gives Endpoint time (GPS time format) |
+| sidewalk.link_connection_policy | RW | string | ml<br>ac | Link connection policy (multi-link or auto connect) |
+| sidewalk.multi_link_policy | RW | string | def<br>pow<br>per<br>lat<br>rel | Multi-link policy (default, power save, performance, latency or reliability) |
+| sidewalk.auto_connect_params | RW | string | "\<link\>,\<enabled\>,\<priority\>,\<timeout\>" | Auto connect parameters (ie: ble,1,10,30 or fsk,0,20,60) |
 
 ### *radio* Section Settings
 

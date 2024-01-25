@@ -45,12 +45,40 @@ extern "C" {
 // -----------------------------------------------------------------------------
 //                                   Includes
 // -----------------------------------------------------------------------------
+
 #include "nvm3.h"
 #include "sid_error.h"
 
 // -----------------------------------------------------------------------------
 //                              Macros and Typedefs
 // -----------------------------------------------------------------------------
+
+// -- DO NOT MODIFY START --
+
+#define SLI_SID_NVM3_KEY_BASE         0xA0000 // reserved for sidewalk in gsdk
+
+#define SLI_SID_NVM3_KEY_MIN_APP_REL  0x0
+#define SLI_SID_NVM3_KEY_MAX_APP_REL  0x1FFF
+#define SLI_SID_NVM3_KEY_MIN_KV_REL   0x0     // defined in sid_pal_storage_kv_internal_group_ids.h
+#define SLI_SID_NVM3_KEY_MAX_KV_REL   0x6FFF  // defined in sid_pal_storage_kv_internal_group_ids.h
+#define SLI_SID_NVM3_KEY_MIN_MFG_REL  0x0     // defined in sid_pal_mfg_store_ifc.h
+#define SLI_SID_NVM3_KEY_MAX_MFG_REL  0x6FFF  // defined in sid_pal_mfg_store_ifc.h
+
+#define SLI_SID_NVM3_KEY_MIN_APP      (SLI_SID_NVM3_KEY_BASE + SLI_SID_NVM3_KEY_MIN_APP_REL)        // 0xA0000 - 0xA1FFF
+#define SLI_SID_NVM3_KEY_MAX_APP      (SLI_SID_NVM3_KEY_BASE + SLI_SID_NVM3_KEY_MAX_APP_REL)
+#define SLI_SID_NVM3_KEY_MIN_KV       (SLI_SID_NVM3_KEY_MAX_APP + 1)                                // 0xA2000 - 0xA8FFF
+#define SLI_SID_NVM3_KEY_MAX_KV       (SLI_SID_NVM3_KEY_MAX_APP + 1 + SLI_SID_NVM3_KEY_MAX_KV_REL)
+#define SLI_SID_NVM3_KEY_MIN_MFG      (SLI_SID_NVM3_KEY_MAX_KV + 1)
+#define SLI_SID_NVM3_KEY_MAX_MFG      (SLI_SID_NVM3_KEY_MAX_KV + 1 + SLI_SID_NVM3_KEY_MAX_MFG_REL)  // 0xA9000 - 0xAFFFF
+
+#define SLI_SID_NVM3_KEY_BASE_APP     SLI_SID_NVM3_KEY_MIN_APP
+#define SLI_SID_NVM3_KEY_BASE_KV      SLI_SID_NVM3_KEY_MIN_KV
+#define SLI_SID_NVM3_KEY_BASE_MFG     SLI_SID_NVM3_KEY_MIN_MFG
+
+// -- DO NOT MODIFY END --
+
+#define SLI_SID_NVM3_VALIDATE_KEY(region, key)    ((uint32_t)key <= SLI_SID_NVM3_KEY_MAX_##region##_REL)
+#define SLI_SID_NVM3_MAP_KEY(region, key)         (SLI_SID_NVM3_KEY_BASE_##region + (uint32_t)key)
 
 // -----------------------------------------------------------------------------
 //                                Global Variables
@@ -61,40 +89,11 @@ extern "C" {
 // -----------------------------------------------------------------------------
 
 /*******************************************************************************
- * Initializes the nvm3 part to be able to used by MFG and KV Storage
- ******************************************************************************/
-void nvm3_manager_init(void);
-
-/*******************************************************************************
- * Get the nvm3 handle for the MFG Store
- * @return pointer to the MFG nvm3 handle
- ******************************************************************************/
-nvm3_Handle_t * get_mfg_nvm3_handle(void);
-
-/*******************************************************************************
- * Get the nvm3 handle for the KV Store
- * @return pointer to the KV nvm3 handle
- ******************************************************************************/
-nvm3_Handle_t * get_kv_nvm3_handle(void);
-
-/*******************************************************************************
- * Check if the init was successful
- * @return true is init was successful
- ******************************************************************************/
-bool is_mfg_nvm3_initialized(void);
-
-/*******************************************************************************
- * Check if the init was successful
- * @return true is init was successful
- ******************************************************************************/
-bool is_kv_nvm3_initialized(void);
-
-/*******************************************************************************
- * Translates Ecode_t type error codes from nvm3 to sid_error_t type
+ * Translates Ecode_t type error codes to sid_error_t type
  * @param[in] Ecode_t type error code from nvm3
  * @return translated error code to sid_error_t
  ******************************************************************************/
-sid_error_t nvm3_manager_nvm3_to_sid_error_code_translation(Ecode_t nvm3_return_code);
+sid_error_t sli_sid_nvm3_convert_ecode_to_sid_error(Ecode_t nvm3_return_code);
 
 #ifdef __cplusplus
 }

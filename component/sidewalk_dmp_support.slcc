@@ -1,0 +1,10 @@
+id: "sidewalk_dmp_support"
+label: "Sidewalk DMP support"
+package: "Flex"
+description: "Provides Sidewalk DMP support"
+category: Example|AWS IoT
+quality: production
+root_path: "component/sidewalk_dmp_support"
+
+provides:
+  - name: "sidewalk_dmp_support"

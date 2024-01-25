@@ -48,6 +48,13 @@ extern "C" {
  */
 sid_error_t sid_pal_storage_kv_init(void);
 
+/**
+ * Deinitialize the key value storage subsystem
+ *
+ * @retval SID_ERROR_NONE in any case
+ */
+sid_error_t sid_pal_storage_kv_deinit(void);
+
 
 /**
  * Get a value using its group and key IDs

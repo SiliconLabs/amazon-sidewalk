@@ -41,6 +41,7 @@
 #include "psa/crypto.h"
 #include "sid_pal_crypto_ifc.h"
 #include "sl_malloc.h"
+#include "sl_psa_crypto.h"
 #include <stdbool.h>
 #include <string.h>
 #include <stdlib.h>
@@ -560,6 +561,7 @@ static sid_error_t efr32_crypto_ecc_dsa(sid_pal_dsa_params_t *params)
           return SID_ERROR_GENERIC;
         }
       }
+
       if (params->algo == SID_PAL_EDDSA_ED25519) {
         ret = psa_sign_message(key_id,
                                PSA_ALG_PURE_EDDSA,
@@ -592,7 +594,7 @@ static sid_error_t efr32_crypto_ecc_dsa(sid_pal_dsa_params_t *params)
       }
       break;
 
-    case SID_PAL_CRYPTO_VERIFY: {
+    case SID_PAL_CRYPTO_VERIFY:
       if (params->algo == SID_PAL_EDDSA_ED25519) {
         ret = psa_import_key(&key_attr, params->key, params->key_size,
                              &key_id);
@@ -634,12 +636,12 @@ static sid_error_t efr32_crypto_ecc_dsa(sid_pal_dsa_params_t *params)
         return SID_ERROR_GENERIC;
       }
       break;
-    }
+
     default:
       return SID_ERROR_INVALID_ARGS;
   }
 
-  if ((params->mode != SID_PAL_CRYPTO_SIGN && secure_vault_enabled) || !secure_vault_enabled) {
+  if ((params->mode == SID_PAL_CRYPTO_VERIFY && secure_vault_enabled) || !secure_vault_enabled) {
     ret = psa_destroy_key(key_id);
     if (ret != PSA_SUCCESS) {
       return SID_ERROR_GENERIC;
@@ -724,26 +726,42 @@ static sid_error_t efr32_crypto_ecc_key_gen(sid_pal_ecc_key_gen_params_t *params
   psa_key_handle_t key_id;
   psa_key_attributes_t key_attr;
   size_t prk_size;
+  psa_key_usage_t key_usage_flags;
+  bool destroy_key_on_exit = true;
 
   key_attr = psa_key_attributes_init();
 
   switch (params->algo) {
     case SID_PAL_EDDSA_ED25519:
+      if (secure_vault_enabled) {
+        psa_set_key_id(&key_attr, params->algo); // hack: guarantees unique key ID for each curve
+        psa_set_key_lifetime(&key_attr,
+                             PSA_KEY_LIFETIME_FROM_PERSISTENCE_AND_LOCATION(PSA_KEY_LIFETIME_PERSISTENT, sl_psa_get_most_secure_key_location()));
+        key_usage_flags = PSA_KEY_USAGE_SIGN_MESSAGE;
+      } else {
+        key_usage_flags = PSA_KEY_USAGE_EXPORT | PSA_KEY_USAGE_SIGN_MESSAGE;
+      }
       psa_set_key_type(&key_attr,
                        PSA_KEY_TYPE_ECC_KEY_PAIR(PSA_ECC_FAMILY_TWISTED_EDWARDS));
       psa_set_key_bits(&key_attr, 255);
-      psa_set_key_usage_flags(&key_attr,
-                              PSA_KEY_USAGE_EXPORT | PSA_KEY_USAGE_SIGN_MESSAGE);
+      psa_set_key_usage_flags(&key_attr, key_usage_flags);
       psa_set_key_algorithm(&key_attr, PSA_ALG_PURE_EDDSA);
       break;
 
     case SID_PAL_ECDSA_SECP256R1:
+      if (secure_vault_enabled) {
+        psa_set_key_id(&key_attr, params->algo); // hack: guarantees unique key ID for each curve
+        psa_set_key_lifetime(&key_attr,
+                             PSA_KEY_LIFETIME_FROM_PERSISTENCE_AND_LOCATION(PSA_KEY_LIFETIME_PERSISTENT, sl_psa_get_most_secure_key_location()));
+        key_usage_flags = PSA_KEY_USAGE_SIGN_HASH;
+      } else {
+        key_usage_flags = PSA_KEY_USAGE_EXPORT | PSA_KEY_USAGE_SIGN_HASH;
+      }
       psa_set_key_type(&key_attr,
                        PSA_KEY_TYPE_ECC_KEY_PAIR(PSA_ECC_FAMILY_SECP_R1));
       psa_set_key_bits(&key_attr, 256);
-      psa_set_key_usage_flags(&key_attr,
-                              PSA_KEY_USAGE_EXPORT | PSA_KEY_USAGE_SIGN_HASH);
-      psa_set_key_algorithm(&key_attr, PSA_ALG_ECDSA_ANY);
+      psa_set_key_usage_flags(&key_attr, key_usage_flags);
+      psa_set_key_algorithm(&key_attr, PSA_ALG_ECDSA(PSA_ALG_SHA_256));
       break;
 
     case SID_PAL_ECDH_SECP256R1:
@@ -773,10 +791,14 @@ static sid_error_t efr32_crypto_ecc_key_gen(sid_pal_ecc_key_gen_params_t *params
     return SID_ERROR_GENERIC;
   }
 
-  ret = psa_export_key(key_id, params->prk, params->prk_size, &prk_size);
-  if (ret != PSA_SUCCESS || params->prk_size != prk_size) {
-    sid_ret = SID_ERROR_GENERIC;
-    goto clnup;
+  if (secure_vault_enabled && (params->algo == SID_PAL_EDDSA_ED25519 || params->algo == SID_PAL_ECDSA_SECP256R1)) {
+    memcpy(params->prk, &key_id, sizeof(psa_key_handle_t));
+  } else {
+    ret = psa_export_key(key_id, params->prk, params->prk_size, &prk_size);
+    if (ret != PSA_SUCCESS || params->prk_size != prk_size) {
+      sid_ret = SID_ERROR_GENERIC;
+      goto clnup;
+    }
   }
 
   size_t puk_size;
@@ -801,9 +823,15 @@ static sid_error_t efr32_crypto_ecc_key_gen(sid_pal_ecc_key_gen_params_t *params
   }
 
   clnup:
-  ret = psa_destroy_key(key_id);
-  if (ret != PSA_SUCCESS) {
-    sid_ret = SID_ERROR_GENERIC;
+  if (secure_vault_enabled && (params->algo == SID_PAL_EDDSA_ED25519 || params->algo == SID_PAL_ECDSA_SECP256R1)) {
+    destroy_key_on_exit = false; // do not destroy persistent keys stored in secure vault
+  }
+
+  if (destroy_key_on_exit) {
+    ret = psa_destroy_key(key_id);
+    if (ret != PSA_SUCCESS) {
+      sid_ret = SID_ERROR_GENERIC;
+    }
   }
 
   return sid_ret;
@@ -812,7 +840,7 @@ static sid_error_t efr32_crypto_ecc_key_gen(sid_pal_ecc_key_gen_params_t *params
 //                          Public Function Definitions
 // -----------------------------------------------------------------------------
 // extern this function and call it from the application
-// preferably before sid_pal_crypto_init()
+// strictly before sid_pal_crypto_init()
 void silabs_crypto_enable_sv(void)
 {
   secure_vault_enabled = true;
@@ -844,6 +872,10 @@ sid_error_t sid_pal_crypto_init()
 
 sid_error_t sid_pal_crypto_deinit(void)
 {
+  if (!hal_init_done) {
+    return SID_ERROR_NONE;
+  }
+
   efr32_crypto_deinit();
   hal_init_done = false;
 

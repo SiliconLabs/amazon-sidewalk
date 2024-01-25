@@ -7,7 +7,7 @@ category: Example|AWS IoT
 
 sdk_extension:
   - id: sidewalk
-    version: 1.2.2
+    version: 2.0.0
 
 source:
   - path: main.c
@@ -84,8 +84,6 @@ requires:
     condition: [device_supports_bluetooth]
   - name: bluetooth_feature_system
     condition: [device_supports_bluetooth]
-  - name: bluetooth_feature_advertiser
-    condition: [device_supports_bluetooth]
   - name: bluetooth_feature_connection
     condition: [device_supports_bluetooth]
   - name: bluetooth_feature_legacy_advertiser
@@ -98,6 +96,10 @@ requires:
 configuration:
   - name: SL_SIDEWALK_COMMON_DEFAULT_LINK_TYPE
     value: SL_SIDEWALK_LINK_FSK
+  - name: SL_SIDEWALK_COMMON_DEFAULT_LINK_CONNECTION_POLICY
+    value: SID_LINK_CONNECTION_POLICY_MULTI_LINK_MANAGER
+  - name: SL_SIDEWALK_COMMON_DEFAULT_MULTI_LINK_POLICY
+    value: SID_LINK_MULTI_LINK_POLICY_RELIABILITY
   - name: SL_BOARD_ENABLE_VCOM
     value: 0
   - name: SL_IOSTREAM_USART_VCOM_RESTRICT_ENERGY_MODE_TO_ALLOW_RECEPTION
@@ -107,15 +109,25 @@ configuration:
     value: 0
     condition: [iostream_uart]
   - name: configMINIMAL_STACK_SIZE
-    value: 1024
+    value: 2048
   - name: configTOTAL_HEAP_SIZE
-    value: 20384
+    value: 20480
   - name: SL_HEAP_SIZE
-    value: 13312
+    value: 15360
+  - name: SL_STACK_SIZE
+    value: 4096
   - name: NVM3_DEFAULT_NVM_SIZE
     value: 24576
+  - name: SL_BT_RTOS_LINK_LAYER_TASK_STACK_SIZE
+    value: 2000
+  - name: SL_BT_RTOS_HOST_STACK_TASK_STACK_SIZE
+    value: 4000
   - name: SL_BT_RTOS_EVENT_HANDLER_STACK_SIZE
-    value: 2048
+    value: 4000
+  - name: SL_BT_CONFIG_BUFFER_SIZE
+    value: 6300
+  - name: configTIMER_TASK_STACK_DEPTH
+    value: 1024
   - name: APP_LOG_AUTO_NL
     value: 1
   - name: SL_BT_CONFIG_MIN_TX_POWER
@@ -145,7 +157,7 @@ ui_hints:
 config_file:
   - path: ../../../tools/cloudformation/public/CF_minimal_sidewalk.json
     directory: sidewalk
-  - path: ../../sidewalk.asconf
+  - path: ../../configurator/fsk/sidewalk.asconf
     directory: sidewalk
   - path: ../../mfg.runconf
     directory: sidewalk

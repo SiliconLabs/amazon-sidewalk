@@ -1,0 +1,39 @@
+id: "sidewalk_board_support"
+label: "Sidewalk board support"
+package: "Flex"
+description: "Provides Sidewalk board support functionality"
+category: Example|AWS IoT
+quality: production
+root_path: "component/sidewalk_board_support"
+
+provides:
+  - name: "sidewalk_board_support"
+source:
+  - path: "sl_sidewalk_board_support.c"
+include:
+  - path: "."
+    file_list:
+    - "path": "sl_sidewalk_board_support.h"
+
+requires:
+  - name: "segment_lcd_driver"
+    condition: 
+      - hardware_board_has_segment_lcd
+  - name: "si70xx_driver"
+    condition:
+      - hardware_board_has_si70xx
+  - name: "tempdrv"
+    condition:
+      - device_has_emu_temp_sensor
+
+define:
+  - name: SL_BOARD_SUPPORT
+  - name: SL_SEGMENT_LCD
+    condition:
+      - segment_lcd_driver
+
+#-------------- Template Contribution ----------------
+template_contribution:
+#---------------- Component Catalog ------------------
+  - name: component_catalog
+    value: sidewalk_board_support

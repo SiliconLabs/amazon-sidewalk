@@ -85,13 +85,13 @@ static RAIL_ChannelConfigEntryAttr_t channelConfigEntryAttr = {
 };
 
 static const uint32_t phyInfo[] = {
-  15UL,
+  16UL,
   0x002D82D8UL, // 45.511111111111106
   (uint32_t) NULL,
   (uint32_t) irCalConfig,
   (uint32_t) timingConfig,
   0x00000000UL,
-  0UL,
+  8UL,
   0UL,
   50000UL,
   0x00F20101UL,
@@ -128,9 +128,9 @@ const uint32_t UNKNOWN_modemConfigBase[] = {
   /*    40C4 */ 0x00000000UL,
   /*    40C8 */ 0x00000000UL,
   0x00044108UL, 0x00004001UL,
-  /*    410C */ 0x000000FFUL,
+  /*    410C */ 0x00000CFFUL,
   /*    4110 */ 0x00004101UL,
-  /*    4114 */ 0x000001FFUL,
+  /*    4114 */ 0x00000DFFUL,
   0x1001C020UL, 0x0007F800UL,
   0x3001C020UL, 0x002801FEUL,
   0x0009C024UL, 0x00001300UL,
@@ -330,9 +330,9 @@ const uint32_t UNKNOWN_modemConfigBase[] = {
   0x32010150UL, 0x00510062UL,
   0x02020168UL, 0x00060010UL,
   /*    016C */ 0x00062000UL,
-  0x02010174UL, 0x01900169UL,
+  0x02010174UL, 0x0C100169UL,
   0x12010178UL, 0x001C0000UL,
-  0x32010178UL, 0x1FE00440UL,
+  0x32010178UL, 0xCFE00440UL,
   0x12010180UL, 0x00000779UL,
   0x32010180UL, 0x00000006UL,
   0x02020188UL, 0x00000090UL,
@@ -351,7 +351,7 @@ const RAIL_ChannelConfigEntry_t UNKNOWN_channels[] = {
     .channelSpacing = 200000,
     .physicalChannelOffset = 0,
     .channelNumberStart = 0,
-    .channelNumberEnd = 68,
+    .channelNumberEnd = 128,
     .maxPower = RAIL_TX_POWER_MAX,
     .attr = &channelConfigEntryAttr,
 #ifdef RADIO_CONFIG_ENABLE_CONC_PHY
@@ -369,7 +369,8 @@ const RAIL_ChannelConfig_t UNKNOWN_channelConfig = {
   .phyConfigDeltaSubtract = NULL,
   .configs = UNKNOWN_channels,
   .length = 1U,
-  .signature = 0UL
+  .signature = 1576096717UL,
+  .xtalFrequencyHz = 39000000UL,
 };
 
 const RAIL_ChannelConfig_t *efr32xgxx_channelConfigs[] = {

@@ -39,7 +39,7 @@ extern "C" {
 //                                   Includes
 // -----------------------------------------------------------------------------
 
-#include "sl_spidrv_eusart_exp_config.h"
+#include "sl_spidrv_exp_config.h"
 
 // -----------------------------------------------------------------------------
 //                              Macros and Typedefs
@@ -94,8 +94,8 @@ extern "C" {
 #define SL_NRESET_PORT                           gpioPortA
 #endif
 
-#define SL_SX_CS_PIN                             SL_SPIDRV_EUSART_EXP_CS_PIN
-#define SL_SX_CS_PORT                            SL_SPIDRV_EUSART_EXP_CS_PORT
+#define SL_SX_CS_PIN                             SL_SPIDRV_EXP_CS_PIN
+#define SL_SX_CS_PORT                            SL_SPIDRV_EXP_CS_PORT
 
 #ifdef __cplusplus
 }

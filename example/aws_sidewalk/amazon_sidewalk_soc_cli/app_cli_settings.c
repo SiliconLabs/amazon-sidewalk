@@ -55,7 +55,9 @@ static const app_settings_sidewalk_t app_settings_sidewalk_default = {
   .region = "US",
   .state = "NOT READY",
   .time = "0.0",
-  .auto_connect = "Not Supported"
+  .auto_connect_params[0] = { SID_LINK_TYPE_1, false, 0, 0 }, // ble
+  .auto_connect_params[1] = { SID_LINK_TYPE_2, false, 0, 0 }, // fsk
+  .auto_connect_params[2] = { SID_LINK_TYPE_3, false, 0, 0 }  // css
 };
 
 static const app_settings_radio_t app_settings_radio_default = {
@@ -248,19 +250,6 @@ const sl_sidewalk_cli_util_entry_t app_settings_entries[] =
     .description = "Endpoint time from sidewalk stack."
   },
   {
-    .key = "auto_connect",
-    .domain = app_settings_domain_sidewalk,
-    .value_size = AUTOCONNECT_STRING_SIZE + 1,
-    .input = SL_APP_SETTINGS_INPUT_FLAG_DEFAULT,
-    .output = SL_APP_SETTINGS_OUTPUT_FLAG_DEFAULT,
-    .value = &app_settings_sidewalk.auto_connect,
-    .input_enum_list = NULL,
-    .output_enum_list = NULL,
-    .set_handler = sl_app_settings_set_autoconnect,
-    .get_handler = sl_app_settings_get_autoconnect,
-    .description = "Not supported yet."
-  },
-  {
     .key = "wakeup_type",
     .domain = app_settings_domain_radio,
     .value_size = SL_APP_SETTINGS_VALUE_SIZE_UINT8,
@@ -298,6 +287,45 @@ const sl_sidewalk_cli_util_entry_t app_settings_entries[] =
     .set_handler = NULL,
     .get_handler = sl_app_settings_get_snr,
     .description = "Signal over Noise Ratio from last *downlink* received message."
+  },
+  {
+    .key = "link_connection_policy",
+    .domain = app_settings_domain_sidewalk,
+    .value_size = SL_APP_SETTINGS_VALUE_SIZE_UINT32,
+    .input = SL_APP_SETTINGS_INPUT_FLAG_DEFAULT,
+    .output = SL_APP_SETTINGS_OUTPUT_FLAG_DEFAULT,
+    .value = &app_settings_sidewalk.link_connection_policy,
+    .input_enum_list = NULL,
+    .output_enum_list = NULL,
+    .set_handler = sl_app_settings_set_link_connection_policy,
+    .get_handler = sl_app_settings_get_link_connection_policy,
+    .description = "Link connection policy (multi-link or auto connect)"
+  },
+  {
+    .key = "multi_link_policy",
+    .domain = app_settings_domain_sidewalk,
+    .value_size = SL_APP_SETTINGS_VALUE_SIZE_UINT32,
+    .input = SL_APP_SETTINGS_INPUT_FLAG_DEFAULT,
+    .output = SL_APP_SETTINGS_OUTPUT_FLAG_DEFAULT,
+    .value = &app_settings_sidewalk.multi_link_policy,
+    .input_enum_list = NULL,
+    .output_enum_list = NULL,
+    .set_handler = sl_app_settings_set_multi_link_policy,
+    .get_handler = sl_app_settings_get_multi_link_policy,
+    .description = "Multi-link policy (default, power, performance, latency or reliability)"
+  },
+  {
+    .key = "auto_connect_params",
+    .domain = app_settings_domain_sidewalk,
+    .value_size = AUTO_CONNECT_PARAMS_STRING_SIZE,
+    .input = SL_APP_SETTINGS_INPUT_FLAG_DEFAULT,
+    .output = SL_APP_SETTINGS_OUTPUT_FLAG_DEFAULT,
+    .value = &app_settings_sidewalk.auto_connect_params,
+    .input_enum_list = NULL,
+    .output_enum_list = NULL,
+    .set_handler = sl_app_settings_set_auto_connect_params,
+    .get_handler = sl_app_settings_get_auto_connect_params,
+    .description = "Auto connect parameters (link, enabled, priority, and timeout)"
   },
 #if defined(SL_BLE_SUPPORTED)
   {
@@ -792,27 +820,6 @@ sl_status_t sl_app_settings_get_time(char *value_str,
   return SID_ERROR_NONE;
 }
 
-sl_status_t sl_app_settings_get_autoconnect(char *value_str,
-                                            const char *key_str,
-                                            const sl_sidewalk_cli_util_entry_t *entry)
-{
-  sl_sidewalk_cli_util_settings_get_string(value_str, key_str, entry);
-
-  return SID_ERROR_NONE;
-}
-
-sl_status_t sl_app_settings_set_autoconnect(const char *value_str,
-                                            const char *key_str,
-                                            const sl_sidewalk_cli_util_entry_t *entry)
-{
-  (void)value_str;
-  (void)key_str;
-  (void)entry;
-  printf("Attribute not supported for now.");
-
-  return SL_STATUS_NOT_SUPPORTED;
-}
-
 sl_status_t sl_app_settings_get_frequency(char *value_str,
                                           const char *key_str,
                                           const sl_sidewalk_cli_util_entry_t *entry)
@@ -863,6 +870,272 @@ sl_status_t sl_app_settings_get_snr(char *value_str,
   sl_sidewalk_cli_util_settings_get_integer(value_str, key_str, entry);
 
   return SL_STATUS_OK;
+}
+
+sl_status_t sl_app_settings_set_link_connection_policy(const char *value_str,
+                                                       const char *key_str,
+                                                       const sl_sidewalk_cli_util_entry_t *entry)
+{
+  (void)key_str;
+  (void)entry;
+
+  // Check if value wanted to be set is correct
+  if (!(strcmp(value_str, (char *) "no\0") == 0
+        || strcmp(value_str, (char *) "ac\0") == 0
+        || strcmp(value_str, (char *) "ml\0") == 0)) {
+    printf("[ERROR] Trying to set an incorrect value for link connection policy: %s\n" \
+           "Correct values are: 'no' for none, 'ac' for auto connect or 'ml' for multi-link\n", value_str);
+    return SL_STATUS_FAIL;
+  } else { // User has chosen a valid argument ...
+    // Discard the end of line character '\0'
+    enum sid_link_connection_policy policy;
+    if ((strcmp(value_str, (char *) "ac\0")) == 0) {
+      policy = SID_LINK_CONNECTION_POLICY_AUTO_CONNECT;
+    } else if ((strcmp(value_str, (char *) "ml\0")) == 0) {
+      policy = SID_LINK_CONNECTION_POLICY_MULTI_LINK_MANAGER;
+    } else {
+      policy = SID_LINK_CONNECTION_POLICY_NONE;
+    }
+
+    // Trigger sidewalk main thread for setting the stack parameters
+    sl_app_trigger_set_link_connection_policy(policy);
+    return SL_STATUS_OK;
+  }
+}
+
+sl_status_t sl_app_settings_get_link_connection_policy(char *value_str,
+                                                       const char *key_str,
+                                                       const sl_sidewalk_cli_util_entry_t *entry)
+{
+  char s_link_connection_policy[3] = { 0 };
+  app_setting_cli_queue_t settings = { 0 };
+
+  sl_app_trigger_get_link_connection_policy();
+
+  // Wait for data from sidewalk thread
+  if (xQueueReceive(g_cli_event_queue, &settings, pdMS_TO_TICKS(2000))) {
+    switch (settings.link_connection_policy) {
+      case SID_LINK_CONNECTION_POLICY_AUTO_CONNECT:
+        sprintf(s_link_connection_policy, "%s", "ac\0");
+        break;
+
+      case SID_LINK_CONNECTION_POLICY_MULTI_LINK_MANAGER:
+        sprintf(s_link_connection_policy, "%s", "ml\0");
+        break;
+
+      default: // SID_LINK_CONNECTION_POLICY_NONE
+        sprintf(s_link_connection_policy, "%s", "no\0");
+        break;
+    }
+
+    sl_sidewalk_cli_util_set_string(s_link_connection_policy, key_str, entry);
+    sl_sidewalk_cli_util_settings_get_string(value_str, key_str, entry);
+    return SL_STATUS_OK;
+  } else {
+    printf("Error while trying to get link connection policy\n");
+    return SL_STATUS_FAIL;
+  }
+}
+
+sl_status_t sl_app_settings_set_multi_link_policy(const char *value_str,
+                                                  const char *key_str,
+                                                  const sl_sidewalk_cli_util_entry_t *entry)
+{
+  (void)key_str;
+  (void)entry;
+
+  // Check if value wanted to be set is correct
+  if (!(strcmp(value_str, (char *) "def\0") == 0 ||
+        strcmp(value_str, (char *) "pow\0") == 0 ||
+        strcmp(value_str, (char *) "per\0") == 0 ||
+        strcmp(value_str, (char *) "lat\0") == 0 ||
+        strcmp(value_str, (char *) "rel\0") == 0)) {
+    printf("[ERROR] Trying to set an incorrect value for multi-link policy: %s\n" \
+           "Correct values are: 'def' for default, 'pow' for power save, 'per' for performance, 'lat' for latency or 'rel' for reliability\n", value_str);
+    return SL_STATUS_FAIL;
+  } else { // User has chosen a valid argument ...
+    // Discard the end of line character '\0'
+    enum sid_link_multi_link_policy policy;
+    if ((strcmp(value_str, (char *) "pow\0")) == 0) {
+      policy = SID_LINK_MULTI_LINK_POLICY_POWER_SAVE;
+    } else if ((strcmp(value_str, (char *) "per\0")) == 0) {
+      policy = SID_LINK_MULTI_LINK_POLICY_PERFORMANCE;
+    } else if ((strcmp(value_str, (char *) "lat\0")) == 0) {
+      policy = SID_LINK_MULTI_LINK_POLICY_LATENCY;
+    } else if ((strcmp(value_str, (char *) "rel\0")) == 0) {
+      policy = SID_LINK_MULTI_LINK_POLICY_RELIABILITY;
+    } else {
+      policy = SID_LINK_MULTI_LINK_POLICY_DEFAULT;
+    }
+
+    // Trigger sidewalk main thread for setting the stack parameters
+    sl_app_trigger_set_multi_link_policy(policy);
+    return SL_STATUS_OK;
+  }
+}
+
+sl_status_t sl_app_settings_get_multi_link_policy(char *value_str,
+                                                  const char *key_str,
+                                                  const sl_sidewalk_cli_util_entry_t *entry)
+{
+  char s_multi_link_policy[MULTI_LINK_POLICY_SIZE + 1] = { 0 };
+  app_setting_cli_queue_t settings = { 0 };
+
+  sl_app_trigger_get_multi_link_policy();
+
+  // Wait for data from sidewalk thread
+  if (xQueueReceive(g_cli_event_queue, &settings, pdMS_TO_TICKS(2000))) {
+    switch (settings.multi_link_policy) {
+      case SID_LINK_MULTI_LINK_POLICY_POWER_SAVE:
+        sprintf(s_multi_link_policy, "%s", "pow\0");
+        break;
+
+      case SID_LINK_MULTI_LINK_POLICY_PERFORMANCE:
+        sprintf(s_multi_link_policy, "%s", "per\0");
+        break;
+
+      case SID_LINK_MULTI_LINK_POLICY_LATENCY:
+        sprintf(s_multi_link_policy, "%s", "lat\0");
+        break;
+
+      case SID_LINK_MULTI_LINK_POLICY_RELIABILITY:
+        sprintf(s_multi_link_policy, "%s", "rel\0");
+        break;
+
+      default: // SID_LINK_MULTI_LINK_POLICY_DEFAULT
+        sprintf(s_multi_link_policy, "%s", "def\0");
+        break;
+    }
+    
+    sl_sidewalk_cli_util_set_string(s_multi_link_policy, key_str, entry);
+    sl_sidewalk_cli_util_settings_get_string(value_str, key_str, entry);
+    return SL_STATUS_OK;
+  } else {
+    printf("Error while trying to get link connection policy\n");
+    return SL_STATUS_FAIL;
+  }
+}
+
+sl_status_t sl_app_settings_set_auto_connect_params(const char *value_str,
+                                                    const char *key_str,
+                                                    const sl_sidewalk_cli_util_entry_t *entry)
+{
+  (void)key_str;
+  (void)entry;
+
+  char *token = NULL;
+  uint8_t token_no = 1;
+  bool success = false;
+  enum sid_link_type link_type = SID_LINK_TYPE_ANY;
+  bool enabled = false;
+  uint8_t link_type_idx = 0;
+  uint32_t priority = 0;
+  uint32_t timeout = 0;
+
+  token = strtok((char *)value_str, ",");
+  while (token != NULL) {
+    if (token_no == 1) {
+      // link type
+      if (!strcmp(token, (char *) "ble\0")) {
+        link_type_idx = 0;
+        link_type = SID_LINK_TYPE_1;
+      } else if (!strcmp(token, (char *) "fsk\0")) {
+        link_type_idx = 1;
+        link_type = SID_LINK_TYPE_2;
+      } else if (!strcmp(token, (char *) "css\0")) {
+        link_type_idx = 2;
+        link_type = SID_LINK_TYPE_3;
+      } else {
+        printf("[ERROR] Trying to set an incorrect value for auto connect link type parameter: %s\n" \
+        "Correct values are: 'ble', 'fsk' or 'css'\n", token);
+        break;
+      }
+    } else if (token_no == 2) {
+      // link enabled
+      if (!strcmp(token, (char *) "1\0")) {
+        enabled = true;
+      } else if (!strcmp(token, (char *) "0\0")) {
+        enabled = false;
+      } else {
+        printf("[ERROR] Trying to set an incorrect value for auto connect link enabled parameter: %s\n" \
+        "Correct values are: '1', or '0'\n", token);
+        break;
+      }
+    } else if (token_no == 3) {
+      // link priority
+      char *end_ptr;
+      priority = strtoul(token, &end_ptr, 10);
+      if (priority == 0 && token == end_ptr) {
+          printf("[ERROR] Trying to set an incorrect value for auto connect priority parameter: %s\n" \
+          "Value must contain only numerical characters\n", token);
+          break;
+      }
+    } else if (token_no == 4) {
+      // link timeout
+      char *end_ptr;
+      timeout = strtoul(token, &end_ptr, 10);
+      if (timeout == 0 && token == end_ptr) {
+          printf("[ERROR] Trying to set an incorrect value for auto connect timeout parameter: %s\n" \
+          "Value must contain only numerical characters\n", token);
+          break;
+      }
+      success = true;
+      break;
+    } else {
+      printf("[ERROR] Trying to set an incorrect value for auto connect parameters: %s\n", value_str);
+      break;
+    }
+    token = strtok(NULL, ",");
+    token_no++;
+  }
+
+  if (!success) {
+    return SL_STATUS_FAIL;
+  }
+
+  app_settings_sidewalk.auto_connect_params[link_type_idx].link_type = link_type;
+  app_settings_sidewalk.auto_connect_params[link_type_idx].enable = enabled;
+  app_settings_sidewalk.auto_connect_params[link_type_idx].priority = priority;
+  app_settings_sidewalk.auto_connect_params[link_type_idx].connection_attempt_timeout_seconds = timeout;
+
+  // Trigger sidewalk main thread for setting the stack parameters
+  sl_app_trigger_set_auto_connect_params(app_settings_sidewalk.auto_connect_params[link_type_idx]);
+
+  return SL_STATUS_OK;
+}
+
+sl_status_t sl_app_settings_get_auto_connect_params(char *value_str,
+                                                    const char *key_str,
+                                                    const sl_sidewalk_cli_util_entry_t *entry)
+{
+  char auto_connect_params[AUTO_CONNECT_PARAMS_STRING_SIZE + 1] = { 0 };
+  app_setting_cli_queue_t settings = { 0 };
+
+  sl_app_trigger_get_auto_connect_params();
+
+  // Wait for data from sidewalk thread
+  if (xQueueReceive(g_cli_event_queue, &settings, pdMS_TO_TICKS(2000))) {
+    sprintf(auto_connect_params, "%s,%d,%d,%d,%s,%d,%d,%d,%s,%d,%d,%d",
+      "ble",
+      settings.auto_connect_params[0].enable,
+      settings.auto_connect_params[0].priority,
+      settings.auto_connect_params[0].connection_attempt_timeout_seconds,
+      "fsk",
+      settings.auto_connect_params[1].enable,
+      settings.auto_connect_params[1].priority,
+      settings.auto_connect_params[1].connection_attempt_timeout_seconds,
+      "css",
+      settings.auto_connect_params[2].enable,
+      settings.auto_connect_params[2].priority,
+      settings.auto_connect_params[2].connection_attempt_timeout_seconds);
+
+    sl_sidewalk_cli_util_set_string(auto_connect_params, key_str, entry);
+    sl_sidewalk_cli_util_settings_get_string(value_str, key_str, entry);
+    return SL_STATUS_OK;
+  } else {
+    printf("Error while trying to get auto connect parameters\n");
+    return SL_STATUS_FAIL;
+  }
 }
 
 #if defined(SL_FSK_SUPPORTED)

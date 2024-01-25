@@ -1,0 +1,18 @@
+<?xml version='1.0' encoding='ASCII'?>
+<model:MDescriptors xmlns:model="http://www.silabs.com/ss/Studio.ecore">
+  <descriptors name="amazon_sidewalk_dmp_soc_light" label="Amazon Sidewalk - SoC Dynamic Multiprotocol Light" description="This is a Dynamic Multiprotocol reference application demonstrating a light bulb that can be switched via Bluetooth. Can be tested with the EFR Connect mobile app. Simultaneously this sample application leverages the Amazon Sidewalk protocol to connect to the cloud using FSK radio layer. The application connects to AWS and send or receive messages on button push.&#10;">
+    <properties key="namespace" value="template.uc"/>
+    <properties key="keywords" value="universal\ configurator"/>
+    <properties key="solutionReferenceId" value="example.aws_sidewalk.amazon_sidewalk_dmp_soc_light.amazon_sidewalk_dmp_soc_light_family_efr32xg28.slcp"/>
+    <properties key="projectFilePaths" value="example/aws_sidewalk/amazon_sidewalk_dmp_soc_light/amazon_sidewalk_dmp_soc_light_family_efr32xg28.slcp"/>
+    <properties key="readmeFiles" value="documentation/example/amazon_sidewalk_dmp_soc_light/readme.md"/>
+    <properties key="boardCompatibility" value="brd2705a brd4400a brd4400b brd4400c brd4401a brd4401b brd4401c com.silabs.board.none"/>
+    <properties key="partCompatibility" value=".*efr32[fsz]g28b.*f[17].*"/>
+    <properties key="ideCompatibility" value="makefile-ide simplicity-ide visual-studio-code generic-template"/>
+    <properties key="toolchainCompatibility" value="gcc"/>
+    <properties key="category" value="Example|AWS IoT"/>
+    <properties key="quality" value="EVALUATION"/>
+    <properties key="stockConfigCompatibility" value="com.silabs.ss.framework.project.toolchain.core.default"/>
+    <properties key="filters" value="Device\ Type|SoC Ecosystem|Amazon Project\ Difficulty|Beginner Wireless\ Technology|Bluetooth Wireless\ Technology|Sidewalk"/>
+  </descriptors>
+</model:MDescriptors>

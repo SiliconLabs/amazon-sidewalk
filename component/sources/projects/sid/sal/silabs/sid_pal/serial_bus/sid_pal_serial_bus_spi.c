@@ -86,13 +86,7 @@ static sid_error_t bus_serial_spi_xfer(const struct sid_pal_serial_bus_iface *if
   sid_pal_gpio_write(client->client_selector, 0);
 
   for (size_t i = 0; i < xfer_size; i++) {
-#if defined(EFR32XG21)
     rx[i] = (uint8_t)USART_SpiTransfer(bus->config.peripheral_id, tx[i]);
-#elif defined(EFR32XG24) || defined(EFR32XG28)
-    rx[i] = (uint8_t)EUSART_Spi_TxRx(bus->config.peripheral_id, (uint16_t)tx[i]);
-#else
-#error UNSUPPORTED PLATFORM!
-#endif
   }
 
   sid_pal_gpio_write(client->client_selector, 1);

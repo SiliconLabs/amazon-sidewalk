@@ -7,7 +7,7 @@ category: Example|AWS IoT
 
 sdk_extension:
   - id: sidewalk
-    version: 1.2.2
+    version: 2.0.0
 
 source:
   - path: main.c
@@ -125,7 +125,7 @@ ui_hints:
 config_file:
   - path: ../../../tools/cloudformation/public/CF_minimal_sidewalk.json
     directory: sidewalk
-  - path: ../../sidewalk.asconf
+  - path: ../../configurator/fsk/sidewalk.asconf
     directory: sidewalk
   - path: ../../mfg.runconf
     directory: sidewalk

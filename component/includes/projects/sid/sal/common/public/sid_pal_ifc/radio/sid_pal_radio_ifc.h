@@ -197,6 +197,14 @@ typedef void ( *sid_pal_radio_irq_handler_t )( void );
  */
 int32_t sid_pal_radio_init(sid_pal_radio_event_notify_t notify, sid_pal_radio_irq_handler_t dio_irq_handler, sid_pal_radio_rx_packet_t *rx_packet);
 
+/** @brief Deinitialize the radio
+ *
+ *  Resets the radio and clear all configuration.
+ *
+ *  @retval  On success RADIO_ERROR_NONE, on error a negative number is returned
+ */
+int32_t sid_pal_radio_deinit(void);
+
 /** @brief Configure irq mask.
  *
  *  Configure the interrupts that the low level driver has to generate.

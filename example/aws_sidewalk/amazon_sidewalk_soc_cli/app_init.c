@@ -39,10 +39,8 @@
 #include "app_process.h"
 #include "FreeRTOS.h"
 #include "task.h"
-#include "sid_pal_crypto_ifc.h"
-#include "sid_pal_mfg_store_ifc.h"
-#include "sid_pal_storage_kv_ifc.h"
 #include "sid_pal_common_ifc.h"
+#include "sid_api.h"
 #include "sl_system_kernel.h"
 
 #if (defined(SL_FSK_SUPPORTED) || defined(SL_CSS_SUPPORTED))
@@ -52,9 +50,15 @@
 // -----------------------------------------------------------------------------
 //                              Macros and Typedefs
 // -----------------------------------------------------------------------------
-
 // Main task stack size
+#if defined(SL_EFR32XG24_LITE_SUPPORTED)
 #define MAIN_TASK_STACK_SIZE    (2048 / sizeof(configSTACK_DEPTH_TYPE))
+#else
+#define MAIN_TASK_STACK_SIZE    (4096 / sizeof(configSTACK_DEPTH_TYPE))
+#endif
+// -----------------------------------------------------------------------------
+//                          Public Function Prototypes
+// -----------------------------------------------------------------------------
 
 // -----------------------------------------------------------------------------
 //                          Static Function Declarations
@@ -69,6 +73,10 @@
 // -----------------------------------------------------------------------------
 
 // -----------------------------------------------------------------------------
+//                          Static Function Definitions
+// -----------------------------------------------------------------------------
+
+// -----------------------------------------------------------------------------
 //                          Public Function Definitions
 // -----------------------------------------------------------------------------
 
@@ -80,38 +88,21 @@ void app_init(void)
   // Initialize the Silabs system
   sl_system_init();
 
-  app_log_info("app: amazon_sidewalk_soc_bt_subghz_cli application started\n");
+  app_log_info("app: app started\n");
 
-  // Initialize the common PAL interfaces
-  sid_error_t ret = sid_pal_common_init();
-  if (ret != SID_ERROR_NONE) {
-    app_log_error("app: sidewalk platform common init failed, err: %d\n", ret);
-  }
-  app_assert(ret == SID_ERROR_NONE, "sidewalk platform common init failed\n");
-
-  // Initialize the Key-Value storage PAL module
-  ret = sid_pal_storage_kv_init();
-  if (ret != SID_ERROR_NONE) {
-    app_log_error("app: sidewalk key-value storage init failed: %d\n", ret);
-  }
-  app_assert(ret == SID_ERROR_NONE, "sidewalk key-value storage init failed\n");
-
-  // Initialize PAL crypto module
-  ret = sid_pal_crypto_init();
-  if (ret != SID_ERROR_NONE) {
-    app_log_error("app: sidewalk crypto init failed: %d\n", ret);
-  }
-  app_assert(ret == SID_ERROR_NONE, "sidewalk crypto init failed\n");
-
-  // Initialize the manufacturing region. It will load the data from there if there is.
-  sid_pal_mfg_store_region_t mfg_region_config;
-  sid_pal_mfg_store_init(mfg_region_config);
-
+  platform_parameters_t platform_parameters = {
 #if defined(SL_RADIO_NATIVE)
-  set_radio_efr32xgxx_device_config(get_radio_cfg());
+    .platform_init_parameters.radio_cfg = (radio_efr32xgxx_device_config_t *)get_radio_cfg(),
 #elif defined(SL_RADIO_EXTERNAL)
-  set_radio_sx126x_device_config(get_radio_cfg());
+    .platform_init_parameters.radio_cfg = (radio_sx126x_device_config_t *)get_radio_cfg(),
 #endif
+  };
+
+  sid_error_t ret_code = sid_platform_init(&platform_parameters);
+  if (ret_code != SID_ERROR_NONE) {
+    app_log_error("app: sid platform init err: %d\n", ret_code);
+  }
+  app_assert(ret_code == SID_ERROR_NONE, "app: sid platform init failed\n");
 
   // Application context creation
   static app_context_t app_context =
@@ -128,12 +119,8 @@ void app_init(void)
                                   &app_context,
                                   1,
                                   &app_context.main_task);
-  app_assert(status == pdPASS, "main task creation failed\n");
+  app_assert(status == pdPASS, "app: main task creation failed\n");
 
   // Start the kernel. Task(s) created in app_init() will start running.
   sl_system_kernel_start();
 }
-
-// -----------------------------------------------------------------------------
-//                          Static Function Definitions
-// -----------------------------------------------------------------------------

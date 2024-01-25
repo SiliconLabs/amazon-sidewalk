@@ -62,6 +62,8 @@ extern uint16_t cli_arg_uint16_t;
 extern uint8_t cli_arg_uint8_t;
 extern char cli_arg_str[64];
 extern char cli_arg_str_2[64];
+extern char cli_arg_str_3[16];
+extern struct sid_link_auto_connect_params cli_arg_sid_link_auto_connect_params;
 
 extern QueueHandle_t g_cli_event_queue;
 
@@ -150,6 +152,57 @@ void get_sidewalk_status(app_context_t *app_context);
  ******************************************************************************/
 void get_sidewalk_mtu(app_context_t *app_context, enum sid_link_type);
 
+/******************************************************************************
+ * Set - link connection policy
+ *
+ * @param[in] context The context which is applicable for the current application
+ * @param[in] policy Link connection policy
+ * @returns None
+ *****************************************************************************/
+void set_link_connection_policy(app_context_t *context, uint8_t policy);
+
+/******************************************************************************
+ * Get - link connection policy
+ *
+ * @param[in] context The context which is applicable for the current application
+ * @returns None
+ *****************************************************************************/
+void get_link_connection_policy(app_context_t *context);
+
+/******************************************************************************
+ * Set - multi-link policy
+ *
+ * @param[in] context The context which is applicable for the current application
+ * @param[in] policy Multi-link policy
+ * @returns None
+ *****************************************************************************/
+void set_multi_link_policy(app_context_t *context, uint8_t policy);
+
+/******************************************************************************
+ * Get - multi-link policy
+ *
+ * @param[in] context The context which is applicable for the current application
+ * @returns None
+ *****************************************************************************/
+void get_multi_link_policy(app_context_t *context);
+
+/******************************************************************************
+ * Set - auto connect parameters
+ *
+ * @param[in] context The context which is applicable for the current application
+ * @param[in] params Auto connect parameters
+ * @returns None
+ *****************************************************************************/
+void set_auto_connect_params(app_context_t *context, struct sid_link_auto_connect_params params);
+
+/******************************************************************************
+ * Get - auto connect parameters
+ *
+ * @param[in] context The context which is applicable for the current application
+ * @returns None
+ *****************************************************************************/
+void get_auto_connect_params(app_context_t *context);
+
 /*******************************************************************************
  * Function to get sidewalk CSS dev profile id
  *
@@ -187,9 +240,10 @@ void set_sidewalk_fsk_dev_prof_id(app_context_t *app_context);
  *
  * @param[in] message_type_str
  * @param[in] message_str
+ * @param[in] link_type
  * @returns None
  ******************************************************************************/
-void sl_app_trigger_sid_send(char *message_type_str, char *message_str);
+void sl_app_trigger_sid_send(char *message_type_str, char *message_str, char *link_type);
 
 /*******************************************************************************
  * Function to trigger sid reset
@@ -344,14 +398,6 @@ void sl_app_trigger_send_counter_update(void);
 void sl_app_trigger_factory_reset(void);
 
 /*******************************************************************************
- * Application function to send
- *
- * @param[in] len
- * @returns None
- ******************************************************************************/
-void sl_app_trigger_send(uint32_t len);
-
-/*******************************************************************************
  * Application function to trigger get time
  *
  * @param[in] void
@@ -374,6 +420,51 @@ void sl_app_trigger_get_status(void);
  * @returns None
  ******************************************************************************/
 void sl_app_trigger_get_mtu(enum sid_link_type link_type);
+
+/*******************************************************************************
+ * Application function to trigger set link connection policy
+ *
+ * @param[in] policy Link connection policy
+ * @returns None
+ ******************************************************************************/
+void sl_app_trigger_set_link_connection_policy(enum sid_link_connection_policy policy);
+
+/*******************************************************************************
+ * Application function to trigger get link connection policy
+ *
+ * @returns None
+ ******************************************************************************/
+void sl_app_trigger_get_link_connection_policy(void);
+
+/*******************************************************************************
+ * Application function to trigger set multi-link policy
+ *
+ * @param[in] policy Multi-link policy
+ * @returns None
+ ******************************************************************************/
+void sl_app_trigger_set_multi_link_policy(enum sid_link_multi_link_policy policy);
+
+/*******************************************************************************
+ * Application function to trigger get multi-link policy
+ *
+ * @returns None
+ ******************************************************************************/
+void sl_app_trigger_get_multi_link_policy(void);
+
+/*******************************************************************************
+ * Application function to trigger set auto connect parameters
+ *
+ * @param[in] params: Auto connect parameters
+ * @returns None
+ ******************************************************************************/
+void sl_app_trigger_set_auto_connect_params(struct sid_link_auto_connect_params params);
+
+/*******************************************************************************
+ * Application function to trigger get auto connect parameters
+ *
+ * @returns None
+ ******************************************************************************/
+void sl_app_trigger_get_auto_connect_params(void);
 
 /*******************************************************************************
  * Function to set sidewalk dev prof id

@@ -201,7 +201,7 @@ sid_error_t sid_pal_timer_arm(sid_pal_timer_t * timer,
   }
   int status = sl_sleeptimer_start_timer(&(timer->sleeptimer_handle), timeout_tick, sleeptimer_callback, timer, priority, 0);
   if (status != SID_ERROR_NONE) {
-    SID_PAL_LOG_ERROR("Failed to arm timer!");
+    SID_PAL_LOG_ERROR("pal: arm timer failed");
   }
   return SID_ERROR_NONE;
 }

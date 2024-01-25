@@ -22,7 +22,10 @@
  * @brief On-Device Certificate Generation Library
  *
  * @details This library is used for generating Sidewalk certificates on-device
- *          during manufacturing and writing the device manufacturing page
+ *          during manufacturing and writing the device manufacturing page.
+ *
+ * @note The user must ensure that the MFG storage and crypto library are initialized
+ * before using this library. See functions sid_pal_mfg_store_init() and sid_pal_crypto_init().
  *
  * Library usage scenario:
  *

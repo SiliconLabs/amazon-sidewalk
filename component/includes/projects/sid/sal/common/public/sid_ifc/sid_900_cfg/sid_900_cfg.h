@@ -82,6 +82,14 @@ enum sid_link2_rx_window_separation_ms {
     X <= SID_LINK2_RX_WINDOW_SEPARATION_7 && X >= SID_LINK2_RX_WINDOW_SEPARATION_1 && \
     (X == SID_LINK2_RX_WINDOW_SEPARATION_1 || X % (SID_LINK2_RX_WINDOW_SEPARATION_2) == 0))
 
+
+/**
+ * Describes the Link Allocation Duration for FSK-WAN Link Profile 2 (Allocated)
+ */
+enum sid_link2_allocation_duration {
+    SID_LINK2_ALLOCATION_DURATION_1HOUR = 0
+};
+
 /**
  * Describes the frequency of RX windows opened by the device (in ms) in asynchronous mode
  */
@@ -144,6 +152,8 @@ struct sid_link_type_2_registration_config {
 struct sid_sub_ghz_links_config {
     /** Enable transmission of Sub-Ghz link metrics to Sidewalk cloud services */
     bool enable_link_metrics;
+    /** sar dcr config*/
+    uint8_t sar_dcr;
     struct sid_link_type_2_registration_config registration_config;
 };
 

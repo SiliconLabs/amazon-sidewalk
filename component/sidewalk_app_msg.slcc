@@ -1,0 +1,33 @@
+id: "sidewalk_app_msg"
+label: "Sidewalk application message structure"
+package: "Flex"
+description: "Provides Sidewalk application message structure functions"
+category: Example|AWS IoT
+quality: production
+root_path: "component/sidewalk_app_msg"
+
+provides:
+  - name: "sidewalk_app_msg"
+source:
+  - path: "sl_sidewalk_app_msg_core.c"
+  - path: "cmd_classes/sl_sidewalk_app_msg_dev_mgmt.c"
+  - path: "cmd_classes/sl_sidewalk_app_msg_dmp_soc_light.c"
+  - path: "cmd_classes/sl_sidewalk_app_msg_sid.c"
+include:
+  - path: "."
+    file_list:
+    - "path": "sl_sidewalk_app_msg_core.h"
+    - "path": "sl_sidewalk_app_msg_cmd_cls.h"
+  - path: "cmd_classes"
+    file_list:
+    - "path": "sl_sidewalk_app_msg_dev_mgmt.h"
+    - "path": "sl_sidewalk_app_msg_sid.h"
+    - "path": "sl_sidewalk_app_msg_dmp_soc_light.h"
+define:
+  - name: SL_SID_APP_MSG_PRESENT
+
+#-------------- Template Contribution ----------------
+template_contribution:
+#---------------- Component Catalog ------------------
+  - name: component_catalog
+    value: sidewalk_app_msg

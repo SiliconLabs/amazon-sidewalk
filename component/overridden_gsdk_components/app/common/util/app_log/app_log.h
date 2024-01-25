@@ -38,6 +38,10 @@
 #include "app_log_config.h"
 #include "sl_status.h"
 
+#if defined(SL_SIDEWALK_RTT_PRESENT)
+#include "SEGGER_RTT_Conf.h"
+#endif
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -201,12 +205,23 @@ uint8_t app_log_filter_mask_get(void);
   sl_iostream_printf(app_log_iostream, __VA_ARGS__); \
   _ENABLE_FORMAT_ZERO_LENGTH_WARNING
 
+#if defined(SL_SIDEWALK_RTT_PRESENT)
+#define app_log_append_level(level, ...) \
+  do {                                   \
+    if (app_log_check_level(level)) {    \
+      SEGGER_RTT_LOCK();                 \
+      app_log_append(__VA_ARGS__);       \
+      SEGGER_RTT_UNLOCK();               \
+    }                                    \
+  } while (0)
+#else
 #define app_log_append_level(level, ...) \
   do {                                   \
     if (app_log_check_level(level)) {    \
       app_log_append(__VA_ARGS__);       \
     }                                    \
   } while (0)
+#endif
 
 #if defined(APP_LOG_COLOR_ENABLE) && APP_LOG_COLOR_ENABLE
 
@@ -302,6 +317,19 @@ uint8_t app_log_filter_mask_get(void);
     _app_log_status_string(sc);           \
   } while (0)
 
+#if defined(SL_SIDEWALK_RTT_PRESENT)
+#define app_log(...)                           \
+  do {                                         \
+    SEGGER_RTT_LOCK();                         \
+    _app_log_print_color(APP_LOG_LEVEL_DEBUG); \
+    _app_log_time();                           \
+    _app_log_counter();                        \
+    _app_log_print_trace();                    \
+    app_log_append(__VA_ARGS__);               \
+    _app_log_nl_prefix();                      \
+    SEGGER_RTT_UNLOCK();                       \
+  } while (0)
+#else
 #define app_log(...)                           \
   do {                                         \
     _app_log_print_color(APP_LOG_LEVEL_DEBUG); \
@@ -311,10 +339,27 @@ uint8_t app_log_filter_mask_get(void);
     app_log_append(__VA_ARGS__);               \
     _app_log_nl_prefix();                      \
   } while (0)
+#endif
 
+#if defined(SL_SIDEWALK_RTT_PRESENT)
 #define app_log_level(level, ...)      \
   do {                                 \
-    if (app_log_check_level(level)) { \
+    if (app_log_check_level(level)) {  \
+      SEGGER_RTT_LOCK();               \
+      _app_log_print_color(level);     \
+      _app_log_time();                 \
+      _app_log_counter();              \
+      _app_log_print_prefix(level);    \
+      _app_log_print_trace();          \
+      app_log_append(__VA_ARGS__);     \
+      _app_log_nl_prefix();            \
+      SEGGER_RTT_UNLOCK();             \
+    }                                  \
+  } while (0)
+#else
+#define app_log_level(level, ...)      \
+  do {                                 \
+    if (app_log_check_level(level)) {  \
       _app_log_print_color(level);     \
       _app_log_time();                 \
       _app_log_counter();              \
@@ -324,10 +369,28 @@ uint8_t app_log_filter_mask_get(void);
       _app_log_nl_prefix();            \
     }                                  \
   } while (0)
+#endif
 
+#if defined(SL_SIDEWALK_RTT_PRESENT)
 #define app_log_status_level_f(level, sc, ...)                  \
   do {                                                          \
-    if (!(sc == SL_STATUS_OK) && app_log_check_level(level)) { \
+    if (!(sc == SL_STATUS_OK) && app_log_check_level(level)) {  \
+      SEGGER_RTT_LOCK();                                        \
+      _app_log_print_color(level);                              \
+      _app_log_time();                                          \
+      _app_log_counter();                                       \
+      _app_log_print_prefix(level);                             \
+      _app_log_print_trace();                                   \
+      _app_log_print_status(sc);                                \
+      app_log_append(__VA_ARGS__);                              \
+      _app_log_nl_prefix();                                     \
+      SEGGER_RTT_UNLOCK();                                      \
+    }                                                           \
+  } while (0)
+#else
+#define app_log_status_level_f(level, sc, ...)                  \
+  do {                                                          \
+    if (!(sc == SL_STATUS_OK) && app_log_check_level(level)) {  \
       _app_log_print_color(level);                              \
       _app_log_time();                                          \
       _app_log_counter();                                       \
@@ -338,6 +401,7 @@ uint8_t app_log_filter_mask_get(void);
       _app_log_nl_prefix();                                     \
     }                                                           \
   } while (0)
+#endif
 
 #define app_log_status_level(level, sc) \
   app_log_status_level_f(level,         \
@@ -354,20 +418,71 @@ uint8_t app_log_filter_mask_get(void);
                          sc,                 \
                          __VA_ARGS__)
 
+#if defined(SL_SIDEWALK_RTT_PRESENT)
 #define app_log_hexdump_level_s(level, separator, p_data, len) \
   do {                                                         \
     if (app_log_check_level(level)) {                          \
-      for (uint32_t i = 0; i < (uint32_t)len; i++) {           \
+      SEGGER_RTT_LOCK();                                       \
+      uint8_t *tmp = (uint8_t *)p_data;                        \
+      _app_log_print_color(level);                             \
+      _app_log_time();                                         \
+      _app_log_counter();                                      \
+      _app_log_print_prefix(level);                            \
+      _app_log_print_trace();                                  \
+      for (uint32_t i = 0; i < len; i++) {                     \
         if (i > 0) {                                           \
           app_log_append(separator);                           \
         }                                                      \
         app_log_append(APP_LOG_HEXDUMP_PREFIX);                \
         app_log_append(APP_LOG_HEXDUMP_FORMAT,                 \
-                       (int) ((uint8_t *)p_data)[i]);          \
+                       (int) tmp[i]);                          \
       }                                                        \
+      _app_log_nl_prefix();                                    \
+      SEGGER_RTT_UNLOCK();                                     \
     }                                                          \
   } while (0)
+#else
+#define app_log_hexdump_level_s(level, separator, p_data, len) \
+  do {                                                         \
+    if (app_log_check_level(level)) {                          \
+      uint8_t *tmp = (uint8_t *)p_data;                        \
+      _app_log_print_color(level);                             \
+      _app_log_time();                                         \
+      _app_log_counter();                                      \
+      _app_log_print_prefix(level);                            \
+      _app_log_print_trace();                                  \
+      for (uint32_t i = 0; i < len; i++) {                     \
+        if (i > 0) {                                           \
+          app_log_append(separator);                           \
+        }                                                      \
+        app_log_append(APP_LOG_HEXDUMP_PREFIX);                \
+        app_log_append(APP_LOG_HEXDUMP_FORMAT,                 \
+                       (int) tmp[i]);                          \
+      }                                                        \
+      _app_log_nl_prefix();                                    \
+    }                                                          \
+  } while (0)
+#endif
 
+#if defined(SL_SIDEWALK_RTT_PRESENT)
+#define app_log_hexdump_reverse_level_s(level, separator, p_data, len) \
+  do {                                                                 \
+    if (app_log_check_level(level)) {                                  \
+      SEGGER_RTT_LOCK();                                               \
+      for (uint32_t i = ((uint32_t)len) - 1;; i--) {                   \
+        app_log_append(APP_LOG_HEXDUMP_PREFIX);                        \
+        app_log_append(APP_LOG_HEXDUMP_FORMAT,                         \
+                       (int) ((uint8_t *)p_data)[i]);                  \
+        if (i > 0) {                                                   \
+          app_log_append(separator);                                   \
+        } else {                                                       \
+          break;                                                       \
+        }                                                              \
+      }                                                                \
+      SEGGER_RTT_UNLOCK();                                             \
+    }                                                                  \
+  } while (0)
+#else
 #define app_log_hexdump_reverse_level_s(level, separator, p_data, len) \
   do {                                                                 \
     if (app_log_check_level(level)) {                                  \
@@ -383,7 +498,23 @@ uint8_t app_log_filter_mask_get(void);
       }                                                                \
     }                                                                  \
   } while (0)
+#endif
 
+#if defined(SL_SIDEWALK_RTT_PRESENT)
+#define app_log_array_dump_level_s(level, separator, p_data, len, format) \
+  do {                                                                    \
+    if (app_log_check_level(level)) {                                     \
+      SEGGER_RTT_LOCK();                                                  \
+      for (uint32_t i = 0; i < (uint32_t)len; i++) {                      \
+        if (i > 0) {                                                      \
+          app_log_append(separator);                                      \
+        }                                                                 \
+        app_log_append(format, p_data[i]);                                \
+      }                                                                   \
+      SEGGER_RTT_UNLOCK();                                                \
+    }                                                                     \
+  } while (0)
+#else
 #define app_log_array_dump_level_s(level, separator, p_data, len, format) \
   do {                                                                    \
     if (app_log_check_level(level)) {                                     \
@@ -395,7 +526,23 @@ uint8_t app_log_filter_mask_get(void);
       }                                                                   \
     }                                                                     \
   } while (0)
+#endif
 
+#if defined(SL_SIDEWALK_RTT_PRESENT)
+#define app_log_array_dump_reverse_level_s(level, separator, p_data, len, format) \
+  do {                                                                            \
+    if (app_log_check_level(level)) {                                             \
+      SEGGER_RTT_LOCK();                                                          \
+      for (uint32_t i = 0; i < (uint32_t)len; i++) {                              \
+        if (i > 0) {                                                              \
+          app_log_append(separator);                                              \
+        }                                                                         \
+        app_log_append(format, p_data[(uint32_t)len - i - 1]);                    \
+      }                                                                           \
+      SEGGER_RTT_UNLOCK();                                                        \
+    }                                                                             \
+  } while (0)
+#else
 #define app_log_array_dump_reverse_level_s(level, separator, p_data, len, format) \
   do {                                                                            \
     if (app_log_check_level(level)) {                                             \
@@ -407,7 +554,25 @@ uint8_t app_log_filter_mask_get(void);
       }                                                                           \
     }                                                                             \
   } while (0)
+#endif
 
+#if defined(SL_SIDEWALK_RTT_PRESENT)
+#define app_log_custom_array_dump_level_s(level, separator, array, array_len, array_data_type, iterator_ptr, format, ...) \
+  do {                                                                                                                    \
+    if (app_log_check_level(level)) {                                                                                     \
+      SEGGER_RTT_LOCK();                                                                                                  \
+      array_data_type *iterator_ptr = (array_data_type *)array;                                                           \
+      for (uint32_t i = 0; i < (uint32_t)array_len; i++) {                                                                \
+        if (i > 0) {                                                                                                      \
+          app_log_append(separator);                                                                                      \
+        }                                                                                                                 \
+        app_log_append(format, __VA_ARGS__);                                                                              \
+        iterator_ptr++;                                                                                                   \
+      }                                                                                                                   \
+      SEGGER_RTT_UNLOCK();                                                                                                \
+    }                                                                                                                     \
+  } while (0)
+#else
 #define app_log_custom_array_dump_level_s(level, separator, array, array_len, array_data_type, iterator_ptr, format, ...) \
   do {                                                                                                                    \
     if (app_log_check_level(level)) {                                                                                     \
@@ -421,7 +586,25 @@ uint8_t app_log_filter_mask_get(void);
       }                                                                                                                   \
     }                                                                                                                     \
   } while (0)
+#endif
 
+#if defined(SL_SIDEWALK_RTT_PRESENT)
+#define app_log_custom_array_dump_reverse_level_s(level, separator, array, array_len, array_data_type, iterator_ptr, format, ...) \
+  do {                                                                                                                            \
+    if (app_log_check_level(level)) {                                                                                             \
+      SEGGER_RTT_LOCK();                                                                                                          \
+      array_data_type *iterator_ptr = (array_data_type *)(&array + 1) - 1;                                                        \
+      for (uint32_t i = 0; i < (uint32_t)array_len; i++) {                                                                        \
+        if (i > 0) {                                                                                                              \
+          app_log_append(separator);                                                                                              \
+        }                                                                                                                         \
+        app_log_append(format, __VA_ARGS__);                                                                                      \
+        iterator_ptr--;                                                                                                           \
+      }                                                                                                                           \
+      SEGGER_RTT_UNLOCK();                                                                                                        \
+    }                                                                                                                             \
+  } while (0)
+#else
 #define app_log_custom_array_dump_reverse_level_s(level, separator, array, array_len, array_data_type, iterator_ptr, format, ...) \
   do {                                                                                                                            \
     if (app_log_check_level(level)) {                                                                                             \
@@ -435,6 +618,7 @@ uint8_t app_log_filter_mask_get(void);
       }                                                                                                                           \
     }                                                                                                                             \
   } while (0)
+#endif
 
 #else // APP_LOG_ENABLE
 

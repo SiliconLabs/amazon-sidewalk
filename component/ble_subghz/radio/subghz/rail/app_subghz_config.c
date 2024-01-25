@@ -41,7 +41,6 @@
 #include <efr32xgxx_config.h>
 #include <gpio.h>
 #include "app_subghz_config.h"
-#include "sl_rail_util_pa_config.h"
 #include <mfg_store_app_values.h>
 
 // -----------------------------------------------------------------------------
@@ -67,6 +66,8 @@
 #define RADIO_RX_LNA_GAIN               0
 #define RADIO_MAX_CAD_SYMBOL            SID_PAL_RADIO_LORA_CAD_04_SYMBOL
 #define RADIO_ANT_GAIN(X)               ((X) * 100)
+
+#define SAR_DCR_CONFIG                  (100)
 
 // -----------------------------------------------------------------------------
 //                          Static Function Declarations
@@ -122,6 +123,7 @@ const radio_efr32xgxx_device_config_t * get_radio_cfg(void)
 
 struct sid_sub_ghz_links_config sub_ghz_link_config = {
   .enable_link_metrics = true,
+  .sar_dcr = SAR_DCR_CONFIG,
   .registration_config = {
     .enable = true,
     .periodicity_s = UINT32_MAX,

@@ -38,18 +38,28 @@
 // -----------------------------------------------------------------------------
 //                                   Includes
 // -----------------------------------------------------------------------------
+
 #include <sid_pal_mfg_store_ifc.h>
 #include <sid_pal_log_ifc.h>
 #include <stdalign.h>
 #include <stdint.h>
 #include <string.h>
-#include <nvm3_manager.h>
-#include "em_system.h"
-#include "assert.h"
+#include "nvm3_manager.h"
+#include "em_system.h" // for SYSTEM_GetUnique
+#include "sl_malloc.h"
+
+/* Manufacturing store write capability is not enabled by default. It
+ * is currently required for internal diagnostic apps and for SWAT
+ */
+#if (defined (HALO_ENABLE_DIAGNOSTICS) && HALO_ENABLE_DIAGNOSTICS) || defined(SWAT_DEVICE_TYPE) \
+  || (defined(SL_SID_PDP_FEATURE_ON) && SL_SID_PDP_FEATURE_ON)
+#define ENABLE_MFG_STORE_WRITE
+#endif
 
 // -----------------------------------------------------------------------------
 //                              Macros and Typedefs
 // -----------------------------------------------------------------------------
+
 #define MFG_VERSION_1_VAL                   0x01000000
 #define MFG_VERSION_2_VAL                   0x2
 
@@ -64,6 +74,18 @@
 #define SLI_NTOHL(netlong) (netlong)
 #endif
 
+enum mfg_store_error_status {
+  MFG_STORE_ERROR_ST_SUCCESS = 0,
+  MFG_STORE_ERROR_ST_WRONG_KEY = -1,
+  MFG_STORE_ERROR_ST_WRONG_INPUT_ARGS = -2,
+  MFG_STORE_ERROR_ST_WRITE_ERROR = -3,
+  MFG_STORE_ERROR_ST_REPACK_ERROR = -4,
+  MFG_STORE_ERROR_ST_DELETE_ERROR = -5,
+  MFG_STORE_ERROR_ST_OUT_OF_MEMORY = -6,
+  MFG_STORE_ERROR_ST_WRITE_NOT_ACTIVATED = -7,
+  MFG_STORE_ERROR_ST_ERASE_NOT_ACTIVATED = -8,
+};
+
 // -----------------------------------------------------------------------------
 //                          Static Function Declarations
 // -----------------------------------------------------------------------------
@@ -76,187 +98,172 @@
 //                                Static Variables
 // -----------------------------------------------------------------------------
 static const uint32_t MFG_WORD_SIZE = 4;  // in bytes
-static nvm3_Handle_t * mfg_nvm3_handle = NULL;
 
 // -----------------------------------------------------------------------------
 //                          Public Function Definitions
 // -----------------------------------------------------------------------------
 
-/*******************************************************************************
- *  Prepare the manufacturing store for use. Must be called before
- *  any of the other sid_pal_mfg_store functions.
- *
- * @param[in]  mfg_store_region Structure containing start and end addresses
- *                              of the manufacturing store.
- ******************************************************************************/
 void sid_pal_mfg_store_init(sid_pal_mfg_store_region_t mfg_store_region)
 {
   (void)mfg_store_region;
-  size_t numberOfObjects;
 
-  if (is_mfg_nvm3_initialized() == false) {
-    nvm3_manager_init();
-  }
-  mfg_nvm3_handle = get_mfg_nvm3_handle();
-  // Get the number of valid keys already in NVM3
-  numberOfObjects = nvm3_countObjects(mfg_nvm3_handle);
-  SID_PAL_LOG(SID_PAL_LOG_SEVERITY_INFO, "MFG Store opened with %d objects\n", numberOfObjects);
-}
-
-/*******************************************************************************
- * Write to mfg store.
- *
- *  @param[in]  value  Enum constant for the desired value. Use values from
- *                     sid_pal_mfg_store_value_t or application defined values
- *                     here.
- *  @param[in]  buffer Buffer containing the value to be stored.
- *  @param[in]  length Length of the value in bytes. Use values from
- *                     sid_pal_mfg_store_value_size_t here.
- *
- *  @return  0 on success, negative value on failure.
- ******************************************************************************/
-int32_t sid_pal_mfg_store_write(uint16_t value,
-                                const uint8_t * buffer,
-                                uint16_t length)
-{
-  Ecode_t status = nvm3_writeData(mfg_nvm3_handle, value, buffer, (size_t)length);
-  if (status != ECODE_NVM3_OK) {
-    SID_PAL_LOG(SID_PAL_LOG_SEVERITY_ERROR, "MFG Store write error: %d\n", status);
-    return -1;
-  }
-
-  /* Do repacking if needed */
-  if (nvm3_repackNeeded(mfg_nvm3_handle)) {
-    status = nvm3_repack(mfg_nvm3_handle);
-    if (status != ECODE_NVM3_OK) {
-      SID_PAL_LOG(SID_PAL_LOG_SEVERITY_ERROR, "MFG Store repack error: %d\n", status);
-      return -1;
+  if (!nvm3_defaultHandle->hasBeenOpened) {
+    Ecode_t status = nvm3_initDefault();
+    if (ECODE_NVM3_OK != status) {
+      SID_PAL_LOG_ERROR("pal: mfg store init err: %d", status);
+      return;
     }
   }
 
-  return 0;
+  uint16_t obj_cnt = (uint16_t)nvm3_enumObjects(nvm3_defaultHandle, NULL, 0, SLI_SID_NVM3_KEY_MIN_MFG, SLI_SID_NVM3_KEY_MAX_MFG);
+  SID_PAL_LOG_INFO("pal: mfg store opened with %d object(s)", obj_cnt);
 }
 
-/*******************************************************************************
- *  Read from mfg store.
- *
- *  @param[in]  value  Enum constant for the desired value. Use values from
- *                     sid_pal_mfg_store_value_t or application defined values
- *                     here.
- *  @param[out] buffer Buffer to which the value will be copied.
- *  @param[in]  length Length of the value in bytes. Use values from
- *                     sid_pal_mfg_store_value_size_t here.
- *
- *
- ******************************************************************************/
-void sid_pal_mfg_store_read(uint16_t value,
-                            uint8_t * buffer,
-                            uint16_t length)
+void sid_pal_mfg_store_deinit(void)
 {
-  uint32_t objectType;
-  size_t dataLen1;
+  // do not deinit default nvm3 instance as it is also used by gsdk
+}
 
-  // Find size of data for object with key identifier 1 and 2 and read out
-  nvm3_getObjectInfo(mfg_nvm3_handle, value, &objectType, &dataLen1);
+int32_t sid_pal_mfg_store_write(uint16_t value, const uint8_t *buffer, uint16_t length)
+{
+#ifdef ENABLE_MFG_STORE_WRITE
+  if (!SLI_SID_NVM3_VALIDATE_KEY(MFG, value)) {
+    SID_PAL_LOG_ERROR("pal: mfg write, key 0x%.5x not in range (0x%.5x - 0x%.5x)", value, SLI_SID_NVM3_KEY_MIN_MFG_REL, SLI_SID_NVM3_KEY_MAX_MFG_REL);
+    return MFG_STORE_ERROR_ST_WRONG_KEY;
+  }
 
-  if (objectType == NVM3_OBJECTTYPE_DATA) {
-    nvm3_readData(mfg_nvm3_handle, value, buffer, (size_t)length);
+  if (!buffer || length == 0) {
+    SID_PAL_LOG_ERROR("pal: mfg write, wrong input args");
+    return MFG_STORE_ERROR_ST_WRONG_INPUT_ARGS;
+  }
+
+  Ecode_t status = nvm3_writeData(nvm3_defaultHandle, SLI_SID_NVM3_MAP_KEY(MFG, value), buffer, (size_t)length);
+  if (status != ECODE_NVM3_OK) {
+    SID_PAL_LOG_ERROR("pal: mfg write, write err: %d", status);
+    return MFG_STORE_ERROR_ST_WRITE_ERROR;
+  }
+
+  if (nvm3_repackNeeded(nvm3_defaultHandle)) {
+    status = nvm3_repack(nvm3_defaultHandle);
+    if (status != ECODE_NVM3_OK) {
+      SID_PAL_LOG_ERROR("pal: mfg write, repack err: %d", status);
+      return MFG_STORE_ERROR_ST_REPACK_ERROR;
+    }
+  }
+
+  return MFG_STORE_ERROR_ST_SUCCESS;
+#else
+  (void)value;
+  (void)buffer;
+  (void)length;
+
+  SID_PAL_LOG_WARNING("pal: mfg write, write not activated");
+
+  return MFG_STORE_ERROR_ST_WRITE_NOT_ACTIVATED;
+#endif
+}
+
+void sid_pal_mfg_store_read(uint16_t value, uint8_t *buffer, uint16_t length)
+{
+  uint32_t object_type;
+  size_t object_length;
+  uint32_t mapped_key = SLI_SID_NVM3_MAP_KEY(MFG, value);
+
+  if (!SLI_SID_NVM3_VALIDATE_KEY(MFG, value)) {
+    SID_PAL_LOG_ERROR("pal: mfg read, key 0x%.5x not in range (0x%.5x - 0x%.5x)", value, SLI_SID_NVM3_KEY_MIN_MFG_REL, SLI_SID_NVM3_KEY_MAX_MFG_REL);
+    return;
+  }
+
+  if (!buffer || length == 0) {
+    SID_PAL_LOG_ERROR("pal: mfg read, wrong input args");
+    return;
+  }
+
+  nvm3_getObjectInfo(nvm3_defaultHandle, mapped_key, &object_type, &object_length);
+
+  if (object_type == NVM3_OBJECTTYPE_DATA) {
+    nvm3_readData(nvm3_defaultHandle, mapped_key, buffer, (size_t)length);
   }
 }
 
-/*******************************************************************************
- *  Get length of a tag ID.
- *
- *  @param[in]  value  Enum constant for the desired value. Use values from
- *                     sid_pal_mfg_store_value_t or application defined values
- *                     here.
- *
- *  @return  Length of the value in bytes for the tag that is requested on success,
- *           0 on failure (not found)
- ******************************************************************************/
 uint16_t sid_pal_mfg_store_get_length_for_value(uint16_t value)
 {
   uint32_t object_type;
-  size_t length;
+  size_t object_length = 0;
 
-  /* Find size of data for object with key identifier */
-  nvm3_getObjectInfo(mfg_nvm3_handle, value, &object_type, &length);
+  if (!SLI_SID_NVM3_VALIDATE_KEY(MFG, value)) {
+    SID_PAL_LOG_ERROR("pal: mfg get len for value, key 0x%.5x not in range (0x%.5x - 0x%.5x)", value, SLI_SID_NVM3_KEY_MIN_MFG_REL, SLI_SID_NVM3_KEY_MAX_MFG_REL);
+    return object_length;
+  }
 
-  return (object_type == NVM3_OBJECTTYPE_DATA) ? length : 0;
+  nvm3_getObjectInfo(nvm3_defaultHandle, SLI_SID_NVM3_MAP_KEY(MFG, value), &object_type, &object_length);
+
+  return (object_type == NVM3_OBJECTTYPE_DATA) ? object_length : 0;
 }
 
-/*******************************************************************************
- *  Erase the manufacturing store.
- *  Because the manufacturing store is backed by flash memory, and flash memory
- *  can only be erased in large chunks (pages), this interface only supports
- *  erasing the entire manufacturing store.
- *
- *  @return  0 on success, negative value on failure.
- ******************************************************************************/
 int32_t sid_pal_mfg_store_erase(void)
 {
-#if defined(HALO_ENABLE_DIAGNOSTICS) && HALO_ENABLE_DIAGNOSTICS
-  Ecode_t status = 0;
-  status = nvm3_eraseAll(mfg_nvm3_handle);
-  return (int32_t) status;
+#ifdef ENABLE_MFG_STORE_WRITE
+  uint32_t obj_cnt;
+  nvm3_ObjectKey_t *key_list = NULL;
+  Ecode_t status = ECODE_NVM3_OK;
+
+  obj_cnt = nvm3_enumObjects(nvm3_defaultHandle, NULL, 0, SLI_SID_NVM3_KEY_MIN_MFG, SLI_SID_NVM3_KEY_MAX_MFG);
+  if (obj_cnt == 0) {
+    SID_PAL_LOG_INFO("pal: mfg erase, nothing to erase");
+    return MFG_STORE_ERROR_ST_SUCCESS;
+  }
+
+  key_list = (nvm3_ObjectKey_t *)sl_calloc(obj_cnt, sizeof(nvm3_ObjectKey_t));
+  if (!key_list) {
+    SID_PAL_LOG_ERROR("pal: mfg erase, out of memory");
+    return MFG_STORE_ERROR_ST_OUT_OF_MEMORY;
+  }
+
+  nvm3_enumObjects(nvm3_defaultHandle, key_list, obj_cnt, SLI_SID_NVM3_KEY_MIN_MFG, SLI_SID_NVM3_KEY_MAX_MFG);
+  for (uint32_t i = 0; i < obj_cnt; i++) {
+    status = nvm3_deleteObject(nvm3_defaultHandle, key_list[i]);
+    if (ECODE_NVM3_OK != status) {
+      SID_PAL_LOG_ERROR("pal: mfg erase, erase err: %d", status);
+      sl_free(key_list);
+      return MFG_STORE_ERROR_ST_DELETE_ERROR;
+    }
+  }
+
+  sl_free(key_list);
+  key_list = NULL;
+
+  return MFG_STORE_ERROR_ST_SUCCESS;
 #else
-#if defined(SL_SID_DDP_FEATURE_ON) && SL_SID_DDP_FEATURE_ON
-  return 0;
-#else
-  return -1;
-#endif /* SL_SID_DDP_FEATURE_ON */
-#endif /* HALO_ENABLE_DIAGNOSTICS */
+  SID_PAL_LOG_WARNING("pal: mfg erase, erase not activated");
+
+  return MFG_STORE_ERROR_ST_ERASE_NOT_ACTIVATED;
+#endif
 }
 
-/*******************************************************************************
- *  Check if the manufacturing store supports TLV based storage.
- *
- *  @return   true if the manufacturing store supports TLV based storage.
- ******************************************************************************/
 bool sid_pal_mfg_store_is_tlv_support(void)
 {
   return true;
 }
 
-/*******************************************************************************
- *  Get version of values stored in mfg store.
- *  The version of the mfg values is stored along with all the values
- *  in mfg store. This API retrieves the value by reading the
- *  address at which the version is stored.
- *
- *  @return   version of mfg store.
- ******************************************************************************/
 uint32_t sid_pal_mfg_store_get_version(void)
 {
   uint32_t version;
 
-  sid_pal_mfg_store_read(SID_PAL_MFG_STORE_VERSION,
-                         (uint8_t *)&version, SID_PAL_MFG_STORE_VERSION_SIZE);
+  sid_pal_mfg_store_read(SID_PAL_MFG_STORE_VERSION, (uint8_t *)&version, SID_PAL_MFG_STORE_VERSION_SIZE);
   // Assuming that we keep this behavior for both 1P & 3P
   return SLI_NTOHL(version);
 }
 
-/*******************************************************************************
- *  Get the device ID from the mfg store.
- *
- *  @param[out] dev_id The device ID
- *
- *  @return true if the device ID could be found
- ******************************************************************************/
 bool sid_pal_mfg_store_dev_id_get(uint8_t dev_id[SID_PAL_MFG_STORE_DEVID_SIZE])
 {
   bool error_code = false;
-  uint8_t buffer[] = { 0xFF, 0xFF, 0xFF, 0xFF, 0xFF };
+  uint8_t buffer[SID_PAL_MFG_STORE_DEVID_SIZE] = { 0xFF, 0xFF, 0xFF, 0xFF, 0xFF };
+  const uint8_t unset_dev_id[SID_PAL_MFG_STORE_DEVID_SIZE] = { 0xFF, 0xFF, 0xFF, 0xFF, 0xFF };
 
-  _Static_assert(sizeof(buffer) == SID_PAL_MFG_STORE_DEVID_SIZE, "dev ID buffer wrong size");
+  sid_pal_mfg_store_read(SID_PAL_MFG_STORE_DEVID, buffer, SID_PAL_MFG_STORE_DEVID_SIZE);
 
-  sid_pal_mfg_store_read(SID_PAL_MFG_STORE_DEVID,
-                         buffer, SID_PAL_MFG_STORE_DEVID_SIZE);
-
-  static const uint8_t UNSET_DEV_ID[] = { 0xFF, 0xFF, 0xFF, 0xFF, 0xFF };
-  _Static_assert(sizeof(UNSET_DEV_ID) == SID_PAL_MFG_STORE_DEVID_SIZE, "Unset dev ID wrong size");
-
-  if (memcmp(buffer, UNSET_DEV_ID, SID_PAL_MFG_STORE_DEVID_SIZE) == 0) {
+  if (memcmp(buffer, unset_dev_id, SID_PAL_MFG_STORE_DEVID_SIZE) == 0) {
     uint64_t full_uniq = SYSTEM_GetUnique();
     uint32_t low = full_uniq & 0x0000FFFF;
     buffer[0] = 0xBF;
@@ -286,36 +293,31 @@ bool sid_pal_mfg_store_dev_id_get(uint8_t dev_id[SID_PAL_MFG_STORE_DEVID_SIZE])
       dev_id_buffer[0] = (dev_id_buffer[0] & DEV_ID_MSB_MASK) | ENCODED_DEV_ID_SIZE_5_BYTES_MASK;
       memcpy(buffer, dev_id_buffer, SID_PAL_MFG_STORE_DEVID_SIZE);
     }
+
     error_code = true;
   }
+
   memcpy(dev_id, buffer, SID_PAL_MFG_STORE_DEVID_SIZE);
+
   return error_code;
 }
 
-/*******************************************************************************
- *  Get the device serial number from the mfg store.
- *
- *  @param[out] serial_num The device serial number
- *
- *  @return true if the device serial number could be found
- ******************************************************************************/
 bool sid_pal_mfg_store_serial_num_get(uint8_t serial_num[SID_PAL_MFG_STORE_SERIAL_NUM_SIZE])
 {
   uint32_t buffer[(SID_PAL_MFG_STORE_SERIAL_NUM_SIZE + (MFG_WORD_SIZE - 1)) / MFG_WORD_SIZE];
 
-  sid_pal_mfg_store_read(SID_PAL_MFG_STORE_SERIAL_NUM,
-                         (uint8_t *)buffer, SID_PAL_MFG_STORE_SERIAL_NUM_SIZE);
+  sid_pal_mfg_store_read(SID_PAL_MFG_STORE_SERIAL_NUM, (uint8_t *)buffer, SID_PAL_MFG_STORE_SERIAL_NUM_SIZE);
 
-  static const uint8_t UNSET_SERIAL_NUM[] =
+  static const uint8_t unset_serial_num[SID_PAL_MFG_STORE_SERIAL_NUM_SIZE] =
   {
     0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF,
     0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF
   };
-  _Static_assert(sizeof(UNSET_SERIAL_NUM) == SID_PAL_MFG_STORE_SERIAL_NUM_SIZE, "Unset serial num wrong size");
 
-  if (memcmp(buffer, UNSET_SERIAL_NUM, SID_PAL_MFG_STORE_SERIAL_NUM_SIZE) == 0) {
+  if (memcmp(buffer, unset_serial_num, SID_PAL_MFG_STORE_SERIAL_NUM_SIZE) == 0) {
     return false;
   }
+
   const uint32_t version = sid_pal_mfg_store_get_version();
 
   // TODO: HALO-5169
@@ -324,6 +326,8 @@ bool sid_pal_mfg_store_serial_num_get(uint8_t serial_num[SID_PAL_MFG_STORE_SERIA
       buffer[i] = SLI_NTOHL(buffer[i]);
     }
   }
+
   memcpy(serial_num, buffer, SID_PAL_MFG_STORE_SERIAL_NUM_SIZE);
+
   return true;
 }

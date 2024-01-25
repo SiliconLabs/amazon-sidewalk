@@ -1,0 +1,99 @@
+/***************************************************************************//**
+ * @file sl_sidewalk_app_msg_dmp_soc_light.c
+ * @brief sidewalk application message component - DMP SOC Light application
+ *******************************************************************************
+ * # License
+ * <b>Copyright 2023 Silicon Laboratories Inc. www.silabs.com</b>
+ *******************************************************************************
+ *
+ * The licensor of this software is Silicon Laboratories Inc. Your use of this
+ * software is governed by the terms of Silicon Labs Master Software License
+ * Agreement (MSLA) available at
+ * www.silabs.com/about-us/legal/master-software-license-agreement. This
+ * software is distributed to you in Source Code format and is governed by the
+ * sections of the MSLA applicable to Source Code.
+ *
+ ******************************************************************************/
+
+/*******************************************************************************
+ *** INCLUDES
+ ******************************************************************************/
+
+#include "sl_sidewalk_app_msg_dmp_soc_light.h"
+
+/*******************************************************************************
+ *** GLOBAL FUNCTIONS
+ ******************************************************************************/
+
+sl_sid_app_msg_st_t sli_sid_app_msg_dmp_soc_light_cmd_handler(sl_sid_app_msg_t *msg)
+{
+  sl_sid_app_msg_st_t status = SL_SID_APP_MSG_ERR_ST_SUCCESS;
+
+  switch (msg->tag.cmd_id) {
+    case SLI_SID_APP_MSG_CMD_ID_DMP_SOC_LIGHT_BLE_START_STOP:
+      {
+        if (msg->tag.op != SL_SID_APP_MSG_OP_SET) {
+          return SL_SID_APP_MSG_ERR_ST_APP_WRONG_OP;
+        }
+
+        sl_sid_app_msg_dmp_soc_light_ble_start_stop_ctx_t ctx = {
+          .hdl.operation = msg->tag.op,
+          .hdl.sequence = msg->tag.seq
+        };
+        sl_sid_app_msg_dmp_soc_light_ble_start_stop_cb(&ctx);
+      }
+      break;
+
+    case SLI_SID_APP_MSG_CMD_ID_DMP_SOC_LIGHT_UPDATE_COUNTER:
+      {
+        if (msg->tag.op != SL_SID_APP_MSG_OP_SET) {
+          return SL_SID_APP_MSG_ERR_ST_APP_WRONG_OP;
+        }
+
+        sl_sid_app_msg_dmp_soc_light_update_counter_ctx_t ctx = {
+          .hdl.operation = msg->tag.op,
+          .hdl.sequence = msg->tag.seq
+        };
+        sl_sid_app_msg_dmp_soc_light_update_counter_cb(&ctx);
+      }
+      break;
+
+    default:
+      status = SL_SID_APP_MSG_ERR_ST_APP_CMD_HDL_NOT_IMPL;
+      break;
+  }
+
+  return status;
+}
+
+sl_sid_app_msg_st_t sl_sid_app_msg_dmp_soc_light_ble_start_stop_prepare_send(
+  sl_sid_app_msg_dmp_soc_light_ble_start_stop_ctx_t *ctx, sl_sid_app_msg_t *send_app_msg)
+{
+  SLI_SID_APP_MSG_CLR_PROCESSING_FLAG(ctx);
+
+  if (ctx->hdl.operation == SL_SID_APP_MSG_OP_SET) {
+    return SLI_SID_APP_MSG_PREP_SEND_ACK_FUNC(SLI_SID_APP_MSG_CMD_CLS_DMP_SOC_LIGHT, SLI_SID_APP_MSG_CMD_ID_DMP_SOC_LIGHT_BLE_START_STOP);
+  } else if (ctx->hdl.operation == SL_SID_APP_MSG_OP_NTFY) {
+    return SLI_SID_APP_MSG_PREP_SEND_PARAM_FUNC(SLI_SID_APP_MSG_CMD_CLS_DMP_SOC_LIGHT, SLI_SID_APP_MSG_CMD_ID_DMP_SOC_LIGHT_BLE_START_STOP);
+  } else {
+    return SL_SID_APP_MSG_ERR_ST_APP_WRONG_OP;
+  }
+}
+
+sl_sid_app_msg_st_t sl_sid_app_msg_dmp_soc_light_update_counter_prepare_send(
+  sl_sid_app_msg_dmp_soc_light_update_counter_ctx_t *ctx, sl_sid_app_msg_t *send_app_msg)
+{
+  SLI_SID_APP_MSG_CLR_PROCESSING_FLAG(ctx);
+
+  if (ctx->hdl.operation == SL_SID_APP_MSG_OP_SET) {
+    return SLI_SID_APP_MSG_PREP_SEND_ACK_FUNC(SLI_SID_APP_MSG_CMD_CLS_DMP_SOC_LIGHT, SLI_SID_APP_MSG_CMD_ID_DMP_SOC_LIGHT_UPDATE_COUNTER);
+  } else if (ctx->hdl.operation == SL_SID_APP_MSG_OP_NTFY) {
+    return SLI_SID_APP_MSG_PREP_SEND_PARAM_FUNC(SLI_SID_APP_MSG_CMD_CLS_DMP_SOC_LIGHT, SLI_SID_APP_MSG_CMD_ID_DMP_SOC_LIGHT_UPDATE_COUNTER);
+  } else {
+    return SL_SID_APP_MSG_ERR_ST_APP_WRONG_OP;
+  }
+}
+
+SL_WEAK void sl_sid_app_msg_dmp_soc_light_ble_start_stop_cb(sl_sid_app_msg_dmp_soc_light_ble_start_stop_ctx_t *ctx) { (void)ctx; }
+
+SL_WEAK void sl_sid_app_msg_dmp_soc_light_update_counter_cb(sl_sid_app_msg_dmp_soc_light_update_counter_ctx_t *ctx) { (void)ctx; }

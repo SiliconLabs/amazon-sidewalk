@@ -194,9 +194,9 @@ static uint16_t put_message(struct sid_handle *sidewalk_handle, char *payload, u
   sid_error_t ret = sid_put_msg(sidewalk_handle, &msg, &desc);
 
   if (ret != SID_ERROR_NONE) {
-    app_log_error("failed queuing data: %d", (int)ret);
+    app_log_error("queuing data failed: %d", (int)ret);
   } else {
-    app_log_info("queued data message id: %u", desc.id);
+    app_log_info("queued data msg id: %u", desc.id);
   }
 
   return desc.id;

@@ -46,8 +46,8 @@
     #include "em_usart.h"
     #define USART_INSTANCE_TYPE USART_TypeDef
 #elif defined(EFR32XG24) || defined(EFR32XG28)
-    #include "em_eusart.h"
-    #define USART_INSTANCE_TYPE EUSART_TypeDef
+    #include "em_usart.h"
+    #define USART_INSTANCE_TYPE USART_TypeDef
 #else
     #error UNSUPPORTED PLATFORM!
 #endif

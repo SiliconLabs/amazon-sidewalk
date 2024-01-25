@@ -21,6 +21,9 @@ requires:
   - name: "sidewalk_sender"
   - name: "sidewalk_utils"
 
+define:
+  - name: SL_SIDEWALK_SENSOR
+
 #-------------- Template Contribution ----------------
 template_contribution:
 #---------------- Component Catalog ------------------

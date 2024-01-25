@@ -37,6 +37,90 @@
           ]
         }
       },
+      "S3Bucket": {
+        "Type": "AWS::S3::Bucket",
+        "Properties": {
+          "BucketName": "sidewalk-test",
+          "VersioningConfiguration": {
+            "Status": "Suspended"
+          },
+          "PublicAccessBlockConfiguration": {
+            "BlockPublicAcls": "Yes",
+            "BlockPublicPolicy": "Yes",
+            "IgnorePublicAcls": "Yes",
+            "RestrictPublicBuckets": "Yes"
+          }
+        }
+      },
+      "CFSFuotaServiceRole": {
+        "Type": "AWS::IAM::Role",
+        "Properties": {
+          "RoleName": "CFSFuotaServiceRole",
+          "Description": "Allows IoT to call AWS services on your behalf.",
+          "MaxSessionDuration": 3600,
+          "Policies": [
+            {
+              "PolicyName": "CFSFuotaTaskPolicy",
+              "PolicyDocument": {
+                "Statement": [
+                  {
+                    "Effect": "Allow",
+                    "Action": [
+                      "iotwireless:CreateFuotaTask",
+                      "iotwireless:DisassociateMulticastGroupFromFuotaTask",
+                      "iotwireless:DisassociateWirelessDeviceFromFuotaTask",
+                      "iotwireless:StartFuotaTask",
+                      "iotwireless:GetFuotaTask",
+                      "iotwireless:DeleteFuotaTask",
+                      "iotwireless:AssociateWirelessDeviceWithFuotaTask",
+                      "iotwireless:ListFuotaTasks",
+                      "iotwireless:ListMulticastGroupsByFuotaTask",
+                      "iotwireless:UpdateFuotaTask",
+                      "iotwireless:AssociateMulticastGroupWithFuotaTask"
+                    ],
+                    "Resource": [
+                      "*"
+                    ]
+                  }
+                ]
+              }
+            },
+            {
+              "PolicyName": "CFSBucketAllowPolicy",
+              "PolicyDocument": {
+                "Statement": [
+                  {
+                    "Effect": "Allow",
+                    "Sid": "Statement1",
+                    "Action": [
+                      "s3:*"
+                    ],
+                    "Resource": [
+                      "arn:aws:s3:::sidewalk-test"
+                    ]
+                  }
+                ]
+              }
+            }
+          ],
+          "AssumeRolePolicyDocument": {
+            "Version": "2012-10-17",
+            "Statement": [
+              {
+                "Effect": "Allow",
+                "Principal": {
+                  "Service": [
+                    "iotwireless.amazonaws.com"
+                  ]
+                },
+                "Action": [
+                  "sts:AssumeRole"
+                ]
+              }
+            ]
+          }
+        }
+      },
       "CFSDestinationRole": {
         "Type": "AWS::IAM::Role",
         "Properties": {
@@ -257,7 +341,7 @@
             ]
           },
           "Code": {
-            "ZipFile": "import json\nimport base64\nimport boto3\n\ndef lambda_handler(event, context):\n  message = json.dumps(event)\n  print(message)\n  payload_data = base64.b64decode(event[\"PayloadData\"])\n  decoded_payload = bytearray.fromhex(base64.b64decode(event[\"PayloadData\"]).decode(\"utf-8\")).decode().replace(\"\\u0000\", \"\")\n\n  client = boto3.client('iot-data', region_name='us-east-1')\n  # Change topic, qos and payload\n  response = client.publish(\n      topic='demo/gatewaytest',\n      qos=1,\n      payload=json.dumps({\"payload\":decoded_payload, \"WirelessMetadata\":event[\"WirelessMetadata\"]})\n    )\n"
+            "ZipFile": "import json\nimport base64\nimport boto3\nimport struct\n\nfrom enum import Enum, auto\n\nclass SAMC_CMD_CLS(Enum):\n  SL_SID_APP_MSG_CMD_CLS_DEV_MGMT = 0\n  SL_SID_APP_MSG_CMD_CLS_CLOUD_MGMT = auto()\n  SL_SID_APP_MSG_CMD_CLS_SID = auto()\n  SL_SID_APP_MSG_CMD_CLS_DMP_SOC_LIGHT = auto()\n\nclass SAMC():\n  SL_SID_APP_MSG_PROTO_VER = 1\n  SL_SID_APP_MSG_LENGTH = 5\n  proto_ver_bits = 0x0f\n  cmd_cls_bits = 0xf0\n\n  def __init__(self, device_id):\n    self.client = boto3.client('iot-data', region_name='us-east-1')\n    self.wireless_device_id = device_id\n    self.topic = 'test/'\n\n  def identifyMessagePacket(self, payload_data):\n    if len(payload_data) == self.SL_SID_APP_MSG_LENGTH:\n      packed_struct = struct.unpack(\"5b\", payload_data)\n      if packed_struct[0] & self.proto_ver_bits == SAMC.SL_SID_APP_MSG_PROTO_VER:\n        if (packed_struct[0] & self.cmd_cls_bits) >> 4 == SAMC_CMD_CLS.SL_SID_APP_MSG_CMD_CLS_DMP_SOC_LIGHT.value:\n          self.topic += 'dmp_soc_light/'\n      else:\n        print(\"Wrong proto version!\")\n    else:\n      print(\"Payload is not recognised as Sidewalk Application Message Component by Silicon Labs!\")\n\n  def publishMessage(self, payload_data_to_publish):\n    self.topic += f'{self.wireless_device_id}'\n    response = self.client.publish(\n        topic=self.topic,\n        qos=1,\n        payload=payload_data_to_publish\n      )\n\ndef lambda_handler(event, context):\n  message = json.dumps(event)\n  print(message)\n\n  payload_ascii = base64.b64decode(event[\"PayloadData\"])\n  print(f'Payload ASCII is {payload_ascii}')\n\n  payload_hex = bytearray.fromhex(payload_ascii.decode())\n\n  decoded_payload = payload_hex.decode(\"iso-8859-2\")\n  decoded_data = json.dumps({\"payload\":decoded_payload, \"WirelessDeviceId\":event[\"WirelessDeviceId\"], \"WirelessMetadata\":event[\"WirelessMetadata\"]})\n\n  samc = SAMC(event[\"WirelessDeviceId\"])\n  samc.identifyMessagePacket(payload_hex)\n  samc.publishMessage(decoded_data)\n"
           }
         }
       },

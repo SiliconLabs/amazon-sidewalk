@@ -115,9 +115,9 @@ int32_t radio_fsk_process_rx_done(const halo_drv_silabs_ctx_t *drv_ctx)
 
   if (err == RADIO_ERROR_NONE) {
     rssi_avg = (rssi_avg == 0) ? rssi : (rssi_avg + rssi) / 2;
-    radio_rx_packet->fsk_rx_packet_status.rx_status = rssi - (RF_NOISE_FLOOR);
     radio_rx_packet->fsk_rx_packet_status.rssi_sync = rssi;
     radio_rx_packet->fsk_rx_packet_status.rssi_avg  = rssi_avg;
+    radio_rx_packet->fsk_rx_packet_status.snr = rssi - (RF_NOISE_FLOOR);
   }
 
   ret:

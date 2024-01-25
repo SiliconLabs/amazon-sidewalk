@@ -29,6 +29,70 @@ Resources:
       Queues:
         - !Ref CFSReceiveQueue
 ####################################################################
+# Type: AWS::S3::Bucket
+# Our S3 bucket.
+####################################################################
+  S3Bucket: 
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: sidewalk-test
+      VersioningConfiguration:
+        Status: Suspended
+      PublicAccessBlockConfiguration:
+        BlockPublicAcls: Yes
+        BlockPublicPolicy: Yes
+        IgnorePublicAcls: Yes
+        RestrictPublicBuckets: Yes
+####################################################################
+# Type: AWS::IAM::Role
+# This role is for the fuota.
+####################################################################
+  CFSFuotaServiceRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: CFSFuotaServiceRole
+      Description: Allows IoT to call AWS services on your behalf.
+      MaxSessionDuration: 3600
+      Policies: 
+        - 
+          PolicyName: CFSFuotaTaskPolicy
+          PolicyDocument:
+            Statement:
+            - Effect: Allow
+              Action:
+              - iotwireless:CreateFuotaTask
+              - iotwireless:DisassociateMulticastGroupFromFuotaTask
+              - iotwireless:DisassociateWirelessDeviceFromFuotaTask
+              - iotwireless:StartFuotaTask
+              - iotwireless:GetFuotaTask
+              - iotwireless:DeleteFuotaTask
+              - iotwireless:AssociateWirelessDeviceWithFuotaTask
+              - iotwireless:ListFuotaTasks
+              - iotwireless:ListMulticastGroupsByFuotaTask
+              - iotwireless:UpdateFuotaTask
+              - iotwireless:AssociateMulticastGroupWithFuotaTask
+              Resource:
+              - "*"
+        - 
+          PolicyName: CFSBucketAllowPolicy
+          PolicyDocument:
+            Statement:
+            - Effect: Allow
+              Sid: Statement1
+              Action:
+              - s3:*
+              Resource:
+              - "arn:aws:s3:::sidewalk-test"
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: "Allow"
+            Principal: 
+              Service: 
+                - "iotwireless.amazonaws.com"
+            Action:
+              - "sts:AssumeRole"
+####################################################################
 # Type: AWS::IAM::Role
 # This role is for the destination.
 ####################################################################
@@ -164,7 +228,7 @@ Resources:
 ####################################################################
 # Type: AWS::Lambda::Function
 # Lambda function which decodes the raw input messages 
-# from Sidewalk and republish them to demo/gatewaytest MQTT topic
+# from Sidewalk and republish them to test/[application]/[device_id] MQTT topic
 ####################################################################
   CFSRepublishLambda:
     Type: AWS::Lambda::Function
@@ -177,20 +241,61 @@ Resources:
           import json
           import base64
           import boto3
+          import struct
+
+          from enum import Enum, auto
+
+          class SAMC_CMD_CLS(Enum):
+              SL_SID_APP_MSG_CMD_CLS_DEV_MGMT = 0
+              SL_SID_APP_MSG_CMD_CLS_CLOUD_MGMT = auto()
+              SL_SID_APP_MSG_CMD_CLS_SID = auto()
+              SL_SID_APP_MSG_CMD_CLS_DMP_SOC_LIGHT = auto()
+              
+          class SAMC():
+              SL_SID_APP_MSG_PROTO_VER = 1
+              SL_SID_APP_MSG_LENGTH = 5
+              proto_ver_bits = 0x0f
+              cmd_cls_bits = 0xf0
+
+              def __init__(self, device_id):
+                  self.client = boto3.client('iot-data', region_name='us-east-1')
+                  self.wireless_device_id = device_id
+                  self.topic = 'test/'
+
+              def identifyMessagePacket(self, payload_data):
+                  if len(payload_data) == self.SL_SID_APP_MSG_LENGTH:
+                      packed_struct = struct.unpack("5b", payload_data)
+                      if packed_struct[0] & self.proto_ver_bits == SAMC.SL_SID_APP_MSG_PROTO_VER:
+                          if (packed_struct[0] & self.cmd_cls_bits) >> 4 == SAMC_CMD_CLS.SL_SID_APP_MSG_CMD_CLS_DMP_SOC_LIGHT.value:
+                              self.topic += 'dmp_soc_light/'
+                      else:
+                          print("Wrong proto version!")
+                  else:
+                      print("Payload is not recognised as Sidewalk Application Message Component by Silicon Labs!")
+
+              def publishMessage(self, payload_data_to_publish):
+                  self.topic += f'{self.wireless_device_id}'
+                  response = self.client.publish(
+                          topic=self.topic,
+                          qos=1,
+                          payload=payload_data_to_publish
+                      )
 
           def lambda_handler(event, context):
               message = json.dumps(event)
               print(message)
-              payload_data = base64.b64decode(event["PayloadData"])
-              decoded_payload = bytearray.fromhex(base64.b64decode(event["PayloadData"]).decode("utf-8")).decode()
-          
-              client = boto3.client('iot-data', region_name='us-east-1')
-              # Change topic, qos and payload
-              response = client.publish(
-                      topic='demo/gatewaytest',
-                      qos=1,
-                      payload=json.dumps({"payload":decoded_payload, "WirelessMetadata":event["WirelessMetadata"]})
-                  )
+              
+              payload_ascii = base64.b64decode(event["PayloadData"])
+              print(f'Payload ASCII is {payload_ascii}')
+              
+              payload_hex = bytearray.fromhex(payload_ascii.decode())
+              
+              decoded_payload = payload_hex.decode("iso-8859-2")
+              decoded_data = json.dumps({"payload":decoded_payload, "WirelessDeviceId":event["WirelessDeviceId"], "WirelessMetadata":event["WirelessMetadata"]})
+
+              samc = SAMC(event["WirelessDeviceId"])
+              samc.identifyMessagePacket(payload_hex)
+              samc.publishMessage(decoded_data)
 ####################################################################
 # Type: AWS::IoTWireless::Destination
 # Destination for the Sidewalk devices

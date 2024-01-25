@@ -40,10 +40,8 @@
 #include "app_button_press.h"
 #include "FreeRTOS.h"
 #include "task.h"
-#include "sid_pal_crypto_ifc.h"
-#include "sid_pal_mfg_store_ifc.h"
-#include "sid_pal_storage_kv_ifc.h"
 #include "sid_pal_common_ifc.h"
+#include "sid_api.h"
 #include "sl_system_kernel.h"
 
 #if (defined(SL_FSK_SUPPORTED) || defined(SL_CSS_SUPPORTED))
@@ -58,6 +56,10 @@
 #define MAIN_TASK_STACK_SIZE    (2048 / sizeof(configSTACK_DEPTH_TYPE))
 
 // -----------------------------------------------------------------------------
+//                          Public Function Prototypes
+// -----------------------------------------------------------------------------
+
+// -----------------------------------------------------------------------------
 //                          Static Function Declarations
 // -----------------------------------------------------------------------------
 
@@ -67,6 +69,10 @@
 
 // -----------------------------------------------------------------------------
 //                                Static Variables
+// -----------------------------------------------------------------------------
+
+// -----------------------------------------------------------------------------
+//                          Static Function Definitions
 // -----------------------------------------------------------------------------
 
 // -----------------------------------------------------------------------------
@@ -81,39 +87,24 @@ void app_init(void)
   // Initialize the Silabs system
   sl_system_init();
 
+  // Enable button press
   app_button_press_enable();
 
-  app_log_info("app: application started");
-  // Initialize the common PAL interfaces
-  sid_error_t ret = sid_pal_common_init();
-  if (ret != SID_ERROR_NONE) {
-    app_log_error("app: sidewalk platform common init failed, err: %d", ret);
-  }
-  app_assert(ret == SID_ERROR_NONE, "sidewalk platform common init failed");
+  app_log_info("app: app started");
 
-  // Initialize the Key-Value storage PAL module
-  ret = sid_pal_storage_kv_init();
-  if (ret != SID_ERROR_NONE) {
-    app_log_error("app: sidewalk key-value storage init failed: %d", ret);
-  }
-  app_assert(ret == SID_ERROR_NONE, "sidewalk key-value storage init failed");
-
-  // Initialize PAL crypto module
-  ret = sid_pal_crypto_init();
-  if (ret != SID_ERROR_NONE) {
-    app_log_error("app: sidewalk crypto init failed: %d", ret);
-  }
-  app_assert(ret == SID_ERROR_NONE, "sidewalk crypto init failed");
-
-  // Initialize the manufacturing region. It will load the data from there if there is.
-  sid_pal_mfg_store_region_t mfg_region_config;
-  sid_pal_mfg_store_init(mfg_region_config);
-
+  platform_parameters_t platform_parameters = {
 #if defined(SL_RADIO_NATIVE)
-  set_radio_efr32xgxx_device_config(get_radio_cfg());
-#else
-  set_radio_sx126x_device_config(get_radio_cfg());
+    .platform_init_parameters.radio_cfg = (radio_efr32xgxx_device_config_t *)get_radio_cfg(),
+#elif defined(SL_RADIO_EXTERNAL)
+    .platform_init_parameters.radio_cfg = (radio_sx126x_device_config_t *)get_radio_cfg(),
 #endif
+  };
+
+  sid_error_t ret_code = sid_platform_init(&platform_parameters);
+  if (ret_code != SID_ERROR_NONE) {
+    app_log_error("app: sid platform init err: %d", ret_code);
+  }
+  app_assert(ret_code == SID_ERROR_NONE, "app: sid platform init failed");
 
   BaseType_t status = xTaskCreate(main_thread,
                                   "MAIN",
@@ -121,12 +112,8 @@ void app_init(void)
                                   NULL,
                                   1,
                                   NULL);
-  app_assert(status == pdPASS, "main task creation failed");
+  app_assert(status == pdPASS, "app: main task creation failed");
 
   // Start the kernel. Task(s) created in app_init() will start running.
   sl_system_kernel_start();
 }
-
-// -----------------------------------------------------------------------------
-//                          Static Function Definitions
-// -----------------------------------------------------------------------------

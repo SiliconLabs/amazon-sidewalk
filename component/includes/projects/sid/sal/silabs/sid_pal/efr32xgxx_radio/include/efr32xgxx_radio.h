@@ -68,7 +68,7 @@ typedef struct {
 } halo_drv_silabs_ctx_t;
 
 #define US_IN_SEC                                      (1000000UL)
-#define EFR32XGXX_US_TO_SYMBOLS(time_in_us, bit_rate)  ((time_in_us * bit_rate) / US_IN_SEC)
+#define EFR32XGXX_US_TO_SYMBOLS(time_in_us, bit_rate)  ((uint64_t)((uint64_t)time_in_us * (uint64_t)bit_rate) / US_IN_SEC)
 
 // -----------------------------------------------------------------------------
 //                          Public Function Declarations

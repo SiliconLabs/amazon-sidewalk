@@ -1,0 +1,22 @@
+id: "sidewalk_led_manager"
+label: "Sidewalk led manager"
+package: "Flex"
+description: "Provides Sidewalk led managing functionality"
+category: Example|AWS IoT
+quality: production
+root_path: "component/sidewalk_led_manager"
+
+provides:
+  - name: "sidewalk_led_manager"
+source:
+  - path: "sl_sidewalk_led_manager.c"
+include:
+  - path: "."
+    file_list:
+    - "path": "sl_sidewalk_led_manager.h"
+
+#-------------- Template Contribution ----------------
+template_contribution:
+#---------------- Component Catalog ------------------
+  - name: component_catalog
+    value: sidewalk_led_manager

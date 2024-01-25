@@ -1,0 +1,38 @@
+id: "sidewalk_nvm3_handler"
+label: "Sidewalk NVM3 Handler"
+package: "Flex"
+description: "Provides Sidewalk NVM3 handler functions"
+category: Example|AWS IoT
+quality: production
+root_path: "component"
+
+provides:
+  - name: "sidewalk_nvm3_handler"
+source:
+  - path: "sidewalk_nvm3_handler/sl_sidewalk_nvm3_handler.c"
+include:
+  - path: "sidewalk_nvm3_handler"
+    file_list:
+    - "path": "sl_sidewalk_nvm3_handler.h"
+  - path: "includes/projects/sid/sal/silabs/sid_pal/include"
+    file_list:
+    - path: "nvm3_manager.h"
+config_file:
+  - path: "sidewalk_nvm3_handler/config/sl_sidewalk_nvm3_handler_config.h"
+
+requires:
+  - name: "nvm3_lib"
+  - name: "nvm3_default"
+  - name: "nvm3_default_config"
+
+#-------------- Template Contribution ----------------
+template_contribution:
+#---------------- Component Catalog ------------------
+  - name: component_catalog
+    value: sidewalk_nvm3_handler
+#---------------- Event handler ----------------------
+  - name: event_handler
+    value:
+      event: service_init
+      include: sl_sidewalk_nvm3_handler.h
+      handler: sl_sidewalk_nvm3_handler_init

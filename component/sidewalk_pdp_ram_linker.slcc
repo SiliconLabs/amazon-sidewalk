@@ -1,0 +1,12 @@
+id: "sidewalk_pdp_ram_linker"
+label: "linker pdp"
+description: "RAM linker script for PDP"
+package: "Flex"
+category: PDP
+quality: evaluation
+root_path: "component"
+
+provides:
+  - name: "sidewalk_pdp_ram_linker"
+template_file:
+  - path: "sidewalk_pdp/linkerfile_ram.ld.jinja"

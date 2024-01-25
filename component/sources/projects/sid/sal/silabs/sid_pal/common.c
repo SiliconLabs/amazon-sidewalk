@@ -42,13 +42,46 @@
 #include <sid_pal_common_ifc.h>
 #include <delay.h>
 
+#if defined(SV_ENABLED)
+extern void silabs_crypto_enable_sv(void);
+#endif // SV_ENABLED
+
 // -----------------------------------------------------------------------------
 //                          Public Function Definitions
 // -----------------------------------------------------------------------------
-sid_error_t sid_pal_common_init(void)
+sid_error_t sid_pal_common_init(const platform_specific_init_parameters_t *platform_init_parameters)
 {
+  if (!platform_init_parameters
+#if (defined(SL_FSK_SUPPORTED) || defined(SL_CSS_SUPPORTED))
+      || !platform_init_parameters->radio_cfg
+#endif
+      ) {
+    return SID_ERROR_INCOMPATIBLE_PARAMS;
+  }
+
   // Initialise platform-specific & hardware-dependent blocks
   silabs_delay_init();
+
+#if defined(SV_ENABLED)
+  silabs_crypto_enable_sv();
+#endif // SV_ENABLED
+
+#if (defined(SL_FSK_SUPPORTED) || defined(SL_CSS_SUPPORTED))
+#if defined(SL_RADIO_EXTERNAL)
+  set_radio_sx126x_device_config(platform_init_parameters->radio_cfg);
+#elif defined(SL_RADIO_NATIVE)
+  set_radio_efr32xgxx_device_config(platform_init_parameters->radio_cfg);
+#endif
+#endif
+
+  return SID_ERROR_NONE;
+}
+
+sid_error_t sid_pal_common_deinit(void)
+{
+#if (defined(SL_FSK_SUPPORTED) || defined(SL_CSS_SUPPORTED))
+  sid_pal_radio_deinit();
+#endif
 
   return SID_ERROR_NONE;
 }

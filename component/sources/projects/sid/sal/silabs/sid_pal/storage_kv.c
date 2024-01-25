@@ -38,19 +38,21 @@
 // -----------------------------------------------------------------------------
 //                                   Includes
 // -----------------------------------------------------------------------------
+
 #include <sid_pal_storage_kv_ifc.h>
 #include <sid_pal_log_ifc.h>
 #include <sid_pal_assert_ifc.h>
-
 #include <stdalign.h>
 #include <stdbool.h>
 #include <stdint.h>
 #include <string.h>
-#include <nvm3_manager.h>
+#include "nvm3_manager.h"
+#include "sl_malloc.h"
 
 // -----------------------------------------------------------------------------
 //                              Macros and Typedefs
 // -----------------------------------------------------------------------------
+
 struct storage_kv_record_header {
   uint32_t data_size;
   uint16_t key;
@@ -61,89 +63,118 @@ struct storage_kv_record_header {
 // -----------------------------------------------------------------------------
 //                                Static Variables
 // -----------------------------------------------------------------------------
-static nvm3_Handle_t *kv_nvm3_handle;
 
 // -----------------------------------------------------------------------------
 //                          Static Function Declarations
 // -----------------------------------------------------------------------------
-static sid_error_t sid_pal_silabs_storage_kv_is_record_exist_in_group(uint16_t group,
-                                                                      uint16_t key,
-                                                                      size_t *record_offset);
+
+static sid_error_t storage_kv_is_record_exist_in_group(uint16_t group, uint16_t key, size_t *record_offset);
 
 // -----------------------------------------------------------------------------
 //                          Public Function Definitions
 // -----------------------------------------------------------------------------
-sid_error_t sid_pal_storage_kv_init()
+
+sid_error_t sid_pal_storage_kv_init(void)
 {
   sid_error_t retval = SID_ERROR_NONE;
 
-  if (is_kv_nvm3_initialized() == false) {
-    nvm3_manager_init();
+  if (!nvm3_defaultHandle->hasBeenOpened) {
+    Ecode_t status = nvm3_initDefault();
+    if (ECODE_NVM3_OK != status) {
+      retval = SID_ERROR_GENERIC;
+    }
   }
-  kv_nvm3_handle = get_kv_nvm3_handle();
+
+  uint16_t obj_cnt = (uint16_t)nvm3_enumObjects(nvm3_defaultHandle, NULL, 0, SLI_SID_NVM3_KEY_MIN_KV, SLI_SID_NVM3_KEY_MAX_KV);
+  SID_PAL_LOG_INFO("pal: kv store opened with %d object(s)", obj_cnt);
+
   return retval;
 }
 
-sid_error_t sid_pal_storage_kv_record_get(uint16_t group,
-                                          uint16_t key,
-                                          void *p_data,
-                                          uint32_t len)
+sid_error_t sid_pal_storage_kv_deinit(void)
 {
-  Ecode_t res = ECODE_NVM3_OK;
+  // do not deinit default nvm3 instance as it is also used by gsdk
+
+  return SID_ERROR_NONE;
+}
+
+sid_error_t sid_pal_storage_kv_record_get(uint16_t group, uint16_t key, void *p_data, uint32_t len)
+{
+  Ecode_t status = ECODE_NVM3_OK;
   struct storage_kv_record_header record_header;
   size_t offset_in_object = 0;
-  uint32_t type;
-  size_t obj_len = 0;
+  uint32_t object_type;
+  size_t object_length = 0;
+  uint32_t mapped_key = SLI_SID_NVM3_MAP_KEY(KV, group);
 
-  nvm3_getObjectInfo(kv_nvm3_handle, group, &type, &obj_len);
+  if (!SLI_SID_NVM3_VALIDATE_KEY(KV, group)) {
+    SID_PAL_LOG_ERROR("pal: kv record get, key 0x%.5x not in range (0x%.5x - 0x%.5x)", group, SLI_SID_NVM3_KEY_MIN_KV_REL, SLI_SID_NVM3_KEY_MAX_KV_REL);
+    return SID_ERROR_PARAM_OUT_OF_RANGE;
+  }
 
-  if (obj_len > 0) {
-    while (obj_len > offset_in_object) {
-      res = nvm3_readPartialData(kv_nvm3_handle, group, &record_header, offset_in_object, STORAGE_KV_REC_HDR_SIZE);
+  if (!p_data) {
+    SID_PAL_LOG_ERROR("pal: kv record get, null ptr");
+    return SID_ERROR_NULL_POINTER;
+  }
 
-      if (res != ECODE_NVM3_OK) {
+  nvm3_getObjectInfo(nvm3_defaultHandle, mapped_key, &object_type, &object_length);
+
+  if (object_length > 0) {
+    while (object_length > offset_in_object) {
+      status = nvm3_readPartialData(nvm3_defaultHandle, mapped_key, &record_header, offset_in_object, STORAGE_KV_REC_HDR_SIZE);
+      if (status != ECODE_NVM3_OK) {
         break;
       }
 
       if (record_header.key == key) {
         // Record found
-        res = nvm3_readPartialData(kv_nvm3_handle, group, p_data, offset_in_object + STORAGE_KV_REC_HDR_SIZE, len);
+        status = nvm3_readPartialData(nvm3_defaultHandle, mapped_key, p_data, offset_in_object + STORAGE_KV_REC_HDR_SIZE, len);
         break;
       }
-      offset_in_object += STORAGE_KV_REC_HDR_SIZE + record_header.data_size;
 
-      if (obj_len <= offset_in_object) {
-        res = ECODE_NVM3_ERR_KEY_NOT_FOUND;
+      offset_in_object += STORAGE_KV_REC_HDR_SIZE + record_header.data_size;
+      if (object_length <= offset_in_object) {
+        status = ECODE_NVM3_ERR_KEY_NOT_FOUND;
         break;
       }
     }
-    if (obj_len <= offset_in_object) {
-      res = ECODE_NVM3_ERR_KEY_NOT_FOUND;
+
+    if (object_length <= offset_in_object) {
+      status = ECODE_NVM3_ERR_KEY_NOT_FOUND;
     }
   } else {
-    res = ECODE_NVM3_ERR_KEY_NOT_FOUND;
+    status = ECODE_NVM3_ERR_KEY_NOT_FOUND;
   }
-  return nvm3_manager_nvm3_to_sid_error_code_translation(res);
+
+  return sli_sid_nvm3_convert_ecode_to_sid_error(status);
 }
 
-sid_error_t sid_pal_storage_kv_record_get_len(uint16_t group,
-                                              uint16_t key,
-                                              uint32_t * p_len)
+sid_error_t sid_pal_storage_kv_record_get_len(uint16_t group, uint16_t key, uint32_t *p_len)
 {
-  Ecode_t res = ECODE_NVM3_OK;
+  Ecode_t status = ECODE_NVM3_OK;
   struct storage_kv_record_header record_header;
   size_t offset_in_object = 0;
+  uint32_t object_type;
+  size_t object_length = 0;
+  uint32_t mapped_key = SLI_SID_NVM3_MAP_KEY(KV, group);
 
-  uint32_t type;
-  size_t obj_len = 0;
+  if (!SLI_SID_NVM3_VALIDATE_KEY(KV, group)) {
+    SID_PAL_LOG_ERROR("pal: kv record get len, key 0x%.5x not in range (0x%.5x - 0x%.5x)", group, SLI_SID_NVM3_KEY_MIN_KV_REL, SLI_SID_NVM3_KEY_MAX_KV_REL);
+    return SID_ERROR_PARAM_OUT_OF_RANGE;
+  }
 
-  nvm3_getObjectInfo(kv_nvm3_handle, group, &type, &obj_len);
+  if (!p_len) {
+    SID_PAL_LOG_ERROR("pal: kv record get len, null ptr");
+    return SID_ERROR_NULL_POINTER;
+  }
 
-  if (obj_len > 0) {
-    while (obj_len > offset_in_object) {
-      res = nvm3_readPartialData(kv_nvm3_handle, group, &record_header, offset_in_object, STORAGE_KV_REC_HDR_SIZE);
+  nvm3_getObjectInfo(nvm3_defaultHandle, mapped_key, &object_type, &object_length);
 
-      if (res != ECODE_NVM3_OK) {
+  if (object_length > 0) {
+    while (object_length > offset_in_object) {
+      status = nvm3_readPartialData(nvm3_defaultHandle, mapped_key, &record_header, offset_in_object, STORAGE_KV_REC_HDR_SIZE);
+
+      if (status != ECODE_NVM3_OK) {
         break;
       }
 
@@ -154,25 +185,28 @@ sid_error_t sid_pal_storage_kv_record_get_len(uint16_t group,
       }
       offset_in_object += STORAGE_KV_REC_HDR_SIZE + record_header.data_size;
     }
-    if (obj_len <= offset_in_object) {
-      res = ECODE_NVM3_ERR_KEY_NOT_FOUND;
+
+    if (object_length <= offset_in_object) {
+      status = ECODE_NVM3_ERR_KEY_NOT_FOUND;
     }
   } else {
-    res = ECODE_NVM3_ERR_KEY_NOT_FOUND;
+    status = ECODE_NVM3_ERR_KEY_NOT_FOUND;
   }
 
-  return nvm3_manager_nvm3_to_sid_error_code_translation(res);
+  return sli_sid_nvm3_convert_ecode_to_sid_error(status);
 }
 
 // "[Record] data must be aligned to a 4 byte boundary"
 // TODO:HALO-7063 - Return workaround rfds_wr_buf[256] to rfds_wr_buf[64]
 // alignas(4) static uint8_t rfds_wr_buf[256];
-sid_error_t sid_pal_storage_kv_record_set(uint16_t group,
-                                          uint16_t key,
-                                          void const * p_data,
-                                          uint32_t len)
+sid_error_t sid_pal_storage_kv_record_set(uint16_t group, uint16_t key, void const *p_data, uint32_t len)
 {
   SID_PAL_ASSERT(len <= SID_PAL_KV_STORE_MAX_LENGTH_BYTES);
+
+  if (!p_data) {
+    SID_PAL_LOG_ERROR("pal: kv record set, null ptr");
+    return SID_ERROR_NULL_POINTER;
+  }
 
   static uint8_t read_buf[SID_PAL_KV_STORE_MAX_LENGTH_BYTES];
   memset(read_buf, 0, sizeof(read_buf));
@@ -182,52 +216,58 @@ sid_error_t sid_pal_storage_kv_record_set(uint16_t group,
     return SID_ERROR_NONE;
   }
 
-  Ecode_t res = ECODE_NVM3_OK;
+  Ecode_t status = ECODE_NVM3_OK;
   sid_error_t is_record_exist = SID_ERROR_NONE;
-  uint32_t objectType = 0;
+  uint32_t object_type = 0;
   size_t data_len = 0;
   size_t new_object_size = 0;
   size_t offset_in_group = 0;
-  uint8_t * raw_file_buffer = NULL;
+  uint8_t *raw_file_buffer = NULL;
   struct storage_kv_record_header new_record_header = {
     .key       = key,
     .data_size = len
   };
+  uint32_t mapped_key = SLI_SID_NVM3_MAP_KEY(KV, group);
 
-  res = nvm3_getObjectInfo(kv_nvm3_handle, group, &objectType, &data_len);
+  if (!SLI_SID_NVM3_VALIDATE_KEY(KV, group)) {
+    SID_PAL_LOG_ERROR("pal: kv record set, key 0x%.5x not in range (0x%.5x - 0x%.5x)", group, SLI_SID_NVM3_KEY_MIN_KV_REL, SLI_SID_NVM3_KEY_MAX_KV_REL);
+    return SID_ERROR_PARAM_OUT_OF_RANGE;
+  }
 
-  if (res == ECODE_NVM3_ERR_KEY_NOT_FOUND) {
+  status = nvm3_getObjectInfo(nvm3_defaultHandle, mapped_key, &object_type, &data_len);
+
+  if (status == ECODE_NVM3_ERR_KEY_NOT_FOUND) {
     // First item in the group
     new_object_size = STORAGE_KV_REC_HDR_SIZE + len;
 
     // This part is needed because NVM3 does NOT support object append at the moment!
-    raw_file_buffer = (uint8_t *)calloc(new_object_size, sizeof(uint8_t));
+    raw_file_buffer = (uint8_t *)sl_calloc(new_object_size, sizeof(uint8_t));
     if (raw_file_buffer == NULL) {
-      res = ECODE_NVM3_ERR_INT_SIZE_ERROR;
+      status = ECODE_NVM3_ERR_INT_SIZE_ERROR;
     } else {
       // Copy the new entry header into the buffer
       memcpy(raw_file_buffer, &new_record_header, STORAGE_KV_REC_HDR_SIZE);
       // Copy the actual data after the header
       memcpy(&raw_file_buffer[STORAGE_KV_REC_HDR_SIZE], p_data, len);
 
-      res = nvm3_writeData(kv_nvm3_handle, group, raw_file_buffer, new_object_size);
+      status = nvm3_writeData(nvm3_defaultHandle, mapped_key, raw_file_buffer, new_object_size);
 
-      free(raw_file_buffer);
+      sl_free(raw_file_buffer);
     }
-  } else if (res == ECODE_NVM3_OK) {
+  } else if (status == ECODE_NVM3_OK) {
     if (data_len > 0) {
-      is_record_exist = sid_pal_silabs_storage_kv_is_record_exist_in_group(group, key, &offset_in_group);
+      is_record_exist = storage_kv_is_record_exist_in_group(group, key, &offset_in_group);
 
       if (is_record_exist == SID_ERROR_NONE) {
         sid_pal_storage_kv_record_delete(group, key);
-        nvm3_getObjectInfo(kv_nvm3_handle, group, &objectType, &data_len);
+        nvm3_getObjectInfo(nvm3_defaultHandle, mapped_key, &object_type, &data_len);
       }
     }
     new_object_size = data_len + len + STORAGE_KV_REC_HDR_SIZE;
-    raw_file_buffer = (uint8_t *)calloc(new_object_size, sizeof(uint8_t));
+    raw_file_buffer = (uint8_t *)sl_calloc(new_object_size, sizeof(uint8_t));
 
     if (data_len > 0) {
-      res = nvm3_readData(kv_nvm3_handle, group, raw_file_buffer, data_len);
+      status = nvm3_readData(nvm3_defaultHandle, mapped_key, raw_file_buffer, data_len);
     }
 
     // Copy the new entry header into the buffer
@@ -235,124 +275,155 @@ sid_error_t sid_pal_storage_kv_record_set(uint16_t group,
     // Copy the actual data after the header
     memcpy(&raw_file_buffer[data_len + STORAGE_KV_REC_HDR_SIZE], p_data, len);
 
-    res = nvm3_writeData(kv_nvm3_handle, group, raw_file_buffer, new_object_size);
+    status = nvm3_writeData(nvm3_defaultHandle, mapped_key, raw_file_buffer, new_object_size);
 
-    if (res == ECODE_OK) {
-      if (nvm3_repackNeeded(kv_nvm3_handle)) {
-        res = nvm3_repack(kv_nvm3_handle);
+    if (status == ECODE_OK) {
+      if (nvm3_repackNeeded(nvm3_defaultHandle)) {
+        status = nvm3_repack(nvm3_defaultHandle);
       }
     }
 
-    free(raw_file_buffer);
+    sl_free(raw_file_buffer);
   }
 
-  return nvm3_manager_nvm3_to_sid_error_code_translation(res);
+  return sli_sid_nvm3_convert_ecode_to_sid_error(status);
 }
 
 sid_error_t sid_pal_storage_kv_group_delete(uint16_t group)
 {
-  Ecode_t res = ECODE_NVM3_OK;
+  Ecode_t status = ECODE_NVM3_OK;
 
-  res = nvm3_deleteObject(kv_nvm3_handle, group);
-
-  if (res == ECODE_NVM3_ERR_KEY_NOT_FOUND) {
-    res = ECODE_NVM3_OK;
+  if (!SLI_SID_NVM3_VALIDATE_KEY(KV, group)) {
+    SID_PAL_LOG_ERROR("pal: kv group delete, key 0x%.5x not in range (0x%.5x - 0x%.5x)", group, SLI_SID_NVM3_KEY_MIN_KV_REL, SLI_SID_NVM3_KEY_MAX_KV_REL);
+    return SID_ERROR_PARAM_OUT_OF_RANGE;
   }
-  return nvm3_manager_nvm3_to_sid_error_code_translation(res);
+
+  status = nvm3_deleteObject(nvm3_defaultHandle, SLI_SID_NVM3_MAP_KEY(KV, group));
+  if (status == ECODE_NVM3_ERR_KEY_NOT_FOUND) {
+    status = ECODE_NVM3_OK;
+  }
+
+  return sli_sid_nvm3_convert_ecode_to_sid_error(status);
 }
 
-sid_error_t sid_pal_storage_kv_record_delete(uint16_t group,
-                                             uint16_t key)
+sid_error_t sid_pal_storage_kv_record_delete(uint16_t group, uint16_t key)
 {
-  Ecode_t res = ECODE_NVM3_OK;
+  Ecode_t status = ECODE_NVM3_OK;
   struct storage_kv_record_header record_header;
-  uint32_t objectType = 0;
+  uint32_t object_type = 0;
   size_t data_len = 0;
   size_t offset_in_object = 0;
-  uint8_t * raw_file_buffer = NULL;
+  uint8_t *raw_file_buffer = NULL;
+  uint32_t mapped_key = SLI_SID_NVM3_MAP_KEY(KV, group);
+
+  if (!SLI_SID_NVM3_VALIDATE_KEY(KV, group)) {
+    SID_PAL_LOG_ERROR("pal: kv record delete, key 0x%.5x not in range (0x%.5x - 0x%.5x)", group, SLI_SID_NVM3_KEY_MIN_KV_REL, SLI_SID_NVM3_KEY_MAX_KV_REL);
+    return SID_ERROR_PARAM_OUT_OF_RANGE;
+  }
 
   do {
-    res = nvm3_getObjectInfo(kv_nvm3_handle, group, &objectType, &data_len);
+    status = nvm3_getObjectInfo(nvm3_defaultHandle, mapped_key, &object_type, &data_len);
 
-    if ((res != ECODE_NVM3_OK) && (res != ECODE_NVM3_ERR_KEY_NOT_FOUND)) {
+    if ((status != ECODE_NVM3_OK) && (status != ECODE_NVM3_ERR_KEY_NOT_FOUND)) {
       break;
     }
-    raw_file_buffer = (uint8_t *)calloc(data_len, sizeof(uint8_t));
+    raw_file_buffer = (uint8_t *)sl_calloc(data_len, sizeof(uint8_t));
 
     if (raw_file_buffer == NULL) {
-      res = ECODE_NVM3_ERR_INT_SIZE_ERROR;
+      status = ECODE_NVM3_ERR_INT_SIZE_ERROR;
       break;
     }
 
     while (data_len > offset_in_object) {
-      res = nvm3_readPartialData(kv_nvm3_handle, group, &record_header, offset_in_object, STORAGE_KV_REC_HDR_SIZE);
+      status = nvm3_readPartialData(nvm3_defaultHandle,
+                                    mapped_key,
+                                    &record_header,
+                                    offset_in_object,
+                                    STORAGE_KV_REC_HDR_SIZE);
 
-      if (res != ECODE_NVM3_OK) {
+      if (status != ECODE_NVM3_OK) {
         break;
       }
 
       if (record_header.key == key) {
         // Record found
-        res = nvm3_readPartialData(kv_nvm3_handle, group, raw_file_buffer, 0, offset_in_object);
+        status = nvm3_readPartialData(nvm3_defaultHandle, mapped_key, raw_file_buffer, 0, offset_in_object);
 
-        if (res != ECODE_NVM3_OK) {
+        if (status != ECODE_NVM3_OK) {
           break;
         }
-        res = nvm3_readPartialData(kv_nvm3_handle,
-                                   group,
-                                   &raw_file_buffer[offset_in_object],
-                                   offset_in_object + record_header.data_size + STORAGE_KV_REC_HDR_SIZE,
-                                   data_len - offset_in_object - record_header.data_size - STORAGE_KV_REC_HDR_SIZE);
+        status = nvm3_readPartialData(nvm3_defaultHandle,
+                                      mapped_key,
+                                      &raw_file_buffer[offset_in_object],
+                                      offset_in_object + record_header.data_size + STORAGE_KV_REC_HDR_SIZE,
+                                      data_len - offset_in_object - record_header.data_size - STORAGE_KV_REC_HDR_SIZE);
 
-        if (res != ECODE_NVM3_OK) {
+        if (status != ECODE_NVM3_OK) {
           break;
         }
-        res = nvm3_deleteObject(kv_nvm3_handle, group);
+        status = nvm3_deleteObject(nvm3_defaultHandle, mapped_key);
 
-        if (res != ECODE_NVM3_OK) {
+        if (status != ECODE_NVM3_OK) {
           break;
         }
-        res = nvm3_writeData(kv_nvm3_handle,
-                             group,
-                             raw_file_buffer,
-                             data_len - record_header.data_size - STORAGE_KV_REC_HDR_SIZE);
+        status = nvm3_writeData(nvm3_defaultHandle,
+                                mapped_key,
+                                raw_file_buffer,
+                                data_len - record_header.data_size - STORAGE_KV_REC_HDR_SIZE);
 
-        if (res != ECODE_NVM3_OK) {
+        if (status != ECODE_NVM3_OK) {
           break;
         }
         break;
       }
+
       offset_in_object += STORAGE_KV_REC_HDR_SIZE + record_header.data_size;
     }
+
     if (data_len <= offset_in_object) {
-      res = ECODE_NVM3_ERR_KEY_NOT_FOUND;
+      status = ECODE_NVM3_ERR_KEY_NOT_FOUND;
     }
   } while (0);
 
-  free(raw_file_buffer);
+  sl_free(raw_file_buffer);
 
-  return nvm3_manager_nvm3_to_sid_error_code_translation(res);
+  return sli_sid_nvm3_convert_ecode_to_sid_error(status);
 }
+
 // -----------------------------------------------------------------------------
 //                          Static Function Definitions
 // -----------------------------------------------------------------------------
-static sid_error_t sid_pal_silabs_storage_kv_is_record_exist_in_group(uint16_t group,
-                                                                      uint16_t key,
-                                                                      size_t * record_offset)
+
+static sid_error_t storage_kv_is_record_exist_in_group(uint16_t group, uint16_t key, size_t *record_offset)
 {
-  Ecode_t res = ECODE_NVM3_OK;
+  Ecode_t status = ECODE_NVM3_OK;
   struct storage_kv_record_header record_header;
   size_t offset_in_object = 0;
-  uint32_t objectType;
+  uint32_t object_type;
   size_t data_len = 0;
+  uint32_t mapped_key = SLI_SID_NVM3_MAP_KEY(KV, group);
 
-  nvm3_getObjectInfo(kv_nvm3_handle, group, &objectType, &data_len);
+  if (!record_offset) {
+    SID_PAL_LOG_ERROR("pal: kv record exist in group, null ptr");
+    return SID_ERROR_NULL_POINTER;
+  }
+
+  if (!SLI_SID_NVM3_VALIDATE_KEY(KV, group)) {
+    SID_PAL_LOG_ERROR("pal: kv record exist in group, key 0x%.5x not in range (0x%.5x - 0x%.5x)", group, SLI_SID_NVM3_KEY_MIN_KV_REL, SLI_SID_NVM3_KEY_MAX_KV_REL);
+    return SID_ERROR_PARAM_OUT_OF_RANGE;
+  }
+
+  nvm3_getObjectInfo(nvm3_defaultHandle, mapped_key, &object_type, &data_len);
 
   if (data_len > 0) {
     while (data_len > offset_in_object) {
-      res = nvm3_readPartialData(kv_nvm3_handle, group, &record_header, offset_in_object, STORAGE_KV_REC_HDR_SIZE);
+      status = nvm3_readPartialData(nvm3_defaultHandle,
+                                    mapped_key,
+                                    &record_header,
+                                    offset_in_object,
+                                    STORAGE_KV_REC_HDR_SIZE);
 
-      if (res != ECODE_NVM3_OK) {
+      if (status != ECODE_NVM3_OK) {
         break;
       }
 
@@ -365,11 +436,11 @@ static sid_error_t sid_pal_silabs_storage_kv_is_record_exist_in_group(uint16_t g
     }
 
     if (data_len <= offset_in_object) {
-      res = ECODE_NVM3_ERR_KEY_NOT_FOUND;
+      status = ECODE_NVM3_ERR_KEY_NOT_FOUND;
     }
   } else {
-    res = ECODE_NVM3_ERR_KEY_NOT_FOUND;
+    status = ECODE_NVM3_ERR_KEY_NOT_FOUND;
   }
 
-  return nvm3_manager_nvm3_to_sid_error_code_translation(res);
+  return sli_sid_nvm3_convert_ecode_to_sid_error(status);
 }

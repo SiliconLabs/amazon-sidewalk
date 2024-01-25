@@ -94,7 +94,7 @@ void sid_pal_assert(int line,
 __WEAK void sl_assert_app_callback(uint16_t line_num,
                                    const char * file_name)
 {
-  SID_PAL_LOG_ERROR("Received a fault! %s @ %d", file_name, line_num);
+  SID_PAL_LOG_ERROR("pal: received a fault! %s @ %d", file_name, line_num);
 }
 
 // -----------------------------------------------------------------------------

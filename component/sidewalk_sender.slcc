@@ -1,5 +1,5 @@
 id: "sidewalk_sender"
-label: "Sidewal sender"
+label: "Sidewalk sender"
 package: "Flex"
 description: "Provides Sidewalk message sending functions"
 category: Example|AWS IoT

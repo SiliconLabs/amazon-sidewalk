@@ -23,6 +23,7 @@ import os
 import re
 import random
 import string
+import shutil
 from enum import IntEnum
 from libs.ProvisionWrapper import ProvisionWrapper, InputType, BoardType
 from libs.EnvConfig import EnvConfig
@@ -42,7 +43,10 @@ parser.add_argument('-c', '--commander', help="Path to commander executable, not
 parser.add_argument('-cfg', '--config', help="Configuration file, if provided other arguments are ignored", required=False)
 args = parser.parse_args()
 
-try:    
+# size_nvm3_instance (0x6000) + size_empty_page_at_the_end (0x2000)
+MFG_START_ADDR_OFFSET_FROM_END_OF_FLASH = 0x8000
+
+try:
 
     os.chdir(os.path.dirname(os.path.abspath(__file__)))
 
@@ -66,6 +70,7 @@ try:
 
     class  ResultDevice:
         def __init__(self) -> None:
+            self.deviceName = ''
             self.deviceID = ''
             self.dir      = ''
             self.smsn     = ''
@@ -79,7 +84,7 @@ try:
     class ResultMfgRange:
         def __init__(self) -> None:
             self.startAddress = ''
-            self.offset = '0xC000'
+            self.offset = '0x6000'
 
     class ResultGeneratedProfiles:
         def __init__(self) -> None:
@@ -133,7 +138,7 @@ try:
             elif __file__:
                 lock_file_path = os.path.dirname(__file__)
                 lock_file_path = os.path.join(lock_file_path, LOCK_FILE_NAME)
-                
+
             logger.info(lock_file_path)
             lock_file_handler = LockFileHandler(os.path.join(os.path.abspath(args.input)), lock_file_path)
             e = EnvConfig(os.path.join(os.path.abspath(args.input), CONFIG_FILE_NAME))
@@ -153,11 +158,10 @@ try:
                 return
 
             aws = AWSHandler(e.aws_access_key, e.aws_secret_access_key, e.aws_session_token, e.aws_region ).client
-        
-        generate_prototype(e, aws)
-        
-    def generate_prototype(e, aws):
 
+        generate_prototype(e, aws)
+
+    def generate_prototype(e, aws):
         is_context_studio = False
         for ix, request in enumerate(e.generation_requests):
             device_profile = ResultGeneratedProfiles()
@@ -165,7 +169,7 @@ try:
             if not request.deviceProfileId:
                 profile_name = 'prototype_' + ''.join(random.choice(string.ascii_lowercase) for i in range(10))
                 logger.info(f"No DeviceProfileID specified. Creating a new DeviceProfile with random name {profile_name}")
-                
+
                 try:
                     response = aws.create_device_profile(Sidewalk={}, Name=profile_name)
                 except Exception as e:
@@ -206,8 +210,13 @@ try:
 
                 logger.info(f"Creating a new WirelessDevice (instance nr {instanceNr})")
 
+            # If name is not specified, use the default name :
+                if request.deviceName is None or "" == request.deviceName:
+                    request.deviceName = f"silabs_sidewalk_device"
+
                 try:
                     response = aws.create_wireless_device(Type='Sidewalk',
+                                                        Name=request.deviceName,
                                                         DestinationName=request.destinationName,
                                                         Sidewalk={"DeviceProfileId": request.deviceProfileId})
                 except Exception as e:
@@ -244,7 +253,7 @@ try:
                     provision_path = os.path.dirname(__file__)
                     provision_path = os.path.join(provision_path, "provision")
                     is_context_studio = False
-                
+
                 target_offset_address = None
 
                 if request.targetPart == "all":
@@ -265,8 +274,10 @@ try:
                             output_dir=paths.get_device_dir(wireless_device_id, absPath=True),
                             offset_addr=target_offset_address)
 
+
                 logger.info("Done!")
 
+                result_device.deviceName = request.deviceName
                 result_device.deviceID = wireless_device_id
                 result_device.dir      = os.path.join(device_profile.dir, "WirelessDevice_" + wireless_device_id)
                 result_device.smsn     = response['Sidewalk']['SidewalkManufacturingSn']
@@ -277,7 +288,7 @@ try:
                 result_device.mfgRange.startAddress = target_offset_address
 
                 device_profile.devices.append(result_device)
-    
+
             result_content.generatedProfiles.append(device_profile)
 
     # Reverse a dictionary: keys become values and values become keys
@@ -293,15 +304,15 @@ try:
         if (device_family in base_address_by_family.keys()):
             return base_address_by_family[device_family]
         else: return None
-    
+
     def get_target_offset_address(device_family, device_memory):
         base_address = get_target_base_address(device_family)
         if(base_address is None):
             logger.error(f"Unknown target, family not recognised: {device_family}")
             return
         end_of_flash = hex(base_address + (int(device_memory)*1024))
-        return hex(int(end_of_flash, 16) - 0xE000)
-    
+        return hex(int(end_of_flash, 16) - MFG_START_ADDR_OFFSET_FROM_END_OF_FLASH)
+
     def make_dir(path):
         if os.path.exists(path) is False:
             try:
@@ -311,7 +322,7 @@ try:
             except OSError as err:
                 logger.error(f"An error has occurred: {err}")
                 raise
-    
+
     class LockFileHandler:
         def __init__(self, project_path, lock_file_path) -> None:
             self.lock_file = lock_file_path
@@ -445,7 +456,38 @@ try:
         log.description = exception
         result_content.logs.append(log)
 
+    def save_project_output():
+        # Build output path: args.input/../../mfg_output
+        output_path = os.path.join(os.path.abspath(args.input), "../../autogen/mfg_output")
+
+        if not os.path.exists(output_path):
+            return
+
+        dst_path = os.path.join( args.output, "mfg_output")
+        try:
+            os.mkdir(dst_path)
+        except FileExistsError:
+            pass
+
+        # copy autogen/mfg_output/* to args.output/mfg_output
+        for root, dirs, files in os.walk(output_path):
+            # For each directory in output_path, create a corresponding directory in dst_path
+            for dir in dirs:
+                dst_dir = os.path.join(dst_path, os.path.relpath(os.path.join(root, dir), output_path))
+                try:
+                    os.mkdir(dst_dir)
+                except FileExistsError:
+                    pass
+            # For each file in output_path, copy it to dst_path
+            for file in files:
+                src_file = os.path.join(root, file)
+                # replicate same tree structure in dst_path
+                dst_file = os.path.join(dst_path, os.path.relpath(src_file, output_path))
+                shutil.copyfile(src_file, dst_file)
+
+    save_project_output()
     main()
+
 except Exception as e:
     if result_content.generatorResult == ResultCodes.OK:
         result_content.generatorResult = ResultCodes.GENERIC_ERROR
@@ -458,11 +500,12 @@ except Exception as e:
         logger.info(e)
 
 finally:
-
     try:
         os.mkdir(os.path.join( args.output, "mfg_output"))
     except FileExistsError:
         pass
 
-    with open(os.path.join(args.output, "mfg_output", RESULT_FILE_NAME), "w") as file:
-         file.write(result_content.toJSON())
+    # New profile/device(s) has been generated
+    if len(result_content.generatedProfiles) > 0:
+        with open(os.path.join(args.output, "mfg_output", RESULT_FILE_NAME), "w") as file:
+            file.write(result_content.toJSON())

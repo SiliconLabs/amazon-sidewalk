@@ -286,7 +286,7 @@ static void ble_connection_cb_fnc(uint16_t conn_id,
                                   bd_addr *bt_addr)
 {
   if (bt_addr != NULL) {
-    SID_PAL_LOG_INFO("Sidewalk BLE State: %sCONNECTED\n", connected ? "" : "DIS");
+    SID_PAL_LOG_INFO("pal: sid BLE state: %sCONNECTED\n", connected ? "" : "DIS");
     ctx.conn_id = conn_id;
     ctx.is_connected = connected;
     memcpy(ctx.bt_addr, bt_addr->addr, BLE_ADDR_MAX_LEN);
@@ -433,12 +433,12 @@ static uint16_t sl_ble_evaluate_permissions(uint16_t xPermissions)
 static sid_error_t ble_adapter_init(const sid_ble_config_t *cfg)
 {
   if (!cfg) {
-    SID_PAL_LOG_ERROR("Missing Sidewalk BLE configuration");
+    SID_PAL_LOG_ERROR("pal: missing sid BLE conf");
     is_bluetooth_started = false;
     return SID_ERROR_INVALID_ARGS;
   }
 
-  SID_PAL_LOG_INFO("Sidewalk BLE initialization is in progress");
+  SID_PAL_LOG_INFO("pal: sid BLE init in progress");
 
   // Save BLE configuration
   ctx.cfg = cfg;
@@ -447,7 +447,7 @@ static sid_error_t ble_adapter_init(const sid_ble_config_t *cfg)
   // Allocate memory dinamically for BLE profile
   ble_profile = (sid_pal_ble_profile_config_t *)sl_malloc(ctx.cfg->num_profile * sizeof(sid_pal_ble_profile_config_t));
   if (!ble_profile) {
-    SID_PAL_LOG_ERROR("Memory allocation failed for Sidewalk BLE profile");
+    SID_PAL_LOG_ERROR("pal: sid BLE profile mem alloc failed");
     return SID_ERROR_GENERIC;
   } else {
     // Allocate memory dinamically for BLE characteristics and descriptors based on config file
@@ -457,7 +457,7 @@ static sid_error_t ble_adapter_init(const sid_ble_config_t *cfg)
       if (!ble_profile[i].current_characteristic_handle) {
         sl_free(ble_profile);
         ble_profile = NULL;
-        SID_PAL_LOG_ERROR("Memory allocation failed for Sidewalk BLE characteristic");
+        SID_PAL_LOG_ERROR("pal: sid BLE characteristic mem alloc failed");
         return SID_ERROR_GENERIC;
       } else {
         ble_profile[i].current_descriptor_handle = (uint16_t *)sl_malloc(ctx.cfg->profile[i].desc_count * sizeof(uint16_t));
@@ -466,7 +466,7 @@ static sid_error_t ble_adapter_init(const sid_ble_config_t *cfg)
           ble_profile[i].current_characteristic_handle = NULL;
           sl_free(ble_profile);
           ble_profile = NULL;
-          SID_PAL_LOG_ERROR("Memory allocation failed for Sidewalk BLE descriptor");
+          SID_PAL_LOG_ERROR("pal: sid BLE descriptor mem alloc failed");
           return SID_ERROR_GENERIC;
         }
       }
@@ -483,8 +483,8 @@ static sid_error_t ble_adapter_init(const sid_ble_config_t *cfg)
   if (!is_bluetooth_started && is_kernel_started) {
     sl_status = sl_bt_system_start_bluetooth();
   } else {
-    SID_PAL_LOG_ERROR("Sidewalk BLE start request is failed due to:%s%s",
-                      is_bluetooth_started ? " Sidewalk BLE stack has already started." : "",
+    SID_PAL_LOG_ERROR("pal: sid BLE start req failed due to:%s%s",
+                      is_bluetooth_started ? " sid BLE stack has already started." : "",
                       !is_kernel_started ? " Kernel has not started yet." : "");
     is_bluetooth_started = false;
     return SID_ERROR_GENERIC;
@@ -496,7 +496,7 @@ static sid_error_t ble_adapter_init(const sid_ble_config_t *cfg)
     size_t OutputDataLen = 0;
     sl_status = sl_bt_system_get_random_data(sizeof(DummyData), sizeof(DummyData), &OutputDataLen, &DummyData);
   } else {
-    SID_PAL_LOG_ERROR("Sidewalk BLE stack is not ready");
+    SID_PAL_LOG_ERROR("pal: sid BLE stack is not ready");
     is_bluetooth_started = false;
     return SID_ERROR_GENERIC;
   }
@@ -506,28 +506,28 @@ static sid_error_t ble_adapter_init(const sid_ble_config_t *cfg)
     // Set default max MTU
     if (sl_bt_gatt_set_max_mtu(ctx.mtu_size, &ctx.mtu_size) != SL_STATUS_OK) {
       sl_ble_free_resources();
-      sl_ble_init_failed("Set default max MTU failed");
+      sl_ble_init_failed("pal: set default max MTU failed");
       return SID_ERROR_GENERIC;
     }
 
     // Set default bondable mode (bonding is disabled)
     if (sl_bt_sm_set_bondable_mode(0) != SL_STATUS_OK) {
       sl_ble_free_resources();
-      sl_ble_init_failed("Set default bondable mode failed");
+      sl_ble_init_failed("pal: set default bondable mode failed");
       return SID_ERROR_GENERIC;
     }
 
     // Set security manager configuration
-    if (sl_bt_sm_configure(SL_BT_DEFAULT_SM_CONFIGURE_FLAGS, sm_io_capability_noinputnooutput) != SL_STATUS_OK) {
+    if (sl_bt_sm_configure(SL_BT_DEFAULT_SM_CONFIGURE_FLAGS, sl_bt_sm_io_capability_noinputnooutput) != SL_STATUS_OK) {
       sl_ble_free_resources();
-      sl_ble_init_failed("Set security manager configuration failed");
+      sl_ble_init_failed("pal: set security mngr conf failed");
       return SID_ERROR_GENERIC;
     }
 
     // Store bonding configuration
     if (sl_bt_sm_store_bonding_configuration(SL_BT_HAL_SM_MAX_BONDING_COUNT, SL_BT_HAL_SM_POLICY_FLAGS) != SL_STATUS_OK) {
       sl_ble_free_resources();
-      sl_ble_init_failed("Store bonding configuration failed");
+      sl_ble_init_failed("pal: store bonding conf failed");
       return SID_ERROR_GENERIC;
     }
 
@@ -537,18 +537,18 @@ static sid_error_t ble_adapter_init(const sid_ble_config_t *cfg)
     if (sl_bt_system_set_tx_power(SL_BT_CONFIG_MIN_TX_POWER, SL_BT_CONFIG_MAX_TX_POWER,
                                   &tx_power_min, &tx_power_max) != SL_STATUS_OK) {
       sl_ble_free_resources();
-      sl_ble_init_failed("Set the global maximum TX power failed");
+      sl_ble_init_failed("pal: set global max TX pwr failed");
       return SID_ERROR_GENERIC;
     }
 
     is_bluetooth_started = true;
   } else {
     sl_ble_free_resources();
-    sl_ble_init_failed("Sidewalk BLE stack has failed to start");
+    sl_ble_init_failed("pal: sid BLE stack start failed");
     return SID_ERROR_GENERIC;
   }
 
-  SID_PAL_LOG_INFO("Sidewalk BLE initialization is successfully completed");
+  SID_PAL_LOG_INFO("pal: sid BLE init success");
 
   return SID_ERROR_NONE;
 }
@@ -622,14 +622,14 @@ static sid_error_t ble_adapter_start_service(void)
         default:
         {
           sl_ble_free_resources();
-          sl_ble_abort_session("Invalid service UUID type", gattdb_session_id);
+          sl_ble_abort_session("pal: invalid service UUID type", gattdb_session_id);
           return SID_ERROR_GENERIC;
           break;
         }
       }
     } else {
       sl_ble_free_resources();
-      sl_ble_abort_session("Start a new GATT database update session for service failed", gattdb_session_id);
+      sl_ble_abort_session("pal: start new GATT db update session for service failed", gattdb_session_id);
       return SID_ERROR_GENERIC;
     }
 
@@ -637,12 +637,12 @@ static sid_error_t ble_adapter_start_service(void)
       // Save all changes performed in current session and close the session
       if (sl_bt_gattdb_commit(gattdb_session_id) != SL_STATUS_OK) {
         sl_ble_free_resources();
-        SID_PAL_LOG_ERROR("Save all changes performed in current session and close the session failed");
+        SID_PAL_LOG_ERROR("pal: save all changes performed in curr session and close session failed");
         return SID_ERROR_GENERIC;
       }
     } else {
       sl_ble_free_resources();
-      sl_ble_abort_session("Add a service into the local GATT database failed", gattdb_session_id);
+      sl_ble_abort_session("pal: add service into the local GATT db failed", gattdb_session_id);
       return SID_ERROR_GENERIC;
     }
 
@@ -715,7 +715,7 @@ static sid_error_t ble_adapter_start_service(void)
                                                               &ble_profile[i].current_characteristic_handle[j]);
         } else {
           sl_ble_free_resources();
-          sl_ble_abort_session("Invalid characteristic UUID type", gattdb_session_id);
+          sl_ble_abort_session("pal: invalid characteristic UUID type", gattdb_session_id);
           return SID_ERROR_GENERIC;
         }
 
@@ -723,17 +723,17 @@ static sid_error_t ble_adapter_start_service(void)
           // Save all changes performed in current session and close the session
           if (sl_bt_gattdb_commit(gattdb_session_id) != SL_STATUS_OK) {
             sl_ble_free_resources();
-            SID_PAL_LOG_ERROR("Save all changes performed in current session and close the session failed");
+            SID_PAL_LOG_ERROR("pal: save all changes performed in curr session and close session failed");
             return SID_ERROR_GENERIC;
           }
         } else {
           sl_ble_free_resources();
-          sl_ble_abort_session("Add UUID characteristic to a service failed", gattdb_session_id);
+          sl_ble_abort_session("pal: add UUID characteristic to a service failed", gattdb_session_id);
           return SID_ERROR_GENERIC;
         }
       } else {
         sl_ble_free_resources();
-        sl_ble_abort_session("Start a new GATT database update session for characteristic failed", gattdb_session_id);
+        sl_ble_abort_session("pal: start new GATT db update session for characteristic failed", gattdb_session_id);
         return SID_ERROR_GENERIC;
       }
     }
@@ -796,7 +796,7 @@ static sid_error_t ble_adapter_start_service(void)
 
         if (last_characteristic_handle == 0) {
           sl_ble_free_resources();
-          sl_ble_abort_session("Invalid characteristic value", gattdb_session_id);
+          sl_ble_abort_session("pal: invalid characteristic value", gattdb_session_id);
           return SID_ERROR_GENERIC;
         }
 
@@ -859,7 +859,7 @@ static sid_error_t ble_adapter_start_service(void)
                                                           &ble_profile[i].current_descriptor_handle[j]);
         } else {
           sl_ble_free_resources();
-          sl_ble_abort_session("Invalid descriptor UUID type", gattdb_session_id);
+          sl_ble_abort_session("pal: invalid descriptor UUID type", gattdb_session_id);
           return SID_ERROR_GENERIC;
         }
 
@@ -867,17 +867,17 @@ static sid_error_t ble_adapter_start_service(void)
           // Save all changes performed in current session and close the session
           if (sl_bt_gattdb_commit(gattdb_session_id) != SL_STATUS_OK) {
             sl_ble_free_resources();
-            SID_PAL_LOG_ERROR("Save all changes performed in current session and close the session failed");
+            SID_PAL_LOG_ERROR("pal: save all changes performed in curr session and close session failed");
             return SID_ERROR_GENERIC;
           }
         } else {
           sl_ble_free_resources();
-          sl_ble_abort_session("Add UUID descriptor to a characteristic failed", gattdb_session_id);
+          sl_ble_abort_session("pal: add UUID descriptor to a characteristic failed", gattdb_session_id);
           return SID_ERROR_GENERIC;
         }
       } else {
         sl_ble_free_resources();
-        sl_ble_abort_session("Start a new GATT database update session for descriptor failed", gattdb_session_id);
+        sl_ble_abort_session("pal: start new GATT db update session for descriptor failed", gattdb_session_id);
         return SID_ERROR_GENERIC;
       }
     }
@@ -892,17 +892,17 @@ static sid_error_t ble_adapter_start_service(void)
         // Save all changes performed in current session and close the session
         if (sl_bt_gattdb_commit(gattdb_session_id) != SL_STATUS_OK) {
           sl_ble_free_resources();
-          SID_PAL_LOG_ERROR("Save all changes performed in current session and close the session failed");
+          SID_PAL_LOG_ERROR("pal: save all changes performed in curr session and close session failed");
           return SID_ERROR_GENERIC;
         }
       } else {
         sl_ble_free_resources();
-        sl_ble_abort_session("Start service failed", gattdb_session_id);
+        sl_ble_abort_session("pal: start service failed", gattdb_session_id);
         return SID_ERROR_GENERIC;
       }
     } else {
       sl_ble_free_resources();
-      sl_ble_abort_session("Start a new GATT database update session for start service failed", gattdb_session_id);
+      sl_ble_abort_session("pal: start new GATT db update session for start service failed", gattdb_session_id);
       return SID_ERROR_GENERIC;
     }
   }
@@ -918,7 +918,7 @@ static sid_error_t ble_adapter_set_adv_data(uint8_t *data, uint8_t length)
       || !ctx.cfg->is_adv_available
       || !ctx.cfg->adv_param.fast_enabled
       || !ctx.cfg->adv_param.slow_enabled) {
-    SID_PAL_LOG_ERROR("Invalid advertisement parameters");
+    SID_PAL_LOG_ERROR("pal: invalid adv params");
     return SID_ERROR_INVALID_ARGS;
   }
 
@@ -932,14 +932,14 @@ static sid_error_t ble_adapter_set_adv_data(uint8_t *data, uint8_t length)
   }
 
   if (!found) {
-    SID_PAL_LOG_ERROR("Invalid service type");
+    SID_PAL_LOG_ERROR("pal: invalid service type");
     return SID_ERROR_INCOMPATIBLE_PARAMS;
   }
 
   // If we don't yet have an advertiser set, create one now
   if (advertising_set_handle == SL_BT_INVALID_ADVERTISING_SET_HANDLE) {
     if (sl_bt_advertiser_create_set(&advertising_set_handle) != SL_STATUS_OK) {
-      SID_PAL_LOG_ERROR("Create advertising set failed");
+      SID_PAL_LOG_ERROR("pal: create adv set failed");
       return SID_ERROR_GENERIC;
     }
   }
@@ -966,7 +966,7 @@ static sid_error_t ble_adapter_set_adv_data(uint8_t *data, uint8_t length)
       break;
 
     default:
-      SID_PAL_LOG_ERROR("Invalid address type");
+      SID_PAL_LOG_ERROR("pal: invalid addr type");
       return SID_ERROR_GENERIC;
       break;
   }
@@ -980,7 +980,7 @@ static sid_error_t ble_adapter_set_adv_data(uint8_t *data, uint8_t length)
     // which is either the public device address programmed at production or the
     // address written into persistent storage using @ref sl_bt_system_set_identity_address command.
     if (sl_bt_advertiser_clear_random_address(advertising_set_handle) != SL_STATUS_OK) {
-      SID_PAL_LOG_ERROR("Clear random address failed");
+      SID_PAL_LOG_ERROR("pal: clear random addr failed");
       return SID_ERROR_GENERIC;
     }
   } else {
@@ -1000,13 +1000,13 @@ static sid_error_t ble_adapter_set_adv_data(uint8_t *data, uint8_t length)
                                                  &data_len,
                                                  adv_static_random_addr.addr);
         if (sl_status != SL_STATUS_OK) {
-          SID_PAL_LOG_ERROR("Failed to get random data");
+          SID_PAL_LOG_ERROR("pal: failed to get random data");
           return SID_ERROR_GENERIC;
         }
 
         // Make sure we got all the bytes we requested
         if (data_len < sizeof(adv_static_random_addr.addr)) {
-          SID_PAL_LOG_ERROR("Failed to get enough random data");
+          SID_PAL_LOG_ERROR("pal: failed to get enough random data");
           return SID_ERROR_GENERIC;
         }
 
@@ -1026,13 +1026,13 @@ static sid_error_t ble_adapter_set_adv_data(uint8_t *data, uint8_t length)
                                                &data_len,
                                                address.addr);
       if (sl_status != SL_STATUS_OK) {
-        SID_PAL_LOG_ERROR("Failed to get random data");
+        SID_PAL_LOG_ERROR("pal: failed to get random data");
         return SID_ERROR_GENERIC;
       }
 
       // Make sure we got all the bytes we requested
       if (data_len < sizeof(address.addr)) {
-        SID_PAL_LOG_ERROR("Failed to get enough random data");
+        SID_PAL_LOG_ERROR("pal: failed to get enough random data");
         return SID_ERROR_GENERIC;
       }
 
@@ -1046,7 +1046,7 @@ static sid_error_t ble_adapter_set_adv_data(uint8_t *data, uint8_t length)
 
     // Set random address for this advertiser
     if (sl_bt_advertiser_set_random_address(advertising_set_handle, address_type, address, &addressOut) != SL_STATUS_OK) {
-      SID_PAL_LOG_ERROR("Set random address for this advertiser failed");
+      SID_PAL_LOG_ERROR("pal: set random addr for adv failed");
       return SID_ERROR_GENERIC;
     }
   }
@@ -1057,7 +1057,7 @@ static sid_error_t ble_adapter_set_adv_data(uint8_t *data, uint8_t length)
                                           adv_timing_params.fast_interval,
                                           adv_timing_params.fast_timeout, 0);
   if (sl_status != SL_STATUS_OK) {
-    SID_PAL_LOG_ERROR("Set timing parameters failed");
+    SID_PAL_LOG_ERROR("pal: set timing params failed");
     return SID_ERROR_GENERIC;
   }
 
@@ -1065,7 +1065,7 @@ static sid_error_t ble_adapter_set_adv_data(uint8_t *data, uint8_t length)
   sl_status = sl_bt_advertiser_set_channel_map(advertising_set_handle,
                                                SL_BT_CHANNEL_MAP);
   if (sl_status != SL_STATUS_OK) {
-    SID_PAL_LOG_ERROR("Set the channel map failed");
+    SID_PAL_LOG_ERROR("pal: set channel map failed");
     return SID_ERROR_GENERIC;
   }
 
@@ -1075,7 +1075,7 @@ static sid_error_t ble_adapter_set_adv_data(uint8_t *data, uint8_t length)
                                             SL_BT_CONFIG_MAX_TX_POWER,
                                             &set_tx_power);
   if (sl_status != SL_STATUS_OK) {
-    SID_PAL_LOG_ERROR("Set the power level failed");
+    SID_PAL_LOG_ERROR("pal: set the pwr lvl failed");
     return SID_ERROR_GENERIC;
   }
 
@@ -1094,7 +1094,7 @@ static sid_error_t ble_adapter_set_adv_data(uint8_t *data, uint8_t length)
   // Make sure the data fits. We need one extra byte for type and another for length
   entry_size = sizeof(flags) + 1 + 1;
   if (size_remaining < entry_size) {
-    SID_PAL_LOG_WARNING("Advertisement data does not fit");
+    SID_PAL_LOG_WARNING("pal: adv data does not fit");
   }
   // Set the length, type, and data
   adv_buf[adv_buf_idx] = sizeof(flags) + 1; // + 1 byte for the type
@@ -1106,26 +1106,24 @@ static sid_error_t ble_adapter_set_adv_data(uint8_t *data, uint8_t length)
   adv_buf_idx += entry_size;
 
   // ====== Optionally append service UUIDs ======
-  if (ctx.cfg->profile[0].service.id.uu != NULL) {
-    // Make sure the data fits. We need one extra byte for type and another for length
-    size_t uuid_len = UUID_LEN_16BIT;
-    entry_size = uuid_len + 1 + 1;
-    if (size_remaining < entry_size) {
-      SID_PAL_LOG_WARNING("Advertisement data does not fit");
-    }
-    // Set the length, type, and data
-    adv_buf[adv_buf_idx] = uuid_len + 1;  // + 1 byte for the type
-    adv_buf[adv_buf_idx + 1] = SL_BT_ADV_DATA_TYPE_COMPLETE_16BIT_UUIDS;
-    // Little endian conversion (16-bit UUID)
-    uint8_t little_endian_uuid[2] = { 0, 0 };
-    little_endian_uuid[0] = ctx.cfg->profile[0].service.id.uu[1];
-    little_endian_uuid[1] = ctx.cfg->profile[0].service.id.uu[0];
-    if (uuid_len > 0) {
-      memcpy(&adv_buf[adv_buf_idx + 2], little_endian_uuid, uuid_len);
-    }
-    size_remaining -= entry_size;
-    adv_buf_idx += entry_size;
+  // Make sure the data fits. We need one extra byte for type and another for length
+  size_t uuid_len = UUID_LEN_16BIT;
+  entry_size = uuid_len + 1 + 1;
+  if (size_remaining < entry_size) {
+    SID_PAL_LOG_WARNING("pal: adv data does not fit");
   }
+  // Set the length, type, and data
+  adv_buf[adv_buf_idx] = uuid_len + 1;  // + 1 byte for the type
+  adv_buf[adv_buf_idx + 1] = SL_BT_ADV_DATA_TYPE_COMPLETE_16BIT_UUIDS;
+  // Little endian conversion (16-bit UUID)
+  uint8_t little_endian_uuid[2] = { 0, 0 };
+  little_endian_uuid[0] = ctx.cfg->profile[0].service.id.uu[1];
+  little_endian_uuid[1] = ctx.cfg->profile[0].service.id.uu[0];
+  if (uuid_len > 0) {
+    memcpy(&adv_buf[adv_buf_idx + 2], little_endian_uuid, uuid_len);
+  }
+  size_remaining -= entry_size;
+  adv_buf_idx += entry_size;
 
   // ====== Optionally append manufacturer data ======
   uint8_t manufacturer_len = length + BLE_COMPANY_ID_BYTE_LENGTH;
@@ -1135,11 +1133,11 @@ static sid_error_t ble_adapter_set_adv_data(uint8_t *data, uint8_t length)
   manuf_data[1] = (uint8_t)(BLE_COMPANY_ID >> 0x08);
   memcpy(&manuf_data[2], data, length);
 
-  if ((manufacturer_len > 0) && (manuf_data != NULL)) {
+  if (manufacturer_len > 0) {
     // Make sure the data fits. We need one extra byte for type and another for length
     entry_size = manufacturer_len + 1 + 1;
     if (size_remaining < entry_size) {
-      SID_PAL_LOG_WARNING("Advertisement data does not fit");
+      SID_PAL_LOG_WARNING("pal: adv data does not fit");
     }
     // Set the length, type, and data
     adv_buf[adv_buf_idx] = manufacturer_len + 1;  // + 1 byte for the type
@@ -1156,7 +1154,7 @@ static sid_error_t ble_adapter_set_adv_data(uint8_t *data, uint8_t length)
 
   // Set the user data to the Bluetooth stack
   if (sl_bt_legacy_advertiser_set_data(advertising_set_handle, sl_bt_advertiser_advertising_data_packet, adv_data_len, adv_buf) != SL_STATUS_OK) {
-    SID_PAL_LOG_ERROR("Set advertisement data failed");
+    SID_PAL_LOG_ERROR("pal: set adv data failed");
     return SID_ERROR_GENERIC;
   }
 
@@ -1174,7 +1172,7 @@ static sid_error_t ble_adapter_set_adv_data(uint8_t *data, uint8_t length)
     // Make sure the data fits. We need one extra byte for type and another for length
     entry_size_scan_rsp = strlen(ctx.cfg->name) + 1 + 1;
     if (size_remaining_scan_rsp < entry_size_scan_rsp) {
-      SID_PAL_LOG_WARNING("Advertisement data does not fit");
+      SID_PAL_LOG_WARNING("pal: adv data does not fit");
     }
     // Set the length, type, and data
     scan_rsp_buf[scan_rsp_buf_idx] = strlen(ctx.cfg->name) + 1; // + 1 byte for the type
@@ -1190,7 +1188,7 @@ static sid_error_t ble_adapter_set_adv_data(uint8_t *data, uint8_t length)
 
   // Set the user data to the Bluetooth stack
   if (sl_bt_legacy_advertiser_set_data(advertising_set_handle, sl_bt_advertiser_scan_response_packet, scan_rsp_data_len, scan_rsp_buf) != SL_STATUS_OK) {
-    SID_PAL_LOG_ERROR("Set scan response data failed");
+    SID_PAL_LOG_ERROR("pal: set scan resp data failed");
     return SID_ERROR_GENERIC;
   }
 
@@ -1202,14 +1200,14 @@ static sid_error_t ble_adapter_start_advertisement(void)
   // If we don't yet have an advertiser set, create one now
   if (advertising_set_handle == SL_BT_INVALID_ADVERTISING_SET_HANDLE) {
     if (sl_bt_advertiser_create_set(&advertising_set_handle) != SL_STATUS_OK) {
-      SID_PAL_LOG_ERROR("Create advertising set failed");
+      SID_PAL_LOG_ERROR("pal: create adv set failed");
       return SID_ERROR_GENERIC;
     }
   }
 
   // Start advertising with user-defined data to listen for incoming connections
   if (sl_bt_legacy_advertiser_start(advertising_set_handle, sl_bt_legacy_advertiser_connectable) != SL_STATUS_OK) {
-    SID_PAL_LOG_ERROR("Start advertising failed");
+    SID_PAL_LOG_ERROR("pal: start adv failed");
     return SID_ERROR_GENERIC;
   }
 
@@ -1223,7 +1221,7 @@ static sid_error_t ble_adapter_stop_advertisement(void)
   // Stop advertising if we have a handle and are currently active
   if ((advertising_set_handle != SL_BT_INVALID_ADVERTISING_SET_HANDLE) && (is_adv_active)) {
     if (sl_bt_advertiser_stop(advertising_set_handle) != SL_STATUS_OK) {
-      SID_PAL_LOG_ERROR("Stop advertising failed");
+      SID_PAL_LOG_ERROR("pal: stop adv failed");
       return SID_ERROR_GENERIC;
     }
 
@@ -1236,12 +1234,12 @@ static sid_error_t ble_adapter_stop_advertisement(void)
 static sid_error_t ble_adapter_send_data(sid_ble_cfg_service_identifier_t id, uint8_t *data, uint16_t length)
 {
   if (!ctx.is_connected) {
-    SID_PAL_LOG_ERROR("Sidewalk BLE is not connected");
+    SID_PAL_LOG_ERROR("pal: sid BLE is not connected");
     return SID_ERROR_PORT_NOT_OPEN;
   }
 
   if (!data || !length || (length > ctx.mtu_size)) {
-    SID_PAL_LOG_ERROR("Invalid arguments");
+    SID_PAL_LOG_ERROR("pal: invalid args");
     return SID_ERROR_INVALID_ARGS;
   }
 
@@ -1269,13 +1267,13 @@ static sid_error_t ble_adapter_send_data(sid_ble_cfg_service_identifier_t id, ui
       // Call the application (failure)
       ctx.callback->ind_callback(false);
 
-      SID_PAL_LOG_ERROR("Send notification failed");
+      SID_PAL_LOG_ERROR("pal: send notif failed");
       return SID_ERROR_GENERIC;
     }
     // Call the application (success)
     ctx.callback->ind_callback(true);
   } else {
-    SID_PAL_LOG_ERROR("Invalid argument to send notification");
+    SID_PAL_LOG_ERROR("pal: invalid arg to send notif");
     return SID_ERROR_INVALID_ARGS;
   }
 
@@ -1304,13 +1302,13 @@ static sid_error_t ble_adapter_set_callback(const sid_pal_ble_adapter_callbacks_
 static sid_error_t ble_adapter_disconnect(void)
 {
   if (!ctx.is_connected) {
-    SID_PAL_LOG_INFO("Sidewalk BLE is not connected");
+    SID_PAL_LOG_INFO("pal: sid BLE is not connected");
     return SID_ERROR_NONE;
   }
 
   // Disconnect a remote device or cancel a pending connection
   if (sl_bt_connection_close(ctx.conn_id) != SL_STATUS_OK) {
-    SID_PAL_LOG_ERROR("Failed to close the connection");
+    SID_PAL_LOG_ERROR("pal: close conn failed");
     return SID_ERROR_GENERIC;
   }
 
@@ -1345,7 +1343,7 @@ static void sl_ble_adapter_on_system_boot(sl_bt_evt_system_boot_t *event)
   // Unused parameter
   (void)event;
   // Print boot message
-  SID_PAL_LOG_INFO("Sidewalk BLE stack is booted: v%d.%d.%d-b%d\n", event->major, event->minor, event->patch, event->build);
+  SID_PAL_LOG_INFO("pal: sid BLE booted: v%d.%d.%d-b%d\n", event->major, event->minor, event->patch, event->build);
 
   // Nothing to do, because kernel is already started and ble_adapter_init() will take care of the initial configuration
 }

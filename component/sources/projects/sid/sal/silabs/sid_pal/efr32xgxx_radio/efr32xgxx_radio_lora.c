@@ -117,6 +117,11 @@ uint32_t sid_pal_radio_get_lora_tx_process_delay(void)
   return RADIO_ERROR_NONE;
 }
 
+uint32_t sid_pal_radio_get_lora_rx_process_delay(void)
+{
+  return RADIO_ERROR_NONE;
+}
+
 int32_t sid_pal_radio_lora_start_cad(void)
 {
   return RADIO_ERROR_NONE;

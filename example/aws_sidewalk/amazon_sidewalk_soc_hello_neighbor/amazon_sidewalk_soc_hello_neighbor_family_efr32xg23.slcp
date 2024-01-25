@@ -7,7 +7,7 @@ category: Example|AWS IoT
 
 sdk_extension:
   - id: sidewalk
-    version: 1.2.2
+    version: 2.0.0
 
 source:
   - path: main.c
@@ -30,6 +30,8 @@ component:
 - id: app_log
   from: sidewalk
 - id: app_button_press
+  from: sidewalk
+- id: sidewalk_board_support
   from: sidewalk
 #############################################
 # GSDK extension components
@@ -95,10 +97,6 @@ configuration:
     value: 24576
   - name: APP_LOG_AUTO_NL
     value: 1
-  - name: SL_BT_CONFIG_MIN_TX_POWER
-    value: (-260)
-  - name: SL_BT_CONFIG_MAX_TX_POWER
-    value: (100)
   - name: APP_LOG_LEVEL_DEBUG_PREFIX
     value: '"<debug>"'
   - name: APP_LOG_LEVEL_INFO_PREFIX
@@ -122,7 +120,7 @@ ui_hints:
 config_file:
   - path: ../../../tools/cloudformation/public/CF_minimal_sidewalk.json
     directory: sidewalk
-  - path: ../../sidewalk.asconf
+  - path: ../../configurator/fsk/sidewalk.asconf
     directory: sidewalk
   - path: ../../mfg.runconf
     directory: sidewalk
@@ -143,10 +141,6 @@ filter:
 
 #-------------- Template Contribution ----------------
 template_contribution:
- - name: bluetooth_on_event
-   value:
-      include: sid_pal_ble_adapter_ifc.h
-      function: sl_ble_adapter_on_event
 #------------------ CLI commands ---------------------
  - name: cli_command
    value:

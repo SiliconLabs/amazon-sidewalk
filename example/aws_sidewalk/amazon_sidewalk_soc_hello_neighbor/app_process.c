@@ -43,6 +43,10 @@
 #include "sl_malloc.h"
 #include "app_button_press.h"
 
+#if defined(SL_BOARD_SUPPORT)
+#include "sl_sidewalk_board_support.h"
+#endif
+
 #if (defined(SL_FSK_SUPPORTED) || defined(SL_CSS_SUPPORTED))
 #include "app_subghz_config.h"
 #endif
@@ -56,6 +60,12 @@
 #include "sl_simple_button_instances.h"
 #endif
 
+// CSS TIMESYNC BACKOFF WORKAROUND BEGIN
+#if defined(SL_CSS_SUPPORTED)
+#include "timers.h"
+#endif
+// CSS TIMESYNC BACKOFF WORKAROUND END
+
 // -----------------------------------------------------------------------------
 //                              Macros and Typedefs
 // -----------------------------------------------------------------------------
@@ -64,9 +74,24 @@
 #define MSG_QUEUE_LEN       (10U)
 
 #define UNUSED(x) (void)(x)
+
+// CSS TIMESYNC BACKOFF WORKAROUND BEGIN
+#if defined(SL_CSS_SUPPORTED)
+#define CSS_TIMESYNC_INTERVAL     (30000) // Lora timesync request interval is 30 sec
+#define CSS_TIMESYNC_RETRIES      (3)
+#define CSS_TIMER_INTERVAL        (600000)
+#define CSS_TIMER_CHECKER_PERIOD  (10000)
+#endif
+// CSS TIMESYNC BACKOFF WORKAROUND END
 // -----------------------------------------------------------------------------
 //                          Static Function Declarations
 // -----------------------------------------------------------------------------
+// CSS TIMESYNC BACKOFF WORKAROUND BEGIN
+#if defined(SL_CSS_SUPPORTED)
+static void css_time_sync_checker_cb(TimerHandle_t pxTimer);
+static void css_time_sync_timeout_cb(TimerHandle_t pxTimer);
+#endif
+// CSS TIMESYNC BACKOFF WORKAROUND END
 
 /*******************************************************************************
  * Issue a queue event.
@@ -197,6 +222,20 @@ static bool button_send_update_req;
 #endif
 
 static app_context_t application_context;
+
+// CSS TIMESYNC BACKOFF WORKAROUND BEGIN
+#if defined(SL_CSS_SUPPORTED)
+static TimerHandle_t css_time_sync_checker_tim = NULL;
+static TimerHandle_t css_time_sync_timeout_tim = NULL;
+
+static enum sid_time_sync_status css_time_sync_status = SID_STATUS_TIME_SYNCED;
+static uint8_t css_time_sync_timeout_cnt = CSS_TIMESYNC_RETRIES;
+static TickType_t css_time_sync_checker_tim_periods = CSS_TIMER_CHECKER_PERIOD;
+static uint8_t css_time_sync_timeout_checker_retires = CSS_TIMESYNC_RETRIES;
+
+static bool timer_can_be_restarted = false;
+#endif
+// CSS TIMESYNC BACKOFF WORKAROUND END
 // -----------------------------------------------------------------------------
 //                          Public Function Definitions
 // -----------------------------------------------------------------------------
@@ -207,7 +246,7 @@ static int32_t init_and_start_link(app_context_t *context, struct sid_config *co
     if (context->sidewalk_handle != NULL) {
       ret = sid_deinit(context->sidewalk_handle);
       if (ret != SID_ERROR_NONE) {
-        app_log_error("app: failed to deinitialize sidewalk, link_mask:%x, err:%d", (int)link_mask, (int)ret);
+        app_log_error("app: sid deinit failed, link:%x, err:%d", (int)link_mask, (int)ret);
         goto error;
       }
     }
@@ -217,16 +256,42 @@ static int32_t init_and_start_link(app_context_t *context, struct sid_config *co
     // Initialise sidewalk
     ret = sid_init(config, &sid_handle);
     if (ret != SID_ERROR_NONE) {
-      app_log_error("app: failed to initialize sidewalk link_mask:%x, err:%d", (int)link_mask, (int)ret);
+      app_log_error("app: sid init failed, link:%x, err:%d", (int)link_mask, (int)ret);
       goto error;
     }
 
+#if (defined(SL_SIDEWALK_COMMON_DEFAULT_LINK_CONNECTION_POLICY) && (SL_SIDEWALK_COMMON_DEFAULT_LINK_CONNECTION_POLICY == SID_LINK_CONNECTION_POLICY_MULTI_LINK_MANAGER)) \
+    && defined(SL_SIDEWALK_COMMON_DEFAULT_MULTI_LINK_POLICY)
+    enum sid_link_connection_policy link_conn_policy = SL_SIDEWALK_COMMON_DEFAULT_LINK_CONNECTION_POLICY;
+    ret = sid_option(sid_handle, SID_OPTION_SET_LINK_CONNECTION_POLICY, &link_conn_policy, sizeof(enum sid_link_connection_policy));
+    if (ret != SID_ERROR_NONE && ret != SID_ERROR_NOSUPPORT) {
+      app_log_error("app: set link conn policy failed: %d", ret);
+      goto error;
+    } else if (ret == SID_ERROR_NOSUPPORT) {
+      app_log_warning("app: link conn policy change not supported on this platform");
+    } else {
+      app_log_info("app: link conn policy set");
+    }
+
+    enum sid_link_multi_link_policy multi_link_policy = SL_SIDEWALK_COMMON_DEFAULT_MULTI_LINK_POLICY;
+    ret = sid_option(sid_handle, SID_OPTION_SET_LINK_POLICY_MULTI_LINK_POLICY, &multi_link_policy, sizeof(enum sid_link_multi_link_policy));
+    if (ret != SID_ERROR_NONE && ret != SID_ERROR_NOSUPPORT) {
+      app_log_error("app: set multi-link policy failed: %d", ret);
+      goto error;
+    } else if (ret == SID_ERROR_NOSUPPORT) {
+      app_log_warning("app: multi-link policy change not supported on this platform");
+    } else {
+      app_log_info("app: multi-link policy set");
+    }
+#endif
+
     // Register sidewalk handler to the application context
     context->sidewalk_handle = sid_handle;
+
     // Start the sidewalk stack
     ret = sid_start(sid_handle, link_mask);
     if (ret != SID_ERROR_NONE) {
-      app_log_error("app: failed to start sidewalk, link_mask:%x, err:%d", (int)link_mask, (int)ret);
+      app_log_error("app: start sid failed, link:%x, err:%d", (int)link_mask, (int)ret);
       goto error;
     }
   }
@@ -234,6 +299,21 @@ static int32_t init_and_start_link(app_context_t *context, struct sid_config *co
 #if defined(SL_BLE_SUPPORTED)
   button_send_update_req = false;
 #endif
+
+// CSS TIMESYNC BACKOFF WORKAROUND BEGIN
+#if defined(SL_CSS_SUPPORTED)
+  if ((link_mask & SID_LINK_TYPE_3) && (css_time_sync_status == SID_STATUS_NO_TIME) && (timer_can_be_restarted == true)) {
+    if ((xTimerIsTimerActive(css_time_sync_checker_tim) == pdFALSE) && (xTimerIsTimerActive(css_time_sync_timeout_tim) == pdFALSE)) {
+      if (xTimerStart(css_time_sync_checker_tim, 0) == pdFALSE) {
+        app_log_error("app: CSS time sync checker timer start failed");
+        goto error;
+      }
+      css_time_sync_timeout_checker_retires = CSS_TIMESYNC_RETRIES;
+      css_time_sync_checker_tim_periods = CSS_TIMER_CHECKER_PERIOD;
+    }
+  }
+#endif
+// CSS TIMESYNC BACKOFF WORKAROUND END
 
   return 0;
 
@@ -263,7 +343,7 @@ static uint32_t link_type_to_link_mask(uint8_t link_type)
 
 void main_thread(void * context)
 {
-  //Creating application context
+  // Creating application context
   (void)context;
 
   // Application context creation
@@ -276,27 +356,34 @@ void main_thread(void * context)
   struct sid_event_callbacks event_callbacks =
   {
     .context           = &application_context,
-    .on_event          = on_sidewalk_event,              /* Called from ISR context */
-    .on_msg_received   = on_sidewalk_msg_received,       /* Called from sid_process() */
-    .on_msg_sent       = on_sidewalk_msg_sent,           /* Called from sid_process() */
-    .on_send_error     = on_sidewalk_send_error,         /* Called from sid_process() */
-    .on_status_changed = on_sidewalk_status_changed,     /* Called from sid_process() */
-    .on_factory_reset  = on_sidewalk_factory_reset,      /* Called from sid_process() */
+    .on_event          = on_sidewalk_event,               // Called from ISR context
+    .on_msg_received   = on_sidewalk_msg_received,        // Called from sid_process()
+    .on_msg_sent       = on_sidewalk_msg_sent,            // Called from sid_process()
+    .on_send_error     = on_sidewalk_send_error,          // Called from sid_process()
+    .on_status_changed = on_sidewalk_status_changed,      // Called from sid_process()
+    .on_factory_reset  = on_sidewalk_factory_reset,       // Called from sid_process()
   };
 
   // Set configuration parameters
   struct sid_config config =
   {
     .link_mask = 0,
-    .time_sync_periodicity_seconds = 7200,
     .callbacks   = &event_callbacks,
     .link_config = NULL,
     .sub_ghz_link_config = NULL,
   };
 
+#if defined(SL_BOARD_SUPPORT)
+  sl_sidewalk_board_support_init();
+#endif
+
+#if defined(SL_BOARD_SUPPORT) && (defined(SL_TEMPERATURE_SENSOR_INTERNAL) || defined(SL_TEMPERATURE_SENSOR_EXTERNAL))
+  sl_sidewalk_start_temperature_timer();
+#endif
+
   // Queue creation for the sidewalk events
   g_event_queue = xQueueCreate(MSG_QUEUE_LEN, sizeof(enum event_type));
-  app_assert(g_event_queue != NULL, "queue creation failed");
+  app_assert(g_event_queue != NULL, "app: queue creation failed");
 
 #if (defined(SL_FSK_SUPPORTED) || defined(SL_CSS_SUPPORTED))
   config.sub_ghz_link_config = app_get_sub_ghz_config();
@@ -307,10 +394,6 @@ void main_thread(void * context)
   button_send_update_req = false;
 #endif
 
-  if (init_and_start_link(&application_context, &config, link_type_to_link_mask(SL_SIDEWALK_COMMON_REGISTRATION_LINK)) != 0) {
-    goto error;
-  }
-
 #if defined(SL_BLE_SUPPORTED)
   application_context.connection_request = false;
 #endif
@@ -320,6 +403,43 @@ void main_thread(void * context)
 
   // Assign queue to the application context
   application_context.event_queue = g_event_queue;
+
+  // CSS TIMESYNC BACKOFF WORKAROUND BEGIN
+#if defined(SL_CSS_SUPPORTED)
+  css_time_sync_checker_tim = xTimerCreate("lora_time_sync_checker",
+                                           pdMS_TO_TICKS(CSS_TIMER_CHECKER_PERIOD),
+                                           pdFALSE,
+                                           (void*)0,
+                                           css_time_sync_checker_cb);
+  if (!css_time_sync_checker_tim) {
+    app_log_error("app: css_time_sync_checker_tim creation failed");
+    goto error;
+  }
+
+  css_time_sync_timeout_tim = xTimerCreate("lora_time_sync_timeout",
+                                           pdMS_TO_TICKS(CSS_TIMESYNC_INTERVAL),
+                                           pdTRUE,
+                                           (void*)1,
+                                           css_time_sync_timeout_cb);
+  if (!css_time_sync_timeout_tim) {
+    app_log_error("app: css_time_sync_timeout_tim creation failed");
+    goto error;
+  }
+#endif
+  // CSS TIMESYNC BACKOFF WORKAROUND END
+
+  if (init_and_start_link(&application_context, &config, link_type_to_link_mask(SL_SIDEWALK_COMMON_REGISTRATION_LINK)) != 0) {
+    goto error;
+  }
+
+  // CSS TIMESYNC BACKOFF WORKAROUND BEGIN
+#if defined(SL_CSS_SUPPORTED)
+  if (xTimerStart(css_time_sync_checker_tim, 0) == pdFALSE) {
+    app_log_error("app: CSS time sync checker timer start failed");
+    goto error;
+  }
+#endif
+  // CSS TIMESYNC BACKOFF WORKAROUND END
 
   while (1) {
     enum event_type event = EVENT_TYPE_INVALID;
@@ -332,35 +452,35 @@ void main_thread(void * context)
           break;
 
         case EVENT_TYPE_SEND_COUNTER_UPDATE:
-          app_log_info("app: send counter update event");
+          app_log_info("app: send ctr update evt");
 
           if (application_context.state == STATE_SIDEWALK_READY) {
             send_counter_update(&application_context);
           } else {
-            app_log_warning("app: sidewalk not ready");
+            app_log_warning("app: sid not ready");
           }
           break;
 
         case EVENT_TYPE_GET_TIME:
-          app_log_info("app: get time event");
+          app_log_info("app: get time evt");
 
           get_time(&application_context);
           break;
 
         case EVENT_TYPE_GET_MTU:
-          app_log_info("app: get MTU event");
+          app_log_info("app: get MTU evt");
 
           get_mtu(&application_context);
           break;
 
         case EVENT_TYPE_FACTORY_RESET:
-          app_log_info("app: factory reset event");
+          app_log_info("app: factory reset evt");
 
           factory_reset(&application_context);
           break;
 
         case EVENT_TYPE_LINK_SWITCH:
-          app_log_info("app: link switch event");
+          app_log_info("app: link switch evt");
 
           if (link_switch(&application_context, &config) != true) {
             goto error;
@@ -368,8 +488,10 @@ void main_thread(void * context)
           break;
 
         case EVENT_TYPE_REGISTERED:
+          app_log_info("app: device registered evt");
+
           if (SL_SIDEWALK_COMMON_DEFAULT_LINK_TYPE != SL_SIDEWALK_COMMON_REGISTRATION_LINK) {
-            if (init_and_start_link(&application_context, &config, link_type_to_link_mask(SL_SIDEWALK_COMMON_DEFAULT_LINK_TYPE)) != 0) {
+            if (init_and_start_link(&application_context, &config, link_type_to_link_mask(SL_SIDEWALK_LINK_TO_USE)) != 0) {
               goto error;
             }
           }
@@ -377,21 +499,80 @@ void main_thread(void * context)
 
 #if defined(SL_BLE_SUPPORTED)
         case EVENT_TYPE_CONNECTION_REQUEST:
-          app_log_info("app: connection request event");
+          app_log_info("app: conn req evt");
 
           toggle_connection_request(&application_context);
           break;
 #endif
 
+          // CSS TIMESYNC BACKOFF WORKAROUND BEGIN
+#if defined(SL_CSS_SUPPORTED)
+        case EVENT_TYPE_CSS_TIMESYNC_CHECK:
+          if ((css_time_sync_status == SID_STATUS_NO_TIME)
+              && (config.link_mask & SID_LINK_TYPE_3)) {
+            if (sid_start(application_context.sidewalk_handle, SID_LINK_TYPE_3) != 0) {
+              goto error;
+            }
+
+            if (xTimerStart(css_time_sync_timeout_tim, 0) == pdFALSE) {
+              app_log_error("app: CSS time sync timeout timer start failed");
+              goto error;
+            }
+          } else {
+            css_time_sync_timeout_cnt = CSS_TIMESYNC_RETRIES;
+          }
+          break;
+
+        case EVENT_TYPE_CSS_TIMESYNC_TIMEOUT:
+          if ((css_time_sync_status == SID_STATUS_NO_TIME)
+              && (config.link_mask & SID_LINK_TYPE_3)
+              && (css_time_sync_timeout_cnt != 0)) {
+            css_time_sync_timeout_cnt--;
+          } else {
+            css_time_sync_timeout_cnt = CSS_TIMESYNC_RETRIES;
+
+            if (application_context.sidewalk_handle != NULL) {
+              if ((config.link_mask & SID_LINK_TYPE_3) && (css_time_sync_status == SID_STATUS_NO_TIME)) {
+                app_log_warning("app: CSS timesync timeout, stop CSS");
+                if (sid_stop(application_context.sidewalk_handle, SID_LINK_TYPE_3) != SID_ERROR_NONE) {
+                  app_log_error("app: sid stop failed");
+                  goto error;
+                }
+              }
+            } else {
+              app_log_error("app: sid handle is NULL");
+              goto error;
+            }
+
+            if (xTimerStop(css_time_sync_timeout_tim, 0) == pdFALSE) {
+              app_log_error("app: CSS time sync timeout timer stop failed");
+              goto error;
+            }
+
+            if (css_time_sync_timeout_checker_retires != 0) {
+              css_time_sync_timeout_checker_retires--;
+              css_time_sync_checker_tim_periods += CSS_TIMER_INTERVAL;
+              if (xTimerChangePeriod(css_time_sync_checker_tim, pdMS_TO_TICKS(css_time_sync_checker_tim_periods), 0) != pdPASS) {
+                app_log_error("app: CSS time sync checker timer change period failed");
+                goto error;
+              }
+              css_time_sync_timeout_cnt = CSS_TIMESYNC_RETRIES;
+              timer_can_be_restarted = false;
+            }
+          }
+          break;
+#endif
+        // CSS TIMESYNC BACKOFF WORKAROUND END
+
         default:
-          app_log_error("app: unexpected event: %d", (int)event);
+          app_log_error("app: unexpected evt: %d", (int)event);
           break;
       }
     }
   }
 
   error:
-// If error happens deinit sidewalk
+  // If error happens deinit sidewalk
   if (application_context.sidewalk_handle != NULL) {
     sid_stop(application_context.sidewalk_handle, config.link_mask);
     sid_deinit(application_context.sidewalk_handle);
@@ -399,6 +580,7 @@ void main_thread(void * context)
   }
   app_log_error("app: fatal error");
 
+  sid_platform_deinit();
   vTaskDelete(NULL);
 }
 
@@ -417,35 +599,35 @@ void app_button_press_cb(uint8_t button, uint8_t duration)
     } else { // short press
       app_trigger_connect_and_send();
     }
-#else /* All others target others than KG100S */
+#else // All others target others than KG100S
     (void)duration;
     app_trigger_link_switch();
-#endif /* !defined(SL_CATALOG_BTN1_PRESENT) */
+#endif  // !defined(SL_CATALOG_BTN1_PRESENT)
   } else { // PB1
 #if !defined(SL_CATALOG_BTN1_PRESENT) //KG100S
-    app_log_error("app: KG100S button 1 is not configured.");
+    app_log_error("app: KG100S btn 1 not configured");
 #else
     app_trigger_connect_and_send();
-#endif /* !defined(SL_CATALOG_BTN1_PRESENT) */
+#endif // !defined(SL_CATALOG_BTN1_PRESENT)
   }
 }
 #endif
 
 void app_trigger_connect_and_send(void)
 {
-  if(application_context.current_link_type & SID_LINK_TYPE_1) { // BLE
+  if (application_context.current_link_type & SID_LINK_TYPE_1) { // BLE
 #if defined(SL_BLE_SUPPORTED)
     if (application_context.state != STATE_SIDEWALK_READY) {
       if (!button_send_update_req) {
         button_send_update_req = true;
         app_trigger_connection_request();
       } else {
-        app_log_info("app: waiting for connection");
+        app_log_info("app: waiting for conn");
       }
     } else {
       app_trigger_send_counter_update();
     }
-#endif /* defined(SL_BLE_SUPPORTED) */
+#endif // defined(SL_BLE_SUPPORTED)
   } else { // FSK or CSS
     app_trigger_send_counter_update();
   }
@@ -455,15 +637,15 @@ void app_trigger_connect_and_send(void)
 static void toggle_connection_request(app_context_t *context)
 {
   if (context->state == STATE_SIDEWALK_READY) {
-    app_log_info("app: sidewalk ready, operation not valid");
+    app_log_info("app: sid ready, operation invalid");
   } else {
     context->connection_request = true;
 
-    app_log_info("app: set connection request");
+    app_log_info("app: set conn req");
 
     sid_error_t ret = sid_ble_bcn_connection_request(context->sidewalk_handle, context->connection_request);
     if (ret != SID_ERROR_NONE) {
-      app_log_error("app: connection request failed: %d", (int)ret);
+      app_log_error("app: conn req failed: %d", (int)ret);
     }
   }
 }
@@ -472,57 +654,59 @@ static void toggle_connection_request(app_context_t *context)
 void app_trigger_switching_to_default_link(void)
 {
   queue_event(g_event_queue, EVENT_TYPE_REGISTERED);
-
-  app_log_info("app: initialising default link");
 }
 
 void app_trigger_link_switch(void)
 {
   queue_event(g_event_queue, EVENT_TYPE_LINK_SWITCH);
-
-  app_log_info("app: link switch user event");
 }
 
 void app_trigger_send_counter_update(void)
 {
   queue_event(g_event_queue, EVENT_TYPE_SEND_COUNTER_UPDATE);
-
-  app_log_info("app: send counter update user event");
 }
 
 void app_trigger_factory_reset(void)
 {
   queue_event(g_event_queue, EVENT_TYPE_FACTORY_RESET);
-
-  app_log_info("app: factory reset user event");
 }
 
 void app_trigger_get_time(void)
 {
   queue_event(g_event_queue, EVENT_TYPE_GET_TIME);
-
-  app_log_info("app: get time user event");
 }
 
 void app_trigger_get_mtu(void)
 {
   queue_event(g_event_queue, EVENT_TYPE_GET_MTU);
-
-  app_log_info("app: get mtu user event");
 }
 
 #if defined(SL_BLE_SUPPORTED)
 void app_trigger_connection_request(void)
 {
   queue_event(g_event_queue, EVENT_TYPE_CONNECTION_REQUEST);
-
-  app_log_info("app: connection request user event");
 }
 #endif
 
 // -----------------------------------------------------------------------------
 //                          Static Function Definitions
 // -----------------------------------------------------------------------------
+// CSS TIMESYNC BACKOFF WORKAROUND BEGIN
+#if defined(SL_CSS_SUPPORTED)
+static void css_time_sync_checker_cb(TimerHandle_t pxTimer)
+{
+  (void) pxTimer;
+  queue_event(g_event_queue, EVENT_TYPE_CSS_TIMESYNC_CHECK);
+}
+
+static void css_time_sync_timeout_cb(TimerHandle_t pxTimer)
+{
+  (void) pxTimer;
+  queue_event(g_event_queue, EVENT_TYPE_CSS_TIMESYNC_TIMEOUT);
+}
+#endif
+// CSS TIMESYNC BACKOFF WORKAROUND END
+
 static void queue_event(QueueHandle_t queue,
                         enum event_type event)
 {
@@ -551,7 +735,7 @@ static void on_sidewalk_msg_received(const struct sid_msg_desc *msg_desc,
                                      void *context)
 {
   UNUSED(context);
-  app_log_info("app: received message (type: %d, id: %u, size: %u)", (int)msg_desc->type, msg_desc->id, msg->size);
+  app_log_info("app: rcvd msg (type: %d, id: %u, size: %u)", (int)msg_desc->type, msg_desc->id, msg->size);
   app_log_info("app: %s", (char *) msg->data);
 }
 
@@ -559,7 +743,7 @@ static void on_sidewalk_msg_sent(const struct sid_msg_desc *msg_desc,
                                  void *context)
 {
   UNUSED(context);
-  app_log_info("app: sent message (type: %d, id: %u)", (int)msg_desc->type, msg_desc->id);
+  app_log_info("app: sent msg (type: %d, id: %u)", (int)msg_desc->type, msg_desc->id);
 }
 
 static void on_sidewalk_send_error(sid_error_t error,
@@ -567,7 +751,7 @@ static void on_sidewalk_send_error(sid_error_t error,
                                    void *context)
 {
   UNUSED(context);
-  app_log_error("app: failed to send message (type: %d, id: %u, err: %d)",
+  app_log_error("app: send msg failed (type: %d, id: %u, err: %d)",
                 (int)msg_desc->type, msg_desc->id, (int)error);
 }
 
@@ -579,7 +763,7 @@ static void on_sidewalk_status_changed(const struct sid_status *status,
 {
   app_context_t *app_context = (app_context_t *)context;
 
-  app_log_info("app: sidewalk status changed: %d", (int)status->state);
+  app_log_info("app: sid status changed: %d", (int)status->state);
 
   switch (status->state) {
     case SID_STATE_READY:
@@ -591,7 +775,7 @@ static void on_sidewalk_status_changed(const struct sid_status *status,
       break;
 
     case SID_STATE_ERROR:
-      app_log_error("app: sidewalk state error: %d", (int)sid_get_error(app_context->sidewalk_handle));
+      app_log_error("app: sid state err: %d", (int)sid_get_error(app_context->sidewalk_handle));
       break;
 
     case SID_STATE_SECURE_CHANNEL_READY:
@@ -603,9 +787,10 @@ static void on_sidewalk_status_changed(const struct sid_status *status,
     app_trigger_switching_to_default_link();
   }
 
-  app_log_info("app: registration status: %d, time sync status: %d, link status: %d",
-               (int) status->detail.registration_status, (int) status->detail.time_sync_status,
-               (int) status->detail.link_status_mask);
+  app_log_info("app: REG: %u, TIME: %u, LINK: %lu",
+               status->detail.registration_status,
+               status->detail.time_sync_status,
+               status->detail.link_status_mask);
 
 #if defined(SL_BLE_SUPPORTED)
   if (button_send_update_req && status->state == SID_STATE_READY) {
@@ -614,12 +799,17 @@ static void on_sidewalk_status_changed(const struct sid_status *status,
   }
 #endif
 
+// CSS TIMESYNC BACKOFF WORKAROUND BEGIN
+#if defined(SL_CSS_SUPPORTED)
+  css_time_sync_status = status->detail.time_sync_status;
+#endif
+// CSS TIMESYNC BACKOFF WORKAROUND END
 }
 
 static void on_sidewalk_factory_reset(void *context)
 {
   UNUSED(context);
-  app_log_info("app: factory reset notification received from sid api");
+  app_log_info("app: factory reset notif rcvd");
   // This is the callback function of the factory reset and as the last step a reset is applied.
   NVIC_SystemReset();
 }
@@ -635,28 +825,28 @@ static enum sid_link_type get_next_link(enum sid_link_type current_link)
   // BLE -> FSK -> CSS
   if (current_link == SID_LINK_TYPE_1) {
 #if defined(SL_FSK_SUPPORTED)
-    app_log_info("app: Switching to FSK...");
+    app_log_info("app: switching to FSK...");
     return SID_LINK_TYPE_2;
 #elif defined(SL_CSS_SUPPORTED)
-    app_log_info("app: Switching to CSS...");
+    app_log_info("app: switching to CSS...");
     return SID_LINK_TYPE_3;
 #endif
     return SID_LINK_TYPE_1;
   } else if (current_link == SID_LINK_TYPE_2) {
 #if defined(SL_CSS_SUPPORTED)
-    app_log_info("app: Switching to CSS...");
+    app_log_info("app: switching to CSS...");
     return SID_LINK_TYPE_3;
 #elif defined(SL_BLE_SUPPORTED)
-    app_log_info("app: Switching to BLE...");
+    app_log_info("app: switching to BLE...");
     return SID_LINK_TYPE_1;
 #endif
     return SID_LINK_TYPE_2;
   } else { // (current_link == SID_LINK_TYPE_3)
 #if defined(SL_BLE_SUPPORTED)
-    app_log_info("app: Switching to BLE...");
+    app_log_info("app: switching to BLE...");
     return SID_LINK_TYPE_1;
 #elif defined(SL_FSK_SUPPORTED)
-    app_log_info("app: Switching to FSK...");
+    app_log_info("app: switching to FSK...");
     return SID_LINK_TYPE_2;
 #endif
     return SID_LINK_TYPE_3;
@@ -668,12 +858,20 @@ static bool link_switch(app_context_t *app_context, struct sid_config *config)
   enum sid_link_type current_link = config->link_mask;
   enum sid_link_type next_link = get_next_link(config->link_mask);
 
+  // CSS TIMESYNC BACKOFF WORKAROUND BEGIN
+#if defined(SL_CSS_SUPPORTED)
+  if ((next_link & SID_LINK_TYPE_3) || (current_link & SID_LINK_TYPE_3)) {
+    timer_can_be_restarted = true;
+  }
+#endif
+  // CSS TIMESYNC BACKOFF WORKAROUND END
+
   if (current_link != next_link) {
     if (init_and_start_link(app_context, config, next_link) != 0) {
       return false;
     }
   } else {
-    app_log_warning("app: only one link is available on this platform...");
+    app_log_warning("app: only 1 link available on this platform");
   }
 
   return true;
@@ -681,14 +879,14 @@ static bool link_switch(app_context_t *app_context, struct sid_config *config)
 
 static void send_counter_update(app_context_t *app_context)
 {
-  char counter_buff[10] = {0};
+  char counter_buff[10] = { 0 };
 
   if (app_context->state == STATE_SIDEWALK_READY
       || app_context->state == STATE_SIDEWALK_SECURE_CONNECTION) {
-    app_log_info("app: sending counter update: %d", app_context->counter);
+    app_log_info("app: sending ctr update: %d", app_context->counter);
 
     // buffer for str representation of integer value
-    snprintf(counter_buff, sizeof(counter_buff), "%d", app_context->counter );
+    snprintf(counter_buff, sizeof(counter_buff), "%d", app_context->counter);
 
     struct sid_msg msg = {
       .data = (void *)counter_buff,
@@ -701,14 +899,14 @@ static void send_counter_update(app_context_t *app_context)
 
     sid_error_t ret = sid_put_msg(app_context->sidewalk_handle, &msg, &desc);
     if (ret != SID_ERROR_NONE) {
-      app_log_error("app: failed queueing data: %d", (int)ret);
+      app_log_error("app: queueing data failed: %d", (int)ret);
     } else {
-      app_log_info("app: queued data message id: %u", desc.id);
+      app_log_info("app: queued data msg id: %u", desc.id);
     }
 
     app_context->counter++;
   } else {
-    app_log_error("app: sidewalk is not ready yet");
+    app_log_error("app: sid is not ready yet");
   }
 }
 
@@ -716,11 +914,11 @@ static void factory_reset(app_context_t *context)
 {
   sid_error_t ret = sid_set_factory_reset(context->sidewalk_handle);
   if (ret != SID_ERROR_NONE) {
-    app_log_error("app: notification of factory reset to sid api failed");
+    app_log_error("app: factory reset notif failed");
 
     NVIC_SystemReset();
   } else {
-    app_log_info("app: waiting for sid api to notify to proceed with factory reset");
+    app_log_info("app: wait to proceed with factory reset");
   }
 }
 
@@ -729,9 +927,9 @@ static void get_time(app_context_t *context)
   struct sid_timespec curr_time;
   sid_error_t ret = sid_get_time(context->sidewalk_handle, SID_GET_GPS_TIME, &curr_time);
   if (ret == SID_ERROR_NONE) {
-    app_log_info("app: current time: %d.%d", (int) curr_time.tv_sec, (int) curr_time.tv_nsec);
+    app_log_info("app: curr time: %d.%d", (int) curr_time.tv_sec, (int) curr_time.tv_nsec);
   } else {
-    app_log_error("app: failed getting time: %d", ret);
+    app_log_error("app: get time failed: %d", ret);
   }
 }
 
@@ -740,8 +938,8 @@ static void get_mtu(app_context_t *context)
   size_t mtu;
   sid_error_t ret = sid_get_mtu(context->sidewalk_handle, SID_LINK_TYPE_2, &mtu);
   if (ret == SID_ERROR_NONE) {
-    app_log_info("app: current mtu: %d", mtu);
+    app_log_info("app: curr mtu: %d", mtu);
   } else {
-    app_log_error("app: failed getting MTU: %d", ret);
+    app_log_error("app: get MTU failed: %d", ret);
   }
 }

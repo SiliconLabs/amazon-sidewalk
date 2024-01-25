@@ -64,17 +64,17 @@ extern "C" {
 /***************************************************************************//**
  * Function to get mfg configuration
  ******************************************************************************/
-const sid_pal_mfg_store_region_t * get_mfg_cfg(void);
+const sid_pal_mfg_store_region_t *get_mfg_cfg(void);
 
 /***************************************************************************//**
  * Function to get subghz config
  ******************************************************************************/
-struct sid_sub_ghz_links_config* app_get_sub_ghz_config(void);
+struct sid_sub_ghz_links_config *app_get_sub_ghz_config(void);
 
 /***************************************************************************//**
  * Function to get radio configuration
  ******************************************************************************/
-const radio_efr32xgxx_device_config_t * get_radio_cfg(void);
+const radio_efr32xgxx_device_config_t *get_radio_cfg(void);
 
 #ifdef __cplusplus
 }

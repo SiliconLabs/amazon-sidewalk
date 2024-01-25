@@ -47,7 +47,7 @@ class EnvConfig:
                 self.aws_profile = config_json["awsAccount"].get("awsProfile", aws_profile)
                 if(config_json["commanderPath"] != None):
                     self.commander_path = config_json["commanderPath"]
-                
+
                 self.generation_requests = []
                 for request in config_json["generationRequests"]:
                     generation_request = GenerationRequest()
@@ -62,6 +62,7 @@ class EnvConfig:
             # This is when using the script with a configuration file
             else:
                 self.session_id     = config_json["sessionID"]
+                self.aws_profile    = None
                 self.commander_path = config_json["commanderPath"]
 
                 self.aws_access_key        = config_json["awsAccount"].get("awsAccessKeyId")
@@ -73,6 +74,7 @@ class EnvConfig:
 
                 for request in config_json["generationRequests"]:
                     generation_request = GenerationRequest()
+                    generation_request.deviceName      = request['deviceName']
                     generation_request.deviceProfileId = request['deviceProfileId']
                     generation_request.destinationName = request['destinationName']
                     generation_request.targetPart      = request['targetPart']
@@ -86,7 +88,7 @@ class EnvConfig:
             self.aws_profile       = aws_profile
             if(commander != None):
                 self.commander_path = commander
-                
+
             self.generation_requests = []
             generation_request = GenerationRequest()
             generation_request.deviceName      = name

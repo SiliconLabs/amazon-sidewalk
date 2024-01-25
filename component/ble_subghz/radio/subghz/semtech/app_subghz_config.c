@@ -48,17 +48,10 @@
 #include <sx126x_radio.h>
 #include <sid_pal_log_ifc.h>
 
-#if defined(EFR32XG24)
-#include <sl_spidrv_eusart_exp_config.h>
-#define SL_SPI_PERIPHERAL_ID         SL_SPIDRV_EUSART_EXP_PERIPHERAL
-#define SL_SPI_PERIPHERAL_BITRATE    SL_SPIDRV_EUSART_EXP_BITRATE
-#define SL_SPI_PERIPHERAL_CLOCK_MODE SL_SPIDRV_EUSART_EXP_CLOCK_MODE
-#elif defined(EFR32XG21)
 #include <sl_spidrv_exp_config.h>
 #define SL_SPI_PERIPHERAL_ID         SL_SPIDRV_EXP_PERIPHERAL
 #define SL_SPI_PERIPHERAL_BITRATE    SL_SPIDRV_EXP_BITRATE
 #define SL_SPI_PERIPHERAL_CLOCK_MODE SL_SPIDRV_EXP_CLOCK_MODE
-#endif
 
 // -----------------------------------------------------------------------------
 //                              Macros and Typedefs
@@ -95,12 +88,17 @@
 #define RADIO_MAX_CAD_SYMBOL            SID_PAL_RADIO_LORA_CAD_04_SYMBOL
 #define RADIO_ANT_GAIN(X)               ((X) * 100)
 
+#define SAR_DCR_CONFIG                  (100)
+
 // -----------------------------------------------------------------------------
 //                          Static Function Declarations
 // -----------------------------------------------------------------------------
 
 static int32_t radio_sx1262_pa_cfg(int8_t tx_power, radio_sx126x_pa_cfg_t *pa_cfg);
 static int32_t radio_sx1262_get_trim_cap_val(uint16_t *trim);
+#if (MODULE_KG100S == 2)
+static int32_t radio_dio3_ctrl_voltage(void);
+#endif
 // -----------------------------------------------------------------------------
 //                                Global Variables
 // -----------------------------------------------------------------------------
@@ -161,6 +159,9 @@ const radio_sx126x_device_config_t radio_sx1262_cfg = {
   .gpio_tx_bypass             = HALO_GPIO_NOT_CONNECTED,
   .pa_cfg_callback            = radio_sx1262_pa_cfg,
   .trim_cap_val_callback      = radio_sx1262_get_trim_cap_val,
+#if (MODULE_KG100S == 2)
+  .dio3_cfg_callback          = radio_dio3_ctrl_voltage,
+#endif
 
   .bus_selector = {
     .client_selector    = SL_PIN_NSS,
@@ -261,6 +262,7 @@ static int32_t radio_sx1262_pa_cfg(int8_t tx_power, radio_sx126x_pa_cfg_t *pa_cf
 
 const struct sid_sub_ghz_links_config sub_ghz_link_config = {
   .enable_link_metrics = true,
+  .sar_dcr = SAR_DCR_CONFIG,
   .registration_config = {
     .enable = true,
     .periodicity_s = UINT32_MAX,

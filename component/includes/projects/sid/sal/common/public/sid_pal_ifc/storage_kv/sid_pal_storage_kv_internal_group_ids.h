@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 Amazon.com, Inc. or its affiliates. All rights reserved.
+ * Copyright 2020-2023 Amazon.com, Inc. or its affiliates. All rights reserved.
  *
  * AMAZON PROPRIETARY/CONFIDENTIAL
  *
@@ -12,13 +12,13 @@
  * FITNESS FOR A PARTICULAR PURPOSE, AND NON-INFRINGEMENT.
  */
 
-
 /* SDK users may define these macros themselves to override the values used here,
  * in order to control which group IDs the Sidewalk code uses. This allows users
  * to deconflict any group ID collisions between application code and Sidewalk
  * code that also uses this PAL.
  */
 
+/* Note: Do not use group Ids greater than 0x6FFE*/
 
 #if !defined(SID_PAL_STORAGE_KV_INTERNAL_PROTOCOL_GROUP_ID)
 #define SID_PAL_STORAGE_KV_INTERNAL_PROTOCOL_GROUP_ID 0x2000
@@ -27,4 +27,8 @@
 
 #if !defined(SID_PAL_STORAGE_KV_INTERNAL_CONFIG_GROUP_ID)
 #define SID_PAL_STORAGE_KV_INTERNAL_CONFIG_GROUP_ID 0x3456
+#endif
+
+#if !defined(SID_PAL_STORAGE_KV_INTERNAL_BULK_DATA_TRANSFER_GROUP_ID)
+#define SID_PAL_STORAGE_KV_INTERNAL_BULK_DATA_TRANSFER_GROUP_ID 0x4567
 #endif

@@ -43,6 +43,7 @@
 #include "sid_clock_ifc.h"
 #include "app_log_config.h"   // APP_LOG_ENABLE
 #include "sid_pal_log_ifc.h"  // SID_PAL_LOG_ENABLED
+
 #if defined(SID_PAL_LOG_ENABLED) && defined(APP_LOG_ENABLE)
   #if (SID_PAL_LOG_ENABLED != APP_LOG_ENABLE)
     #warning "The value of SID_PAL_LOG_ENABLED is going to be overwritten with APP_LOG_ENABLE!"
@@ -58,14 +59,12 @@
   #include <stdarg.h>
   #pragma message "Please note! The Sidewalk APIs from the file sid_clock_ifc.h might not be backward compatible in the future."
 #endif
-
 // -----------------------------------------------------------------------------
 //                              Macros and Typedefs
 // -----------------------------------------------------------------------------
 #if SID_PAL_LOG_ENABLED
   #define SLI_LOG_MAX_BUFFER_CHAR (256)
 #endif
-
 // -----------------------------------------------------------------------------
 //                          Static Function Declarations
 // -----------------------------------------------------------------------------

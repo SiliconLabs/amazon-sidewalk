@@ -9,7 +9,11 @@ label=Sidewalk Assistant
 uc.triggerExtension=runconf
 
 executable(generate_prototype:macosx.x86_64) {
-  exe=macos/generate_prototype
+  exe=macos/x86_64/generate_prototype
+}
+
+executable(generate_prototype:macosx.aarch64) {
+  exe=macos/aarch64/generate_prototype
 }
 
 executable(generate_prototype:win32.x86_64) {

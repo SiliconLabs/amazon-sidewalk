@@ -61,7 +61,7 @@ void sid_pal_log(sid_pal_log_severity_t severity, uint32_t num_args, const char*
  * @retval log severity level
  *
  */
-sid_pal_log_severity_t sid_log_control_get_current_log_level();
+sid_pal_log_severity_t sid_log_control_get_current_log_level(void);
 
 /**
  * Flush log function

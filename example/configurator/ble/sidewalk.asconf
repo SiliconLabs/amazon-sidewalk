@@ -1,0 +1,47 @@
+{
+  "stackName": "SidewalkHelloNeighbor",
+  "stackTemplatePath": "config/sidewalk/CF_minimal_sidewalk.json",
+  "region": {
+    "value": "RADIO_REGION_NA",
+    "type": "SYMBOL"
+  },
+  "linkType": {
+    "value": "SL_SIDEWALK_LINK_BLE",
+    "type": "SYMBOL"
+  },
+  "deviceName": null,
+  "txRxWakeUp": {
+    "value": "SID_NO_WAKEUP",
+    "type": "SYMBOL"
+  },
+  "bleSettings": {
+    "devicename": {
+      "value": "my_custom_sidewalk_device",
+      "type": "STR"
+    },
+    "disconnectionTime": {
+      "value": null,
+      "type": null
+    }
+  },
+  "fskSettings": {
+    "deviceProfile": {
+      "value": "SID_LINK2_PROFILE_2",
+      "type": "SYMBOL"
+    },
+    "outputPower": {
+      "value": "20",
+      "type": "INT"
+    }
+  },
+  "cssSettings": {
+   "deviceProfile": {
+     "value": "SID_LINK3_PROFILE_B",
+     "type": "SYMBOL"
+   },
+   "outputPower": {
+     "value": "20",
+     "type": "INT"
+    }
+  }
+}

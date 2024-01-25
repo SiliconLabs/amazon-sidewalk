@@ -47,21 +47,16 @@
 #include "sid_pal_mfg_store_ifc.h"
 #include "sl_sidewalk_device_backup.h"
 #include "sli_sidewalk_device_backup_certificate_common.h"
+#include "sl_malloc.h"
 
-#if defined(EFR32MG24)
+#if defined(EFR32XG24)
 #include "em_msc.h"
 #include "em_cmu.h"
 #else
 #include "sl_se_manager_util.h"
-#endif // EFR32MG24
+#endif // EFR32XG24
 
-#if defined(SV_ENABLED)
 #include "nvm3.h"
-#endif // SV_ENABLED
-
-#if defined(SV_ENABLED)
-extern nvm3_Handle_t *nvm3_defaultHandle;
-#endif // SV_ENABLED
 
 // -----------------------------------------------------------------------------
 //                              Macros and Typedefs
@@ -78,7 +73,7 @@ extern nvm3_Handle_t *nvm3_defaultHandle;
 
 #if defined(SV_ENABLED)
 #define ITS_OBJ_RANGE_START (0x83100)
-#define ITS_OBJ_RANGE_END (0x83105)
+#define ITS_OBJ_RANGE_END (0x870FF)
 
 #define WRAPPED_KEY_NVM3_KEY_START (ITS_OBJ_RANGE_START)
 
@@ -106,7 +101,7 @@ static bool is_magic_number_present(void);
 static bool is_apid_valid(void);
 #if defined(SV_ENABLED)
 static bool are_wrapped_keys_present(void);
-#endif /* SV_ENABLED */
+#endif // SV_ENABLED
 static bool is_backup_needed(void);
 static bool is_restore_needed(void);
 static bool is_backup_possible(void);
@@ -123,54 +118,54 @@ static void perform_restore(void);
 // -----------------------------------------------------------------------------
 
 static const mfg_obj_tbl_t MFG_OBJECT_TABLE[] = {
-  { .key = SID_PAL_MFG_STORE_SMSN,                          .len = SID_PAL_MFG_STORE_SMSN_SIZE,                           .val = NULL },
-  { .key = SID_PAL_MFG_STORE_APP_PUB_ED25519,               .len = SID_PAL_MFG_STORE_APP_PUB_ED25519_SIZE,                .val = APP_PUB_ED25519_VAL },
+  { .key = SID_PAL_MFG_STORE_SMSN, .len = SID_PAL_MFG_STORE_SMSN_SIZE, .val = NULL },
+  { .key = SID_PAL_MFG_STORE_APP_PUB_ED25519, .len = SID_PAL_MFG_STORE_APP_PUB_ED25519_SIZE, .val = APP_PUB_ED25519_VAL },
 #if defined(SV_ENABLED)
-  { .key = SID_PAL_MFG_STORE_DEVICE_PRIV_ED25519,           .len = SID_PAL_MFG_STORE_DEVICE_PRIV_ED25519_SIZE,            .val = DEVICE_PRIV_ED25519 },
+  { .key = SID_PAL_MFG_STORE_DEVICE_PRIV_ED25519, .len = SID_PAL_MFG_STORE_DEVICE_PRIV_ED25519_SIZE, .val = DEVICE_PRIV_ED25519 },
 #else
-  { .key = SID_PAL_MFG_STORE_DEVICE_PRIV_ED25519,           .len = SID_PAL_MFG_STORE_DEVICE_PRIV_ED25519_SIZE,            .val = NULL },
-#endif /* SV_ENABLED */
-  { .key = SID_PAL_MFG_STORE_DEVICE_PUB_ED25519,            .len = SID_PAL_MFG_STORE_DEVICE_PUB_ED25519_SIZE,             .val = NULL },
-  { .key = SID_PAL_MFG_STORE_DEVICE_PUB_ED25519_SIGNATURE,  .len = SID_PAL_MFG_STORE_DEVICE_PUB_ED25519_SIGNATURE_SIZE,   .val = NULL },
+  { .key = SID_PAL_MFG_STORE_DEVICE_PRIV_ED25519, .len = SID_PAL_MFG_STORE_DEVICE_PRIV_ED25519_SIZE, .val = NULL },
+#endif // SV_ENABLED
+  { .key = SID_PAL_MFG_STORE_DEVICE_PUB_ED25519, .len = SID_PAL_MFG_STORE_DEVICE_PUB_ED25519_SIZE, .val = NULL },
+  { .key = SID_PAL_MFG_STORE_DEVICE_PUB_ED25519_SIGNATURE, .len = SID_PAL_MFG_STORE_DEVICE_PUB_ED25519_SIGNATURE_SIZE, .val = NULL },
 #if defined(SV_ENABLED)
-  { .key = SID_PAL_MFG_STORE_DEVICE_PRIV_P256R1,            .len = SID_PAL_MFG_STORE_DEVICE_PRIV_P256R1_SIZE,             .val = DEVICE_PRIV_P256R1 },
+  { .key = SID_PAL_MFG_STORE_DEVICE_PRIV_P256R1, .len = SID_PAL_MFG_STORE_DEVICE_PRIV_P256R1_SIZE, .val = DEVICE_PRIV_P256R1 },
 #else
-  { .key = SID_PAL_MFG_STORE_DEVICE_PRIV_P256R1,            .len = SID_PAL_MFG_STORE_DEVICE_PRIV_P256R1_SIZE,             .val = NULL },
-#endif /* SV_ENABLED */
-  { .key = SID_PAL_MFG_STORE_DEVICE_PUB_P256R1,             .len = SID_PAL_MFG_STORE_DEVICE_PUB_P256R1_SIZE,              .val = NULL },
-  { .key = SID_PAL_MFG_STORE_DEVICE_PUB_P256R1_SIGNATURE,   .len = SID_PAL_MFG_STORE_DEVICE_PUB_P256R1_SIGNATURE_SIZE,    .val = NULL },
-  { .key = SID_PAL_MFG_STORE_DAK_PUB_ED25519,               .len = SID_PAL_MFG_STORE_DAK_PUB_ED25519_SIZE,                .val = NULL },
-  { .key = SID_PAL_MFG_STORE_DAK_PUB_ED25519_SIGNATURE,     .len = SID_PAL_MFG_STORE_DAK_PUB_ED25519_SIGNATURE_SIZE,      .val = NULL },
-  { .key = SID_PAL_MFG_STORE_DAK_ED25519_SERIAL,            .len = SID_PAL_MFG_STORE_DAK_ED25519_SERIAL_SIZE,             .val = NULL },
-  { .key = SID_PAL_MFG_STORE_DAK_PUB_P256R1,                .len = SID_PAL_MFG_STORE_DAK_PUB_P256R1_SIZE,                 .val = NULL },
-  { .key = SID_PAL_MFG_STORE_DAK_PUB_P256R1_SIGNATURE,      .len = SID_PAL_MFG_STORE_DAK_PUB_P256R1_SIGNATURE_SIZE,       .val = NULL },
-  { .key = SID_PAL_MFG_STORE_DAK_P256R1_SERIAL,             .len = SID_PAL_MFG_STORE_DAK_P256R1_SERIAL_SIZE,              .val = NULL },
-  { .key = SID_PAL_MFG_STORE_PRODUCT_PUB_ED25519,           .len = SID_PAL_MFG_STORE_PRODUCT_PUB_ED25519_SIZE,            .val = PRODUCT_PUB_ED25519_VAL },
-  { .key = SID_PAL_MFG_STORE_PRODUCT_PUB_ED25519_SIGNATURE, .len = SID_PAL_MFG_STORE_PRODUCT_PUB_ED25519_SIGNATURE_SIZE,  .val = PRODUCT_PUB_ED25519_SIGNATURE_VAL },
-  { .key = SID_PAL_MFG_STORE_PRODUCT_ED25519_SERIAL,        .len = SID_PAL_MFG_STORE_PRODUCT_ED25519_SERIAL_SIZE,         .val = PRODUCT_ED25519_SERIAL_VAL },
-  { .key = SID_PAL_MFG_STORE_PRODUCT_PUB_P256R1,            .len = SID_PAL_MFG_STORE_PRODUCT_PUB_P256R1_SIZE,             .val = PRODUCT_PUB_P256R1_VAL },
-  { .key = SID_PAL_MFG_STORE_PRODUCT_PUB_P256R1_SIGNATURE,  .len = SID_PAL_MFG_STORE_PRODUCT_PUB_P256R1_SIGNATURE_SIZE,   .val = PRODUCT_PUB_P256R1_SIGNATURE_VAL },
-  { .key = SID_PAL_MFG_STORE_PRODUCT_P256R1_SERIAL,         .len = SID_PAL_MFG_STORE_PRODUCT_P256R1_SERIAL_SIZE,          .val = PRODUCT_P256R1_SERIAL_VAL },
-  { .key = SID_PAL_MFG_STORE_MAN_PUB_ED25519,               .len = SID_PAL_MFG_STORE_MAN_PUB_ED25519_SIZE,                .val = MAN_PUB_ED25519_VAL },
-  { .key = SID_PAL_MFG_STORE_MAN_PUB_ED25519_SIGNATURE,     .len = SID_PAL_MFG_STORE_MAN_PUB_ED25519_SIGNATURE_SIZE,      .val = MAN_PUB_ED25519_SIGNATURE_VAL },
-  { .key = SID_PAL_MFG_STORE_MAN_ED25519_SERIAL,            .len = SID_PAL_MFG_STORE_MAN_ED25519_SERIAL_SIZE,             .val = MAN_ED25519_SERIAL_VAL },
-  { .key = SID_PAL_MFG_STORE_MAN_PUB_P256R1,                .len = SID_PAL_MFG_STORE_MAN_PUB_P256R1_SIZE,                 .val = MAN_PUB_P256R1_VAL },
-  { .key = SID_PAL_MFG_STORE_MAN_PUB_P256R1_SIGNATURE,      .len = SID_PAL_MFG_STORE_MAN_PUB_P256R1_SIGNATURE_SIZE,       .val = MAN_PUB_P256R1_SIGNATURE_VAL },
-  { .key = SID_PAL_MFG_STORE_MAN_P256R1_SERIAL,             .len = SID_PAL_MFG_STORE_MAN_P256R1_SERIAL_SIZE,              .val = MAN_P256R1_SERIAL_VAL },
-  { .key = SID_PAL_MFG_STORE_SW_PUB_ED25519,                .len = SID_PAL_MFG_STORE_SW_PUB_ED25519_SIZE,                 .val = SW_PUB_ED25519_VAL },
-  { .key = SID_PAL_MFG_STORE_SW_PUB_ED25519_SIGNATURE,      .len = SID_PAL_MFG_STORE_SW_PUB_ED25519_SIGNATURE_SIZE,       .val = SW_PUB_ED25519_SIGNATURE_VAL },
-  { .key = SID_PAL_MFG_STORE_SW_ED25519_SERIAL,             .len = SID_PAL_MFG_STORE_SW_ED25519_SERIAL_SIZE,              .val = SW_ED25519_SERIAL_VAL },
-  { .key = SID_PAL_MFG_STORE_SW_PUB_P256R1,                 .len = SID_PAL_MFG_STORE_SW_PUB_P256R1_SIZE,                  .val = SW_PUB_P256R1_VAL },
-  { .key = SID_PAL_MFG_STORE_SW_PUB_P256R1_SIGNATURE,       .len = SID_PAL_MFG_STORE_SW_PUB_P256R1_SIGNATURE_SIZE,        .val = SW_PUB_P256R1_SIGNATURE_VAL },
-  { .key = SID_PAL_MFG_STORE_SW_P256R1_SERIAL,              .len = SID_PAL_MFG_STORE_SW_P256R1_SERIAL_SIZE,               .val = SW_P256R1_SERIAL_VAL },
-  { .key = SID_PAL_MFG_STORE_AMZN_PUB_ED25519,              .len = SID_PAL_MFG_STORE_AMZN_PUB_ED25519_SIZE,               .val = AMZN_PUB_ED25519_VAL },
-  { .key = SID_PAL_MFG_STORE_AMZN_PUB_P256R1,               .len = SID_PAL_MFG_STORE_AMZN_PUB_P256R1_SIZE,                .val = AMZN_PUB_P256R1_VAL },
-  { .key = SID_PAL_MFG_STORE_APID,                          .len = SID_PAL_MFG_STORE_APID_SIZE,                           .val = APID_VAL }
+  { .key = SID_PAL_MFG_STORE_DEVICE_PRIV_P256R1, .len = SID_PAL_MFG_STORE_DEVICE_PRIV_P256R1_SIZE, .val = NULL },
+#endif // SV_ENABLED
+  { .key = SID_PAL_MFG_STORE_DEVICE_PUB_P256R1, .len = SID_PAL_MFG_STORE_DEVICE_PUB_P256R1_SIZE, .val = NULL },
+  { .key = SID_PAL_MFG_STORE_DEVICE_PUB_P256R1_SIGNATURE, .len = SID_PAL_MFG_STORE_DEVICE_PUB_P256R1_SIGNATURE_SIZE, .val = NULL },
+  { .key = SID_PAL_MFG_STORE_DAK_PUB_ED25519, .len = SID_PAL_MFG_STORE_DAK_PUB_ED25519_SIZE, .val = NULL },
+  { .key = SID_PAL_MFG_STORE_DAK_PUB_ED25519_SIGNATURE, .len = SID_PAL_MFG_STORE_DAK_PUB_ED25519_SIGNATURE_SIZE, .val = NULL },
+  { .key = SID_PAL_MFG_STORE_DAK_ED25519_SERIAL, .len = SID_PAL_MFG_STORE_DAK_ED25519_SERIAL_SIZE, .val = NULL },
+  { .key = SID_PAL_MFG_STORE_DAK_PUB_P256R1, .len = SID_PAL_MFG_STORE_DAK_PUB_P256R1_SIZE, .val = NULL },
+  { .key = SID_PAL_MFG_STORE_DAK_PUB_P256R1_SIGNATURE, .len = SID_PAL_MFG_STORE_DAK_PUB_P256R1_SIGNATURE_SIZE, .val = NULL },
+  { .key = SID_PAL_MFG_STORE_DAK_P256R1_SERIAL, .len = SID_PAL_MFG_STORE_DAK_P256R1_SERIAL_SIZE, .val = NULL },
+  { .key = SID_PAL_MFG_STORE_PRODUCT_PUB_ED25519, .len = SID_PAL_MFG_STORE_PRODUCT_PUB_ED25519_SIZE, .val = PRODUCT_PUB_ED25519_VAL },
+  { .key = SID_PAL_MFG_STORE_PRODUCT_PUB_ED25519_SIGNATURE, .len = SID_PAL_MFG_STORE_PRODUCT_PUB_ED25519_SIGNATURE_SIZE, .val = PRODUCT_PUB_ED25519_SIGNATURE_VAL },
+  { .key = SID_PAL_MFG_STORE_PRODUCT_ED25519_SERIAL, .len = SID_PAL_MFG_STORE_PRODUCT_ED25519_SERIAL_SIZE, .val = PRODUCT_ED25519_SERIAL_VAL },
+  { .key = SID_PAL_MFG_STORE_PRODUCT_PUB_P256R1, .len = SID_PAL_MFG_STORE_PRODUCT_PUB_P256R1_SIZE, .val = PRODUCT_PUB_P256R1_VAL },
+  { .key = SID_PAL_MFG_STORE_PRODUCT_PUB_P256R1_SIGNATURE, .len = SID_PAL_MFG_STORE_PRODUCT_PUB_P256R1_SIGNATURE_SIZE, .val = PRODUCT_PUB_P256R1_SIGNATURE_VAL },
+  { .key = SID_PAL_MFG_STORE_PRODUCT_P256R1_SERIAL, .len = SID_PAL_MFG_STORE_PRODUCT_P256R1_SERIAL_SIZE, .val = PRODUCT_P256R1_SERIAL_VAL },
+  { .key = SID_PAL_MFG_STORE_MAN_PUB_ED25519, .len = SID_PAL_MFG_STORE_MAN_PUB_ED25519_SIZE, .val = MAN_PUB_ED25519_VAL },
+  { .key = SID_PAL_MFG_STORE_MAN_PUB_ED25519_SIGNATURE, .len = SID_PAL_MFG_STORE_MAN_PUB_ED25519_SIGNATURE_SIZE, .val = MAN_PUB_ED25519_SIGNATURE_VAL },
+  { .key = SID_PAL_MFG_STORE_MAN_ED25519_SERIAL, .len = SID_PAL_MFG_STORE_MAN_ED25519_SERIAL_SIZE, .val = MAN_ED25519_SERIAL_VAL },
+  { .key = SID_PAL_MFG_STORE_MAN_PUB_P256R1, .len = SID_PAL_MFG_STORE_MAN_PUB_P256R1_SIZE, .val = MAN_PUB_P256R1_VAL },
+  { .key = SID_PAL_MFG_STORE_MAN_PUB_P256R1_SIGNATURE, .len = SID_PAL_MFG_STORE_MAN_PUB_P256R1_SIGNATURE_SIZE, .val = MAN_PUB_P256R1_SIGNATURE_VAL },
+  { .key = SID_PAL_MFG_STORE_MAN_P256R1_SERIAL, .len = SID_PAL_MFG_STORE_MAN_P256R1_SERIAL_SIZE, .val = MAN_P256R1_SERIAL_VAL },
+  { .key = SID_PAL_MFG_STORE_SW_PUB_ED25519, .len = SID_PAL_MFG_STORE_SW_PUB_ED25519_SIZE, .val = SW_PUB_ED25519_VAL },
+  { .key = SID_PAL_MFG_STORE_SW_PUB_ED25519_SIGNATURE, .len = SID_PAL_MFG_STORE_SW_PUB_ED25519_SIGNATURE_SIZE, .val = SW_PUB_ED25519_SIGNATURE_VAL },
+  { .key = SID_PAL_MFG_STORE_SW_ED25519_SERIAL, .len = SID_PAL_MFG_STORE_SW_ED25519_SERIAL_SIZE, .val = SW_ED25519_SERIAL_VAL },
+  { .key = SID_PAL_MFG_STORE_SW_PUB_P256R1, .len = SID_PAL_MFG_STORE_SW_PUB_P256R1_SIZE, .val = SW_PUB_P256R1_VAL },
+  { .key = SID_PAL_MFG_STORE_SW_PUB_P256R1_SIGNATURE, .len = SID_PAL_MFG_STORE_SW_PUB_P256R1_SIGNATURE_SIZE, .val = SW_PUB_P256R1_SIGNATURE_VAL },
+  { .key = SID_PAL_MFG_STORE_SW_P256R1_SERIAL, .len = SID_PAL_MFG_STORE_SW_P256R1_SERIAL_SIZE, .val = SW_P256R1_SERIAL_VAL },
+  { .key = SID_PAL_MFG_STORE_AMZN_PUB_ED25519, .len = SID_PAL_MFG_STORE_AMZN_PUB_ED25519_SIZE, .val = AMZN_PUB_ED25519_VAL },
+  { .key = SID_PAL_MFG_STORE_AMZN_PUB_P256R1, .len = SID_PAL_MFG_STORE_AMZN_PUB_P256R1_SIZE, .val = AMZN_PUB_P256R1_VAL },
+  { .key = SID_PAL_MFG_STORE_APID, .len = SID_PAL_MFG_STORE_APID_SIZE, .val = APID_VAL }
 };
 
-#if !defined(EFR32MG24)
+#if !defined(EFR32XG24)
 static sl_se_command_context_t cmd_ctx;
-#endif // !EFR32MG24
+#endif // !EFR32XG24
 
 // -----------------------------------------------------------------------------
 //                          Public Function Definitions
@@ -205,7 +200,7 @@ void sl_sidewalk_device_backup_handle_backup_restore(void)
  *****************************************************************************/
 static void erase_user_data(void)
 {
-#if defined(EFR32MG24)
+#if defined(EFR32XG24)
   CMU_ClockEnable(cmuClock_MSC, true);
 
   MSC_Status_TypeDef ret = MSC_ErasePage((uint32_t *)USERDATA_BASE);
@@ -213,7 +208,7 @@ static void erase_user_data(void)
 #else
   sl_status_t ret = sl_se_erase_user_data(&cmd_ctx);
   app_assert(ret == SL_STATUS_OK, "@userdata erase failed");
-#endif
+#endif // EFR32XG24
 }
 
 /***************************************************************************//**
@@ -229,7 +224,7 @@ static void write_user_data(uint32_t offset, void *data, uint32_t data_len)
 {
   app_assert(data_len % sizeof(uint32_t) == 0, "@userdata data length is not word aligned");
 
-#if defined(EFR32MG24)
+#if defined(EFR32XG24)
   MSC_Init();
 
   MSC_Status_TypeDef ret = MSC_WriteWord(((uint32_t *)USERDATA_BASE + offset), data, data_len);
@@ -239,7 +234,7 @@ static void write_user_data(uint32_t offset, void *data, uint32_t data_len)
 #else
   sl_status_t ret = sl_se_write_user_data(&cmd_ctx, (sizeof(uint32_t) * offset), data, data_len);
   app_assert(ret == SL_STATUS_OK, "@userdata write failed");
-#endif
+#endif // !EFR32XG24
 }
 
 /***************************************************************************//**
@@ -327,21 +322,36 @@ static bool are_wrapped_keys_present(void)
   uint32_t obj_type;
   size_t obj_len;
   uint8_t rec_cnt = 0;
+  uint32_t crpyto_obj_num;
+  nvm3_ObjectKey_t *crpyto_obj_keys = NULL;
 
-  for (uint32_t key = ITS_OBJ_RANGE_START; key < ITS_OBJ_RANGE_END; key++) {
-    st = nvm3_getObjectInfo(nvm3_defaultHandle, key, &obj_type, &obj_len);
+  // Get all object keys in the platform crypto range, where the wrapped keys are stored.
+  crpyto_obj_num = nvm3_enumObjects(nvm3_defaultHandle, NULL, 0, ITS_OBJ_RANGE_START, ITS_OBJ_RANGE_END);
+  crpyto_obj_keys = (nvm3_ObjectKey_t *)sl_calloc(crpyto_obj_num, sizeof(nvm3_ObjectKey_t));
+  if (!crpyto_obj_keys) {
+    return false;
+  }
+  nvm3_enumObjects(nvm3_defaultHandle, crpyto_obj_keys, crpyto_obj_num, ITS_OBJ_RANGE_START, ITS_OBJ_RANGE_END);
+
+  // Count all possible wrapped keys based on object type and length.
+  for (uint32_t i = 0; i < crpyto_obj_num; i++) {
+    st = nvm3_getObjectInfo(nvm3_defaultHandle, crpyto_obj_keys[i], &obj_type, &obj_len);
     if (st == ECODE_NVM3_OK && obj_type == NVM3_OBJECTTYPE_DATA && obj_len == WRAPPED_KEY_LEN) {
       rec_cnt++;
     }
   }
 
+  sl_free(crpyto_obj_keys);
+  crpyto_obj_keys = NULL;
+
+  // Check if exacatle the expected amount of key objects has been found.
   if (rec_cnt == WRAPPED_KEY_CNT) {
     return true;
   } else {
     return false;
   }
 }
-#endif /* SV_ENABLED */
+#endif // SV_ENABLED
 
 /***************************************************************************//**
  * @brief Checks if backup is needed or not
@@ -364,7 +374,7 @@ static bool is_restore_needed(void)
   return (!is_apid_valid() || !are_wrapped_keys_present());
 #else
   return !is_apid_valid();
-#endif /* SV_ENABLED */
+#endif // SV_ENABLED
 }
 
 /***************************************************************************//**
@@ -378,7 +388,7 @@ static bool is_backup_possible(void)
   return (are_wrapped_keys_present() && is_apid_valid());
 #else
   return is_apid_valid();
-#endif /* SV_ENABLED */
+#endif // SV_ENABLED
 }
 
 /***************************************************************************//**
@@ -410,7 +420,7 @@ static void perform_backup(void)
   Ecode_t st;
   uint32_t obj_type;
   size_t obj_len;
-#endif /* SV_ENABLED */
+#endif // SV_ENABLED
 
   erase_user_data();
 
@@ -436,7 +446,7 @@ static void perform_backup(void)
       offset += obj_len / sizeof(uint32_t);
     }
   }
-#endif /* SV_ENABLED */
+#endif // SV_ENABLED
 
   offset = OFFSET_MAGIC_NUMBER;
   write_user_data(offset, (void *)&magic_number, sizeof(magic_number));
@@ -453,11 +463,14 @@ static void perform_restore(void)
   uint8_t read_buffer[READ_BUF_MAX_SIZE];
   int32_t ret;
   uint32_t offset = OFFSET_MFG_OBJ_START;
-#if defined(SV_ENABLED)
   Ecode_t st;
+#if defined(SV_ENABLED)
   uint32_t key;
   uint32_t obj_len;
-#endif /* SV_ENABLED */
+#endif // SV_ENABLED
+
+  st = nvm3_eraseAll(nvm3_defaultHandle);
+  app_assert(st == ECODE_NVM3_OK, "default nvm3 instance cannot be erased");
 
   for (uint8_t i = 0; i < TOTAL_MFG_OBJ_CNT; i++) {
     if (MFG_OBJECT_TABLE[i].val == NULL) {
@@ -474,8 +487,6 @@ static void perform_restore(void)
   }
 
 #if defined(SV_ENABLED)
-  st = nvm3_eraseAll(nvm3_defaultHandle);
-  app_assert(st == ECODE_NVM3_OK, "default nvm3 instance cannot be erased");
   for (uint8_t i = 0; i < WRAPPED_KEY_CNT; i++) {
     // wrapped keys
     memset(read_buffer, 0, sizeof(read_buffer));
@@ -490,5 +501,5 @@ static void perform_restore(void)
     }
     offset += obj_len / sizeof(uint32_t);
   }
-#endif /* SV_ENABLED */
+#endif // SV_ENABLED
 }
