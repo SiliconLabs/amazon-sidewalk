@@ -57,7 +57,7 @@ try:
 
     BASE_ADDRESS = {
         0x00000000: ['xg21'],
-        0x08000000: ['xg24', 'xg28', 'xg23']
+        0x08000000: ['xg24', 'xg28', 'xg23', 'bg24_1024']
     }
 
     class ResultLog:

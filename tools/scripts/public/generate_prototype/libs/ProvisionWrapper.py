@@ -59,7 +59,7 @@ class ProvisionWrapper:
         else:
             self.commander = commander_executable
 
-        self.DEFAULT_BOARDS = ['xg21', 'xg24', 'xg28', 'xg23', 'xg25']
+        self.DEFAULT_BOARDS = ['xg21', 'xg24', 'xg28', 'xg23', 'xg25', 'bg24_1024']
 
     def generate_mfg(self, target_family, output_dir, input_type, wireless_device_path=None, device_profile_path=None,
                      certificate_json=None, offset_addr=None):

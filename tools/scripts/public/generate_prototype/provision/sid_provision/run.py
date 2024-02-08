@@ -1427,6 +1427,7 @@ ARG_GROUPS = [
             SidChipAddr(name="xg28", full_name="EFR32ZG28B322F1024IM68", offset_addr=0x080F8000),
             SidChipAddr(name="xg23", full_name="EFR32ZG23B020F512IM48", offset_addr=0x8078000),
             SidChipAddr(name="xg25", full_name="EFR32FG25B222F1920IM56", offset_addr=0x081D8000),
+            SidChipAddr(name="bg24_1024", full_name="EFR32BG24B220F1024IM48", offset_addr=0x080F8000),
         ],
     ),
     SidPlatformArgs(
