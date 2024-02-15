@@ -1,15 +1,40 @@
 Silicon Labs Amazon Sidewalk Release Note
 =========================================
 
+# Release 2.0.1
+(release date 2024-02-14)
+
+*GSDK 4.4.1 - Amazon Sidewalk SDK 1.16.2*
+
+## New Features/Improvements
+### Silicon Labs Extension
+- Support for GSDK 4.4.1
+
+### Amazon Sidewalk stack
+- Include Amazon Sidewalk SDK 1.16.2
+
+## Known issues
+- ~~[1148] - In CSS, if the gateway is not available, endpoint does not exponentially backoff for time_sync request and sends a new time_sync request every 30secs forever. Workaround in place in application code, to stop time sync after timeout.~~
+- ~~[1253713] - Cloudformation could not be deployed due to S3 bucket resource name was fixed. It is solved via generation of the S3 bucket name based on the AWs stackid.~~
+- [1174] - On KG100S, we see errors related to missing acknowledge `tx_st:-6` with the CLI application. However, the stack recovers after some time.
+- [47374] - Message duplicate error during FFN: `<error> msg dup: xxxxxxxxx (xxx)`. Device recovers in next FFN session.
+
+### Sidewalk Assistant Known issues
+- ~~Sidewalk Assistant does not generate the manufacturing page on Windows.~~
+- Removed the Application tab in the Sidewalk Assistant.
+- Sidewalk Assistant allows underscores in cloud formation stack name, however this is not accepted by AWS.
+- Sidewalk Assistant is not able to detect AWS credentials if it is not in the default AWS profile.
+- On MAC OS with Sidewalk Assistant, changing the Cloud Formation name on the GUI will not change it in the cloud.
+
 # Release 2.0.0
 (release date 2024-01-24)
 
 *GSDK 4.4.0 - Amazon Sidewalk SDK 1.16.0.2*
 
 ## New Features/Improvements
+### Silicon Labs Extension
 - Support for GSDK 4.4.0
 - Include Amazon Sidewalk SDK 1.16.0.2
-- Multilink support
 - NVM3 rework to free space, MFG page changed location (breaking backward compatibility)
 - Semtech PAL layer implementation open sourced
 - TLV message structure added as sotware component
@@ -17,6 +42,10 @@ Silicon Labs Amazon Sidewalk Release Note
 - New sample applications:
   - Dynamic Multiprotocol for xG28 (as Evaluation)
   - Production Device Provisioner (as Production)
+
+### Amazon Sidewalk stack
+- Multilink support [Application note](https://docs.sidewalk.amazon/assets/pdf/Amazon_Sidewalk_Multi-link_App_Note-1.0-rev-A.pdf)
+- Bulk data transfer
 
 > **⚠ WARNING ⚠**: NVM3 organisation changed, breaking backward compatibility. Manufacturing pages should be re-generated and flashed again.
 

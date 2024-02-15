@@ -6,7 +6,7 @@
     <properties key="solutionReferenceId" value="example.aws_sidewalk.amazon_sidewalk_soc_hello_neighbor.amazon_sidewalk_soc_hello_neighbor_family_efr32xg21.slcp"/>
     <properties key="projectFilePaths" value="example/aws_sidewalk/amazon_sidewalk_soc_hello_neighbor/amazon_sidewalk_soc_hello_neighbor_family_efr32xg21.slcp"/>
     <properties key="readmeFiles" value="documentation/example/amazon_sidewalk_soc_hello_neighbor/readme.md"/>
-    <properties key="boardCompatibility" value="brd4181c com.silabs.board.none"/>
+    <properties key="boardCompatibility" value="brd4181c brd4196a brd4196b com.silabs.board.none"/>
     <properties key="partCompatibility" value=".*efr32[bm]g21b.*f[17].*"/>
     <properties key="ideCompatibility" value="makefile-ide simplicity-ide visual-studio-code generic-template"/>
     <properties key="toolchainCompatibility" value="gcc"/>
@@ -21,7 +21,7 @@
     <properties key="solutionReferenceId" value="example.aws_sidewalk.amazon_sidewalk_soc_hello_neighbor.amazon_sidewalk_soc_hello_neighbor_family_efr32xg24.slcp"/>
     <properties key="projectFilePaths" value="example/aws_sidewalk/amazon_sidewalk_soc_hello_neighbor/amazon_sidewalk_soc_hello_neighbor_family_efr32xg24.slcp"/>
     <properties key="readmeFiles" value="documentation/example/amazon_sidewalk_soc_hello_neighbor/readme.md"/>
-    <properties key="boardCompatibility" value="brd4115a brd4115b brd4186b brd4186c brd4187b brd4187c com.silabs.board.none"/>
+    <properties key="boardCompatibility" value="brd2601a brd2601b brd4115a brd4115b brd4186b brd4186c brd4187b brd4187c brd4198a brd4198b brd4411a com.silabs.board.none"/>
     <properties key="partCompatibility" value=".*efr32[bm]g24b.*f[17].*"/>
     <properties key="ideCompatibility" value="makefile-ide simplicity-ide visual-studio-code generic-template"/>
     <properties key="toolchainCompatibility" value="gcc"/>
@@ -96,7 +96,7 @@
     <properties key="solutionReferenceId" value="example.aws_sidewalk.amazon_sidewalk_soc_pdp.amazon_sidewalk_soc_pdp.slcp"/>
     <properties key="projectFilePaths" value="example/aws_sidewalk/amazon_sidewalk_soc_pdp/amazon_sidewalk_soc_pdp.slcp"/>
     <properties key="readmeFiles" value="documentation/example/amazon_sidewalk_soc_pdp/readme.md"/>
-    <properties key="boardCompatibility" value="brd2600a brd2705a brd4115a brd4115b brd4181c brd4186b brd4186c brd4187b brd4187c brd4204c brd4204d brd4210a brd4263c brd4264c brd4270a brd4270b brd4332a brd4400a brd4400b brd4400c brd4401a brd4401b brd4401c com.silabs.board.none"/>
+    <properties key="boardCompatibility" value="brd2600a brd2601a brd2601b brd2705a brd4115a brd4115b brd4181c brd4186b brd4186c brd4187b brd4187c brd4196a brd4196b brd4198a brd4198b brd4204c brd4204d brd4210a brd4263c brd4264c brd4270a brd4270b brd4332a brd4400a brd4400b brd4400c brd4401a brd4401b brd4401c brd4411a com.silabs.board.none"/>
     <properties key="partCompatibility" value=".*efr32[bm]g21b.*f[17].* .*efr32[bm]g24b.*f[17].* .*efr32fg25b.*f[1].* .*efr32[fsz]g28b.*f[17].* .*efr32[fsz]g23b.*f512.*"/>
     <properties key="ideCompatibility" value="makefile-ide simplicity-ide visual-studio-code generic-template"/>
     <properties key="toolchainCompatibility" value="gcc"/>
@@ -111,7 +111,7 @@
     <properties key="solutionReferenceId" value="example.aws_sidewalk.amazon_sidewalk_soc_cli.amazon_sidewalk_soc_cli_family_efr32xg21.slcp"/>
     <properties key="projectFilePaths" value="example/aws_sidewalk/amazon_sidewalk_soc_cli/amazon_sidewalk_soc_cli_family_efr32xg21.slcp"/>
     <properties key="readmeFiles" value="documentation/example/amazon_sidewalk_soc_bt_subghz_cli/readme.md"/>
-    <properties key="boardCompatibility" value="brd4181c com.silabs.board.none"/>
+    <properties key="boardCompatibility" value="brd4181c brd4196a brd4196b com.silabs.board.none"/>
     <properties key="partCompatibility" value=".*efr32[bm]g21b.*f[17].*"/>
     <properties key="ideCompatibility" value="makefile-ide simplicity-ide visual-studio-code generic-template"/>
     <properties key="toolchainCompatibility" value="gcc"/>
@@ -141,7 +141,7 @@
     <properties key="solutionReferenceId" value="example.aws_sidewalk.amazon_sidewalk_soc_cli.amazon_sidewalk_soc_cli_family_efr32xg24.slcp"/>
     <properties key="projectFilePaths" value="example/aws_sidewalk/amazon_sidewalk_soc_cli/amazon_sidewalk_soc_cli_family_efr32xg24.slcp"/>
     <properties key="readmeFiles" value="documentation/example/amazon_sidewalk_soc_bt_subghz_cli/readme.md"/>
-    <properties key="boardCompatibility" value="brd4115a brd4115b brd4186b brd4186c brd4187b brd4187c com.silabs.board.none"/>
+    <properties key="boardCompatibility" value="brd2601a brd2601b brd4115a brd4115b brd4186b brd4186c brd4187b brd4187c brd4198a brd4198b brd4411a com.silabs.board.none"/>
     <properties key="partCompatibility" value=".*efr32[bm]g24b.*f[17].*"/>
     <properties key="ideCompatibility" value="makefile-ide simplicity-ide visual-studio-code generic-template"/>
     <properties key="toolchainCompatibility" value="gcc"/>

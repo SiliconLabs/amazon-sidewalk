@@ -2,362 +2,395 @@
     "AWSTemplateFormatVersion": "2010-09-09",
     "Description": "This is a minimal AWS stack descriptor for Sidewalk project within Silicon Labs.",
     "Resources": {
-      "CFSReceiveQueue": {
-        "Type": "AWS::SQS::Queue",
-        "Properties": {
-          "QueueName": "CFSReceiveQueue"
-        }
-      },
-      "CFSReceiveQueuePolicy": {
-        "Type": "AWS::SQS::QueuePolicy",
-        "Properties": {
-          "PolicyDocument": {
-            "Id": "CFSReceiveQueuePolicy",
-            "Version": "2012-10-17",
-            "Statement": [
-              {
-                "Sid": "Send_Permission",
-                "Effect": "Allow",
-                "Action": [
-                  "sqs:*"
+        "CFSReceiveQueue": {
+            "Type": "AWS::SQS::Queue",
+            "Properties": {
+                "QueueName": "CFSReceiveQueue"
+            }
+        },
+        "CFSReceiveQueuePolicy": {
+            "Type": "AWS::SQS::QueuePolicy",
+            "Properties": {
+                "PolicyDocument": {
+                    "Id": "CFSReceiveQueuePolicy",
+                    "Version": "2012-10-17",
+                    "Statement": [
+                        {
+                            "Sid": "Send_Permission",
+                            "Effect": "Allow",
+                            "Action": [
+                                "sqs:*"
+                            ],
+                            "Resource": {
+                                "Fn::GetAtt": [
+                                    "CFSReceiveQueue",
+                                    "Arn"
+                                ]
+                            }
+                        }
+                    ]
+                },
+                "Queues": [
+                    {
+                        "Ref": "CFSReceiveQueue"
+                    }
+                ]
+            }
+        },
+        "S3Bucket": {
+            "Type": "AWS::S3::Bucket",
+            "Properties": {
+                "BucketName": {
+                    "Fn::Join": [
+                        "-",
+                        [
+                            "sidewalk-sl",
+                            {
+                                "Fn::Select": [
+                                    0,
+                                    {
+                                        "Fn::Split": [
+                                            "-",
+                                            {
+                                                "Fn::Select": [
+                                                    2,
+                                                    {
+                                                        "Fn::Split": [
+                                                            "/",
+                                                            {
+                                                                "Ref": "AWS::StackId"
+                                                            }
+                                                        ]
+                                                    }
+                                                ]
+                                            }
+                                        ]
+                                    }
+                                ]
+                            }
+                        ]
+                    ]
+                },
+                "VersioningConfiguration": {
+                    "Status": "Suspended"
+                },
+                "PublicAccessBlockConfiguration": {
+                    "BlockPublicAcls": true,
+                    "BlockPublicPolicy": true,
+                    "IgnorePublicAcls": true,
+                    "RestrictPublicBuckets": true
+                }
+            }
+        },
+        "CFSFuotaServiceRole": {
+            "Type": "AWS::IAM::Role",
+            "Properties": {
+                "RoleName": "CFSFuotaServiceRole",
+                "Description": "Allows IoT to call AWS services on your behalf.",
+                "MaxSessionDuration": 3600,
+                "Policies": [
+                    {
+                        "PolicyName": "CFSFuotaTaskPolicy",
+                        "PolicyDocument": {
+                            "Statement": [
+                                {
+                                    "Effect": "Allow",
+                                    "Action": [
+                                        "iotwireless:CreateFuotaTask",
+                                        "iotwireless:DisassociateMulticastGroupFromFuotaTask",
+                                        "iotwireless:DisassociateWirelessDeviceFromFuotaTask",
+                                        "iotwireless:StartFuotaTask",
+                                        "iotwireless:GetFuotaTask",
+                                        "iotwireless:DeleteFuotaTask",
+                                        "iotwireless:AssociateWirelessDeviceWithFuotaTask",
+                                        "iotwireless:ListFuotaTasks",
+                                        "iotwireless:ListMulticastGroupsByFuotaTask",
+                                        "iotwireless:UpdateFuotaTask",
+                                        "iotwireless:AssociateMulticastGroupWithFuotaTask"
+                                    ],
+                                    "Resource": [
+                                        "*"
+                                    ]
+                                }
+                            ]
+                        }
+                    },
+                    {
+                        "PolicyName": "CFSBucketAllowPolicy",
+                        "PolicyDocument": {
+                            "Statement": [
+                                {
+                                    "Effect": "Allow",
+                                    "Sid": "Statement1",
+                                    "Action": [
+                                        "s3:*"
+                                    ],
+                                    "Resource": {
+                                        "Fn::GetAtt": [
+                                            "S3Bucket",
+                                            "Arn"
+                                        ]
+                                    }
+                                }
+                            ]
+                        }
+                    }
                 ],
-                "Resource": {
-                  "Fn::GetAtt": [
-                    "CFSReceiveQueue",
-                    "Arn"
-                  ]
+                "AssumeRolePolicyDocument": {
+                    "Version": "2012-10-17",
+                    "Statement": [
+                        {
+                            "Effect": "Allow",
+                            "Principal": {
+                                "Service": [
+                                    "iotwireless.amazonaws.com"
+                                ]
+                            },
+                            "Action": [
+                                "sts:AssumeRole"
+                            ]
+                        }
+                    ]
                 }
-              }
-            ]
-          },
-          "Queues": [
-            {
-              "Ref": "CFSReceiveQueue"
             }
-          ]
-        }
-      },
-      "S3Bucket": {
-        "Type": "AWS::S3::Bucket",
-        "Properties": {
-          "BucketName": "sidewalk-test",
-          "VersioningConfiguration": {
-            "Status": "Suspended"
-          },
-          "PublicAccessBlockConfiguration": {
-            "BlockPublicAcls": "Yes",
-            "BlockPublicPolicy": "Yes",
-            "IgnorePublicAcls": "Yes",
-            "RestrictPublicBuckets": "Yes"
-          }
-        }
-      },
-      "CFSFuotaServiceRole": {
-        "Type": "AWS::IAM::Role",
-        "Properties": {
-          "RoleName": "CFSFuotaServiceRole",
-          "Description": "Allows IoT to call AWS services on your behalf.",
-          "MaxSessionDuration": 3600,
-          "Policies": [
-            {
-              "PolicyName": "CFSFuotaTaskPolicy",
-              "PolicyDocument": {
-                "Statement": [
-                  {
-                    "Effect": "Allow",
-                    "Action": [
-                      "iotwireless:CreateFuotaTask",
-                      "iotwireless:DisassociateMulticastGroupFromFuotaTask",
-                      "iotwireless:DisassociateWirelessDeviceFromFuotaTask",
-                      "iotwireless:StartFuotaTask",
-                      "iotwireless:GetFuotaTask",
-                      "iotwireless:DeleteFuotaTask",
-                      "iotwireless:AssociateWirelessDeviceWithFuotaTask",
-                      "iotwireless:ListFuotaTasks",
-                      "iotwireless:ListMulticastGroupsByFuotaTask",
-                      "iotwireless:UpdateFuotaTask",
-                      "iotwireless:AssociateMulticastGroupWithFuotaTask"
-                    ],
-                    "Resource": [
-                      "*"
+        },
+        "CFSDestinationRole": {
+            "Type": "AWS::IAM::Role",
+            "Properties": {
+                "RoleName": "CFSDestinationRole",
+                "Description": "Allows IoT to call AWS services on your behalf.",
+                "MaxSessionDuration": 3600,
+                "Policies": [
+                    {
+                        "PolicyName": "CFSDestinationPolicy",
+                        "PolicyDocument": {
+                            "Statement": [
+                                {
+                                    "Effect": "Allow",
+                                    "Action": [
+                                        "iot:Connect",
+                                        "iot:DescribeEndpoint",
+                                        "iot:Publish"
+                                    ],
+                                    "Resource": [
+                                        "*"
+                                    ]
+                                }
+                            ]
+                        }
+                    }
+                ],
+                "AssumeRolePolicyDocument": {
+                    "Version": "2012-10-17",
+                    "Statement": [
+                        {
+                            "Effect": "Allow",
+                            "Principal": {
+                                "Service": [
+                                    "iotwireless.amazonaws.com"
+                                ]
+                            },
+                            "Action": [
+                                "sts:AssumeRole"
+                            ]
+                        }
                     ]
-                  }
-                ]
-              }
-            },
-            {
-              "PolicyName": "CFSBucketAllowPolicy",
-              "PolicyDocument": {
-                "Statement": [
-                  {
-                    "Effect": "Allow",
-                    "Sid": "Statement1",
-                    "Action": [
-                      "s3:*"
-                    ],
-                    "Resource": [
-                      "arn:aws:s3:::sidewalk-test"
-                    ]
-                  }
-                ]
-              }
-            }
-          ],
-          "AssumeRolePolicyDocument": {
-            "Version": "2012-10-17",
-            "Statement": [
-              {
-                "Effect": "Allow",
-                "Principal": {
-                  "Service": [
-                    "iotwireless.amazonaws.com"
-                  ]
-                },
-                "Action": [
-                  "sts:AssumeRole"
-                ]
-              }
-            ]
-          }
-        }
-      },
-      "CFSDestinationRole": {
-        "Type": "AWS::IAM::Role",
-        "Properties": {
-          "RoleName": "CFSDestinationRole",
-          "Description": "Allows IoT to call AWS services on your behalf.",
-          "MaxSessionDuration": 3600,
-          "Policies": [
-            {
-              "PolicyName": "CFSDestinationPolicy",
-              "PolicyDocument": {
-                "Statement": [
-                  {
-                    "Effect": "Allow",
-                    "Action": [
-                      "iot:Connect",
-                      "iot:DescribeEndpoint",
-                      "iot:Publish"
-                    ],
-                    "Resource": [
-                      "*"
-                    ]
-                  }
-                ]
-              }
-            }
-          ],
-          "AssumeRolePolicyDocument": {
-            "Version": "2012-10-17",
-            "Statement": [
-              {
-                "Effect": "Allow",
-                "Principal": {
-                  "Service": [
-                    "iotwireless.amazonaws.com"
-                  ]
-                },
-                "Action": [
-                  "sts:AssumeRole"
-                ]
-              }
-            ]
-          }
-        }
-      },
-      "CFSRepublishRole": {
-        "Type": "AWS::IAM::Role",
-        "Properties": {
-          "RoleName": "CFSRepublishRole",
-          "Description": "Allows IoT to call AWS services on your behalf.",
-          "MaxSessionDuration": 3600,
-          "Policies": [
-            {
-              "PolicyName": "CFSRepublishPolicy",
-              "PolicyDocument": {
-                "Statement": [
-                  {
-                    "Effect": "Allow",
-                    "Action": [
-                      "iot:*",
-                      "sqs:*",
-                      "iotwireless:*",
-                      "logs:*"
-                    ],
-                    "Resource": [
-                      "*"
-                    ]
-                  }
-                ]
-              }
-            }
-          ],
-          "AssumeRolePolicyDocument": {
-            "Version": "2012-10-17",
-            "Statement": [
-              {
-                "Effect": "Allow",
-                "Sid": "",
-                "Principal": {
-                  "Service": [
-                    "iot.amazonaws.com"
-                  ]
-                },
-                "Action": [
-                  "sts:AssumeRole"
-                ]
-              }
-            ]
-          }
-        }
-      },
-      "CFSRepublishLambdaRole": {
-        "Type": "AWS::IAM::Role",
-        "Properties": {
-          "RoleName": "CFSRepublishLambdaRole",
-          "Description": "Allows IoT to call AWS services on your behalf.",
-          "MaxSessionDuration": 3600,
-          "Policies": [
-            {
-              "PolicyName": "CFSRepublishPolicy",
-              "PolicyDocument": {
-                "Statement": [
-                  {
-                    "Effect": "Allow",
-                    "Action": [
-                      "iot:*",
-                      "sqs:*",
-                      "iotwireless:*",
-                      "logs:*"
-                    ],
-                    "Resource": [
-                      "*"
-                    ]
-                  }
-                ]
-              }
-            }
-          ],
-          "AssumeRolePolicyDocument": {
-            "Version": "2012-10-17",
-            "Statement": [
-              {
-                "Effect": "Allow",
-                "Sid": "",
-                "Principal": {
-                  "Service": [
-                    "lambda.amazonaws.com"
-                  ]
-                },
-                "Action": [
-                  "sts:AssumeRole"
-                ]
-              }
-            ]
-          }
-        }
-      },
-      "CFSDestinationRule": {
-        "Type": "AWS::IoT::TopicRule",
-        "Properties": {
-          "RuleName": "CFSDestinationRule",
-          "TopicRulePayload": {
-            "RuleDisabled": "false",
-            "Sql": "SELECT *",
-            "Actions": [
-              {
-                "Lambda": {
-                  "FunctionArn": {
-                    "Fn::GetAtt": [
-                      "CFSRepublishLambda",
-                      "Arn"
-                    ]
-                  }
                 }
-              },
-              {
-                "Republish": {
-                  "Qos": 0,
-                  "Topic": "sidewalk/received",
-                  "RoleArn": {
-                    "Fn::GetAtt": [
-                      "CFSRepublishRole",
-                      "Arn"
+            }
+        },
+        "CFSRepublishRole": {
+            "Type": "AWS::IAM::Role",
+            "Properties": {
+                "RoleName": "CFSRepublishRole",
+                "Description": "Allows IoT to call AWS services on your behalf.",
+                "MaxSessionDuration": 3600,
+                "Policies": [
+                    {
+                        "PolicyName": "CFSRepublishPolicy",
+                        "PolicyDocument": {
+                            "Statement": [
+                                {
+                                    "Effect": "Allow",
+                                    "Action": [
+                                        "iot:*",
+                                        "sqs:*",
+                                        "iotwireless:*",
+                                        "logs:*"
+                                    ],
+                                    "Resource": [
+                                        "*"
+                                    ]
+                                }
+                            ]
+                        }
+                    }
+                ],
+                "AssumeRolePolicyDocument": {
+                    "Version": "2012-10-17",
+                    "Statement": [
+                        {
+                            "Effect": "Allow",
+                            "Sid": "",
+                            "Principal": {
+                                "Service": [
+                                    "iot.amazonaws.com"
+                                ]
+                            },
+                            "Action": [
+                                "sts:AssumeRole"
+                            ]
+                        }
                     ]
-                  }
                 }
-              },
-              {
-                "Sqs": {
-                  "QueueUrl": {
-                    "Fn::GetAtt": [
-                      "CFSReceiveQueue",
-                      "QueueName"
+            }
+        },
+        "CFSRepublishLambdaRole": {
+            "Type": "AWS::IAM::Role",
+            "Properties": {
+                "RoleName": "CFSRepublishLambdaRole",
+                "Description": "Allows IoT to call AWS services on your behalf.",
+                "MaxSessionDuration": 3600,
+                "Policies": [
+                    {
+                        "PolicyName": "CFSRepublishPolicy",
+                        "PolicyDocument": {
+                            "Statement": [
+                                {
+                                    "Effect": "Allow",
+                                    "Action": [
+                                        "iot:*",
+                                        "sqs:*",
+                                        "iotwireless:*",
+                                        "logs:*"
+                                    ],
+                                    "Resource": [
+                                        "*"
+                                    ]
+                                }
+                            ]
+                        }
+                    }
+                ],
+                "AssumeRolePolicyDocument": {
+                    "Version": "2012-10-17",
+                    "Statement": [
+                        {
+                            "Effect": "Allow",
+                            "Sid": "",
+                            "Principal": {
+                                "Service": [
+                                    "lambda.amazonaws.com"
+                                ]
+                            },
+                            "Action": [
+                                "sts:AssumeRole"
+                            ]
+                        }
                     ]
-                  },
-                  "RoleArn": {
-                    "Fn::GetAtt": [
-                      "CFSRepublishRole",
-                      "Arn"
-                    ]
-                  }
                 }
-              }
-            ]
-          }
+            }
+        },
+        "CFSDestinationRule": {
+            "Type": "AWS::IoT::TopicRule",
+            "Properties": {
+                "RuleName": "CFSDestinationRule",
+                "TopicRulePayload": {
+                    "RuleDisabled": "false",
+                    "Sql": "SELECT *",
+                    "Actions": [
+                        {
+                            "Lambda": {
+                                "FunctionArn": {
+                                    "Fn::GetAtt": [
+                                        "CFSRepublishLambda",
+                                        "Arn"
+                                    ]
+                                }
+                            }
+                        },
+                        {
+                            "Republish": {
+                                "Qos": 0,
+                                "Topic": "sidewalk/received",
+                                "RoleArn": {
+                                    "Fn::GetAtt": [
+                                        "CFSRepublishRole",
+                                        "Arn"
+                                    ]
+                                }
+                            }
+                        },
+                        {
+                            "Sqs": {
+                                "QueueUrl": {
+                                    "Fn::GetAtt": [
+                                        "CFSReceiveQueue",
+                                        "QueueName"
+                                    ]
+                                },
+                                "RoleArn": {
+                                    "Fn::GetAtt": [
+                                        "CFSRepublishRole",
+                                        "Arn"
+                                    ]
+                                }
+                            }
+                        }
+                    ]
+                }
+            }
+        },
+        "CFSRepublishLambdaPermission": {
+            "Type": "AWS::Lambda::Permission",
+            "Properties": {
+                "FunctionName": {
+                    "Fn::GetAtt": [
+                        "CFSRepublishLambda",
+                        "Arn"
+                    ]
+                },
+                "Action": "lambda:InvokeFunction",
+                "Principal": "iot.amazonaws.com",
+                "SourceAccount": {
+                    "Ref": "AWS::AccountId"
+                },
+                "SourceArn": {
+                    "Fn::GetAtt": [
+                        "CFSDestinationRule",
+                        "Arn"
+                    ]
+                }
+            }
+        },
+        "CFSRepublishLambda": {
+            "Type": "AWS::Lambda::Function",
+            "Properties": {
+                "Handler": "index.lambda_handler",
+                "Runtime": "python3.8",
+                "Role": {
+                    "Fn::GetAtt": [
+                        "CFSRepublishLambdaRole",
+                        "Arn"
+                    ]
+                },
+                "Code": {
+                    "ZipFile": "import json\nimport base64\nimport boto3\nimport struct\n\nfrom enum import Enum, auto\n\nclass SAMC_CMD_CLS(Enum):\n    SL_SID_APP_MSG_CMD_CLS_DEV_MGMT = 0\n    SL_SID_APP_MSG_CMD_CLS_CLOUD_MGMT = auto()\n    SL_SID_APP_MSG_CMD_CLS_SID = auto()\n    SL_SID_APP_MSG_CMD_CLS_DMP_SOC_LIGHT = auto()\n    \nclass SAMC():\n    SL_SID_APP_MSG_PROTO_VER = 1\n    SL_SID_APP_MSG_LENGTH = 5\n    proto_ver_bits = 0x0f\n    cmd_cls_bits = 0xf0\n\n    def __init__(self, device_id):\n        self.client = boto3.client('iot-data', region_name='us-east-1')\n        self.wireless_device_id = device_id\n        self.topic = 'test/'\n\n    def identifyMessagePacket(self, payload_data):\n        if len(payload_data) == self.SL_SID_APP_MSG_LENGTH:\n            packed_struct = struct.unpack(\"5b\", payload_data)\n            if packed_struct[0] & self.proto_ver_bits == SAMC.SL_SID_APP_MSG_PROTO_VER:\n                if (packed_struct[0] & self.cmd_cls_bits) >> 4 == SAMC_CMD_CLS.SL_SID_APP_MSG_CMD_CLS_DMP_SOC_LIGHT.value:\n                    self.topic += 'dmp_soc_light/'\n            else:\n                print(\"Wrong proto version!\")\n        else:\n            print(\"Payload is not recognised as Sidewalk Application Message Component by Silicon Labs!\")\n\n    def publishMessage(self, payload_data_to_publish):\n        self.topic += f'{self.wireless_device_id}'\n        response = self.client.publish(\n                topic=self.topic,\n                qos=1,\n                payload=payload_data_to_publish\n            )\n\ndef lambda_handler(event, context):\n    message = json.dumps(event)\n    print(message)\n    \n    payload_ascii = base64.b64decode(event[\"PayloadData\"])\n    print(f'Payload ASCII is {payload_ascii}')\n    \n    payload_hex = bytearray.fromhex(payload_ascii.decode())\n    \n    decoded_payload = payload_hex.decode(\"iso-8859-2\")\n    decoded_data = json.dumps({\"payload\":decoded_payload, \"WirelessDeviceId\":event[\"WirelessDeviceId\"], \"WirelessMetadata\":event[\"WirelessMetadata\"]})\n\n    samc = SAMC(event[\"WirelessDeviceId\"])\n    samc.identifyMessagePacket(payload_hex)\n    samc.publishMessage(decoded_data)\n"
+                }
+            }
+        },
+        "CFSDestination": {
+            "Type": "AWS::IoTWireless::Destination",
+            "Properties": {
+                "Expression": "CFSDestinationRule",
+                "ExpressionType": "RuleName",
+                "Name": "CFSDestination",
+                "RoleArn": {
+                    "Fn::GetAtt": [
+                        "CFSDestinationRole",
+                        "Arn"
+                    ]
+                }
+            }
         }
-      },
-      "CFSRepublishLambdaPermission": {
-        "Type": "AWS::Lambda::Permission",
-        "Properties": {
-          "FunctionName": {
-            "Fn::GetAtt": [
-              "CFSRepublishLambda",
-              "Arn"
-            ]
-          },
-          "Action": "lambda:InvokeFunction",
-          "Principal": "iot.amazonaws.com",
-          "SourceAccount": {
-            "Ref": "AWS::AccountId"
-          },
-          "SourceArn": {
-            "Fn::GetAtt": [
-              "CFSDestinationRule",
-              "Arn"
-            ]
-          }
-        }
-      },
-      "CFSRepublishLambda": {
-        "Type": "AWS::Lambda::Function",
-        "Properties": {
-          "Handler": "index.lambda_handler",
-          "Runtime": "python3.8",
-          "Role": {
-            "Fn::GetAtt": [
-              "CFSRepublishLambdaRole",
-              "Arn"
-            ]
-          },
-          "Code": {
-            "ZipFile": "import json\nimport base64\nimport boto3\nimport struct\n\nfrom enum import Enum, auto\n\nclass SAMC_CMD_CLS(Enum):\n  SL_SID_APP_MSG_CMD_CLS_DEV_MGMT = 0\n  SL_SID_APP_MSG_CMD_CLS_CLOUD_MGMT = auto()\n  SL_SID_APP_MSG_CMD_CLS_SID = auto()\n  SL_SID_APP_MSG_CMD_CLS_DMP_SOC_LIGHT = auto()\n\nclass SAMC():\n  SL_SID_APP_MSG_PROTO_VER = 1\n  SL_SID_APP_MSG_LENGTH = 5\n  proto_ver_bits = 0x0f\n  cmd_cls_bits = 0xf0\n\n  def __init__(self, device_id):\n    self.client = boto3.client('iot-data', region_name='us-east-1')\n    self.wireless_device_id = device_id\n    self.topic = 'test/'\n\n  def identifyMessagePacket(self, payload_data):\n    if len(payload_data) == self.SL_SID_APP_MSG_LENGTH:\n      packed_struct = struct.unpack(\"5b\", payload_data)\n      if packed_struct[0] & self.proto_ver_bits == SAMC.SL_SID_APP_MSG_PROTO_VER:\n        if (packed_struct[0] & self.cmd_cls_bits) >> 4 == SAMC_CMD_CLS.SL_SID_APP_MSG_CMD_CLS_DMP_SOC_LIGHT.value:\n          self.topic += 'dmp_soc_light/'\n      else:\n        print(\"Wrong proto version!\")\n    else:\n      print(\"Payload is not recognised as Sidewalk Application Message Component by Silicon Labs!\")\n\n  def publishMessage(self, payload_data_to_publish):\n    self.topic += f'{self.wireless_device_id}'\n    response = self.client.publish(\n        topic=self.topic,\n        qos=1,\n        payload=payload_data_to_publish\n      )\n\ndef lambda_handler(event, context):\n  message = json.dumps(event)\n  print(message)\n\n  payload_ascii = base64.b64decode(event[\"PayloadData\"])\n  print(f'Payload ASCII is {payload_ascii}')\n\n  payload_hex = bytearray.fromhex(payload_ascii.decode())\n\n  decoded_payload = payload_hex.decode(\"iso-8859-2\")\n  decoded_data = json.dumps({\"payload\":decoded_payload, \"WirelessDeviceId\":event[\"WirelessDeviceId\"], \"WirelessMetadata\":event[\"WirelessMetadata\"]})\n\n  samc = SAMC(event[\"WirelessDeviceId\"])\n  samc.identifyMessagePacket(payload_hex)\n  samc.publishMessage(decoded_data)\n"
-          }
-        }
-      },
-      "CFSDestination": {
-        "Type": "AWS::IoTWireless::Destination",
-        "Properties": {
-          "Expression": "CFSDestinationRule",
-          "ExpressionType": "RuleName",
-          "Name": "CFSDestination",
-          "RoleArn": {
-            "Fn::GetAtt": [
-              "CFSDestinationRole",
-              "Arn"
-            ]
-          }
-        }
-      }
     }
-  }
+}

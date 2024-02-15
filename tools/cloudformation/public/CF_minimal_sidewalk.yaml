@@ -35,14 +35,25 @@ Resources:
   S3Bucket: 
     Type: AWS::S3::Bucket
     Properties:
-      BucketName: sidewalk-test
+      BucketName: !Join 
+        - '-'
+        - - sidewalk-sl
+          - !Select 
+            - 0
+            - !Split 
+              - '-'
+              - !Select 
+                - 2
+                - !Split 
+                  - /
+                  - !Ref 'AWS::StackId'
       VersioningConfiguration:
         Status: Suspended
       PublicAccessBlockConfiguration:
-        BlockPublicAcls: Yes
-        BlockPublicPolicy: Yes
-        IgnorePublicAcls: Yes
-        RestrictPublicBuckets: Yes
+        BlockPublicAcls: true
+        BlockPublicPolicy: true
+        IgnorePublicAcls: true
+        RestrictPublicBuckets: true
 ####################################################################
 # Type: AWS::IAM::Role
 # This role is for the fuota.
@@ -81,8 +92,7 @@ Resources:
               Sid: Statement1
               Action:
               - s3:*
-              Resource:
-              - "arn:aws:s3:::sidewalk-test"
+              Resource: !GetAtt S3Bucket.Arn
       AssumeRolePolicyDocument:
         Version: '2012-10-17'
         Statement:

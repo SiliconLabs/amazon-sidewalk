@@ -191,6 +191,19 @@ enum sid_msg_type {
     SID_MSG_TYPE_RESPONSE = 3,
 };
 
+/**
+ * The additional attributes that can optionally be configured for a tx
+ */
+enum sid_msg_desc_tx_additional_attributes {
+    /** No additional attributes, default setting*/
+    SID_MSG_DESC_TX_ADDITIONAL_ATTRIBUTES_NONE = 0,
+    /** Additional tx attribute indicating to the Sidewalk stack that the message should be sent as
+     * Low Latency message on #SID_LINK_TYPE_3 link*/
+    SID_MSG_DESC_TX_ADDITIONAL_ATTRIBUTES_LORA_LOW_LATENCY = 1,
+    /** Delimiter to enum sid_msg_desc_tx_additional_attributes*/
+    SID_MSG_DESC_TX_ADDITIONAL_ATTRIBUTES_LAST
+};
+
 /** Attributes applied to the message descriptor on tx */
 struct sid_msg_desc_tx_attributes {
     /** Whether this message requests an ack from the AWS IOT service */
@@ -199,6 +212,8 @@ struct sid_msg_desc_tx_attributes {
      * request_ack is set to false
      */
     uint8_t num_retries;
+    /** Additional tx attributes that influence the message transmission */
+    enum sid_msg_desc_tx_additional_attributes additional_attr;
     /** Total time the Sidewalk stack holds the message in its queue in case the ack is not received. Setting not
      * applicable if request_ack is set to false
      */
@@ -389,10 +404,30 @@ enum sid_time_format {
 };
 
 /**
+ * The set of control events that are notfied to the developer.
+ *  @see on_control_event_notify in #sid_event_callbacks.
+ */
+enum sid_control_event_type {
+    /** Event indicating change in low latency configuraiton for #SID_LINK_TYPE_3*/
+    SID_CONTROL_EVENT_LOW_LATENCY_CONFIG_UPDATE = 0,
+    /** Delimiter to enum sid_control_event_type */
+    SID_CONTROL_EVENT_LAST,
+};
+
+/**
+ * The Sidewalk network control event and its data
+ */
+struct sid_control_event_data {
+    enum sid_control_event_type event_type;
+    /** Object used to store data pertaining to the event */
+    void *event_data;
+};
+
+/**
  * The set of callbacks a user can register through sid_init().
  */
 struct sid_event_callbacks {
-    /** Object used to  store user data */
+    /** Object used to store user data */
     void *context;
 
     /**
@@ -477,6 +512,13 @@ struct sid_event_callbacks {
      * @param[in] context The context pointer given in sid_event_callbacks.context
      */
     void (*on_factory_reset)(void *context);
+
+    /**
+     * Callback to invoke when the Sidewalk library notifies network control event.
+     *
+     * Sidewalk stack notifies certain control events to the user
+     */
+    void (*on_control_event_notify)(const struct sid_control_event_data *data, void *context);
 };
 
 /**

@@ -429,7 +429,7 @@ uint8_t app_log_filter_mask_get(void);
       _app_log_counter();                                      \
       _app_log_print_prefix(level);                            \
       _app_log_print_trace();                                  \
-      for (uint32_t i = 0; i < len; i++) {                     \
+      for (uint32_t i = 0; i < (uint32_t)len; i++) {           \
         if (i > 0) {                                           \
           app_log_append(separator);                           \
         }                                                      \
@@ -451,7 +451,7 @@ uint8_t app_log_filter_mask_get(void);
       _app_log_counter();                                      \
       _app_log_print_prefix(level);                            \
       _app_log_print_trace();                                  \
-      for (uint32_t i = 0; i < len; i++) {                     \
+      for (uint32_t i = 0; i < (uint32_t)len; i++) {           \
         if (i > 0) {                                           \
           app_log_append(separator);                           \
         }                                                      \

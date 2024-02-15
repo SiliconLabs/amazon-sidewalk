@@ -59,13 +59,6 @@
 #if defined(SL_CATALOG_SIMPLE_BUTTON_PRESENT)
 #include "sl_simple_button_instances.h"
 #endif
-
-// CSS TIMESYNC BACKOFF WORKAROUND BEGIN
-#if defined(SL_CSS_SUPPORTED)
-#include "timers.h"
-#endif
-// CSS TIMESYNC BACKOFF WORKAROUND END
-
 // -----------------------------------------------------------------------------
 //                              Macros and Typedefs
 // -----------------------------------------------------------------------------
@@ -74,24 +67,9 @@
 #define MSG_QUEUE_LEN       (10U)
 
 #define UNUSED(x) (void)(x)
-
-// CSS TIMESYNC BACKOFF WORKAROUND BEGIN
-#if defined(SL_CSS_SUPPORTED)
-#define CSS_TIMESYNC_INTERVAL     (30000) // Lora timesync request interval is 30 sec
-#define CSS_TIMESYNC_RETRIES      (3)
-#define CSS_TIMER_INTERVAL        (600000)
-#define CSS_TIMER_CHECKER_PERIOD  (10000)
-#endif
-// CSS TIMESYNC BACKOFF WORKAROUND END
 // -----------------------------------------------------------------------------
 //                          Static Function Declarations
 // -----------------------------------------------------------------------------
-// CSS TIMESYNC BACKOFF WORKAROUND BEGIN
-#if defined(SL_CSS_SUPPORTED)
-static void css_time_sync_checker_cb(TimerHandle_t pxTimer);
-static void css_time_sync_timeout_cb(TimerHandle_t pxTimer);
-#endif
-// CSS TIMESYNC BACKOFF WORKAROUND END
 
 /*******************************************************************************
  * Issue a queue event.
@@ -222,20 +200,6 @@ static bool button_send_update_req;
 #endif
 
 static app_context_t application_context;
-
-// CSS TIMESYNC BACKOFF WORKAROUND BEGIN
-#if defined(SL_CSS_SUPPORTED)
-static TimerHandle_t css_time_sync_checker_tim = NULL;
-static TimerHandle_t css_time_sync_timeout_tim = NULL;
-
-static enum sid_time_sync_status css_time_sync_status = SID_STATUS_TIME_SYNCED;
-static uint8_t css_time_sync_timeout_cnt = CSS_TIMESYNC_RETRIES;
-static TickType_t css_time_sync_checker_tim_periods = CSS_TIMER_CHECKER_PERIOD;
-static uint8_t css_time_sync_timeout_checker_retires = CSS_TIMESYNC_RETRIES;
-
-static bool timer_can_be_restarted = false;
-#endif
-// CSS TIMESYNC BACKOFF WORKAROUND END
 // -----------------------------------------------------------------------------
 //                          Public Function Definitions
 // -----------------------------------------------------------------------------
@@ -299,21 +263,6 @@ static int32_t init_and_start_link(app_context_t *context, struct sid_config *co
 #if defined(SL_BLE_SUPPORTED)
   button_send_update_req = false;
 #endif
-
-// CSS TIMESYNC BACKOFF WORKAROUND BEGIN
-#if defined(SL_CSS_SUPPORTED)
-  if ((link_mask & SID_LINK_TYPE_3) && (css_time_sync_status == SID_STATUS_NO_TIME) && (timer_can_be_restarted == true)) {
-    if ((xTimerIsTimerActive(css_time_sync_checker_tim) == pdFALSE) && (xTimerIsTimerActive(css_time_sync_timeout_tim) == pdFALSE)) {
-      if (xTimerStart(css_time_sync_checker_tim, 0) == pdFALSE) {
-        app_log_error("app: CSS time sync checker timer start failed");
-        goto error;
-      }
-      css_time_sync_timeout_checker_retires = CSS_TIMESYNC_RETRIES;
-      css_time_sync_checker_tim_periods = CSS_TIMER_CHECKER_PERIOD;
-    }
-  }
-#endif
-// CSS TIMESYNC BACKOFF WORKAROUND END
 
   return 0;
 
@@ -404,42 +353,9 @@ void main_thread(void * context)
   // Assign queue to the application context
   application_context.event_queue = g_event_queue;
 
-  // CSS TIMESYNC BACKOFF WORKAROUND BEGIN
-#if defined(SL_CSS_SUPPORTED)
-  css_time_sync_checker_tim = xTimerCreate("lora_time_sync_checker",
-                                           pdMS_TO_TICKS(CSS_TIMER_CHECKER_PERIOD),
-                                           pdFALSE,
-                                           (void*)0,
-                                           css_time_sync_checker_cb);
-  if (!css_time_sync_checker_tim) {
-    app_log_error("app: css_time_sync_checker_tim creation failed");
-    goto error;
-  }
-
-  css_time_sync_timeout_tim = xTimerCreate("lora_time_sync_timeout",
-                                           pdMS_TO_TICKS(CSS_TIMESYNC_INTERVAL),
-                                           pdTRUE,
-                                           (void*)1,
-                                           css_time_sync_timeout_cb);
-  if (!css_time_sync_timeout_tim) {
-    app_log_error("app: css_time_sync_timeout_tim creation failed");
-    goto error;
-  }
-#endif
-  // CSS TIMESYNC BACKOFF WORKAROUND END
-
   if (init_and_start_link(&application_context, &config, link_type_to_link_mask(SL_SIDEWALK_COMMON_REGISTRATION_LINK)) != 0) {
     goto error;
   }
-
-  // CSS TIMESYNC BACKOFF WORKAROUND BEGIN
-#if defined(SL_CSS_SUPPORTED)
-  if (xTimerStart(css_time_sync_checker_tim, 0) == pdFALSE) {
-    app_log_error("app: CSS time sync checker timer start failed");
-    goto error;
-  }
-#endif
-  // CSS TIMESYNC BACKOFF WORKAROUND END
 
   while (1) {
     enum event_type event = EVENT_TYPE_INVALID;
@@ -504,65 +420,6 @@ void main_thread(void * context)
           toggle_connection_request(&application_context);
           break;
 #endif
-
-          // CSS TIMESYNC BACKOFF WORKAROUND BEGIN
-#if defined(SL_CSS_SUPPORTED)
-        case EVENT_TYPE_CSS_TIMESYNC_CHECK:
-          if ((css_time_sync_status == SID_STATUS_NO_TIME)
-              && (config.link_mask & SID_LINK_TYPE_3)) {
-            if (sid_start(application_context.sidewalk_handle, SID_LINK_TYPE_3) != 0) {
-              goto error;
-            }
-
-            if (xTimerStart(css_time_sync_timeout_tim, 0) == pdFALSE) {
-              app_log_error("app: CSS time sync timeout timer start failed");
-              goto error;
-            }
-          } else {
-            css_time_sync_timeout_cnt = CSS_TIMESYNC_RETRIES;
-          }
-          break;
-
-        case EVENT_TYPE_CSS_TIMESYNC_TIMEOUT:
-          if ((css_time_sync_status == SID_STATUS_NO_TIME)
-              && (config.link_mask & SID_LINK_TYPE_3)
-              && (css_time_sync_timeout_cnt != 0)) {
-            css_time_sync_timeout_cnt--;
-          } else {
-            css_time_sync_timeout_cnt = CSS_TIMESYNC_RETRIES;
-
-            if (application_context.sidewalk_handle != NULL) {
-              if ((config.link_mask & SID_LINK_TYPE_3) && (css_time_sync_status == SID_STATUS_NO_TIME)) {
-                app_log_warning("app: CSS timesync timeout, stop CSS");
-                if (sid_stop(application_context.sidewalk_handle, SID_LINK_TYPE_3) != SID_ERROR_NONE) {
-                  app_log_error("app: sid stop failed");
-                  goto error;
-                }
-              }
-            } else {
-              app_log_error("app: sid handle is NULL");
-              goto error;
-            }
-
-            if (xTimerStop(css_time_sync_timeout_tim, 0) == pdFALSE) {
-              app_log_error("app: CSS time sync timeout timer stop failed");
-              goto error;
-            }
-
-            if (css_time_sync_timeout_checker_retires != 0) {
-              css_time_sync_timeout_checker_retires--;
-              css_time_sync_checker_tim_periods += CSS_TIMER_INTERVAL;
-              if (xTimerChangePeriod(css_time_sync_checker_tim, pdMS_TO_TICKS(css_time_sync_checker_tim_periods), 0) != pdPASS) {
-                app_log_error("app: CSS time sync checker timer change period failed");
-                goto error;
-              }
-              css_time_sync_timeout_cnt = CSS_TIMESYNC_RETRIES;
-              timer_can_be_restarted = false;
-            }
-          }
-          break;
-#endif
-        // CSS TIMESYNC BACKOFF WORKAROUND END
 
         default:
           app_log_error("app: unexpected evt: %d", (int)event);
@@ -691,22 +548,6 @@ void app_trigger_connection_request(void)
 // -----------------------------------------------------------------------------
 //                          Static Function Definitions
 // -----------------------------------------------------------------------------
-// CSS TIMESYNC BACKOFF WORKAROUND BEGIN
-#if defined(SL_CSS_SUPPORTED)
-static void css_time_sync_checker_cb(TimerHandle_t pxTimer)
-{
-  (void) pxTimer;
-  queue_event(g_event_queue, EVENT_TYPE_CSS_TIMESYNC_CHECK);
-}
-
-static void css_time_sync_timeout_cb(TimerHandle_t pxTimer)
-{
-  (void) pxTimer;
-  queue_event(g_event_queue, EVENT_TYPE_CSS_TIMESYNC_TIMEOUT);
-}
-#endif
-// CSS TIMESYNC BACKOFF WORKAROUND END
-
 static void queue_event(QueueHandle_t queue,
                         enum event_type event)
 {
@@ -798,12 +639,6 @@ static void on_sidewalk_status_changed(const struct sid_status *status,
     app_trigger_send_counter_update();
   }
 #endif
-
-// CSS TIMESYNC BACKOFF WORKAROUND BEGIN
-#if defined(SL_CSS_SUPPORTED)
-  css_time_sync_status = status->detail.time_sync_status;
-#endif
-// CSS TIMESYNC BACKOFF WORKAROUND END
 }
 
 static void on_sidewalk_factory_reset(void *context)
@@ -857,14 +692,6 @@ static bool link_switch(app_context_t *app_context, struct sid_config *config)
 {
   enum sid_link_type current_link = config->link_mask;
   enum sid_link_type next_link = get_next_link(config->link_mask);
-
-  // CSS TIMESYNC BACKOFF WORKAROUND BEGIN
-#if defined(SL_CSS_SUPPORTED)
-  if ((next_link & SID_LINK_TYPE_3) || (current_link & SID_LINK_TYPE_3)) {
-    timer_can_be_restarted = true;
-  }
-#endif
-  // CSS TIMESYNC BACKOFF WORKAROUND END
 
   if (current_link != next_link) {
     if (init_and_start_link(app_context, config, next_link) != 0) {

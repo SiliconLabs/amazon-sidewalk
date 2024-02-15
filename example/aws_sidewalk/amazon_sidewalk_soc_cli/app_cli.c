@@ -64,6 +64,7 @@ int16_t cli_arg_int16_t;
 uint16_t cli_arg_uint16_t;
 uint8_t cli_arg_uint8_t;
 struct sid_link_auto_connect_params cli_arg_sid_link_auto_connect_params;
+// note: this will limit the max size of uplink payload inputed from cli (BLE, FSK)
 char cli_arg_str[64];
 char cli_arg_str_2[64];
 char cli_arg_str_3[16];
@@ -481,20 +482,31 @@ void set_sidewalk_css_dev_prof_id(app_context_t *app_context)
  ******************************************************************************/
 void sl_app_trigger_sid_send(char *message_type_str, char *message_str, char *link_type)
 {
+  if (strlen(message_type_str) > sizeof(cli_arg_str)) {
+    app_log_error("app: cli msg type str max size reached: %u/%u.", strlen(message_type_str), sizeof(cli_arg_str));
+    return;
+  }
+  if (strlen(message_str) > sizeof(cli_arg_str_2)) {
+    app_log_error("app: cli msg str max size reached: %u/%u.", strlen(message_str), sizeof(cli_arg_str_2));
+    return;
+  }
   memset(cli_arg_str, 0, sizeof(cli_arg_str));
-  memcpy(cli_arg_str, message_type_str, strlen(message_type_str));
   memset(cli_arg_str_2, 0, sizeof(cli_arg_str_2));
-  memcpy(cli_arg_str_2, message_str, strlen(message_str));
   memset(cli_arg_str_3, 0, sizeof(cli_arg_str_3));
+  memcpy(cli_arg_str, message_type_str, strlen(message_type_str));
+  memcpy(cli_arg_str_2, message_str, strlen(message_str));
+  // optional arg
   if (link_type != NULL) {
-    // optional arg
+    if (strlen(link_type) > sizeof(cli_arg_str_3)) {
+      app_log_error("app: cli link type str max size reached: %u/%u.", strlen(link_type), sizeof(cli_arg_str_3));
+      return;
+    }
     memcpy(cli_arg_str_3, link_type, strlen(link_type));
   }
   queue_event(g_event_queue, EVENT_TYPE_SID_SEND);
 
   app_log_info("app: send user evt\n");
 }
-
 /*******************************************************************************
  * Trigger - sid reset
  * @param[in] void

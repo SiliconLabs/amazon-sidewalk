@@ -10,7 +10,7 @@ category: Example|AWS IoT
 
 sdk_extension:
   - id: sidewalk
-    version: 2.0.0
+    version: 2.0.1
 
 source:
   - path: main.c
