@@ -41,7 +41,7 @@
 
 #ifdef DEBUG_PDP
 #include <stdio.h>
-#endif /* DEBUG_PDP */
+#endif  // DEBUG_PDP
 #include <string.h>
 #include "nvm3.h"
 #include "nvm3_hal_flash.h"
@@ -129,7 +129,7 @@ sl_sid_pdp_status_t sl_sid_pdp_priv_key_prov_inject_key(const uint8_t * const in
   if (ret != PSA_SUCCESS) {
     return SL_SID_PDP_STATUS_ERR_PSA_SIGN_MESSAGE;
   }
-#endif /* DEBUG_PDP */
+#endif  // DEBUG_PDP
 
   return SL_SID_PDP_STATUS_SUCCESS;
 }

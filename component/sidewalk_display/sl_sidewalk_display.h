@@ -3,7 +3,7 @@
  * @brief sl_sidewalk_display.h
  *******************************************************************************
  * # License
- * <b>Copyright 2022 Silicon Laboratories Inc. www.silabs.com</b>
+ * <b>Copyright 2024 Silicon Laboratories Inc. www.silabs.com</b>
  *******************************************************************************
  *
  * SPDX-License-Identifier: Zlib
@@ -37,6 +37,10 @@
 
 #ifndef SL_SIDEWALK_DISPLAY_H
 #define SL_SIDEWALK_DISPLAY_H
+
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 // -----------------------------------------------------------------------------
 //                                   Includes
@@ -100,5 +104,9 @@ void sl_sidewalk_display_message(char *payload);
  * @param payload The QR-code to be displayed
  *****************************************************************************/
 void sl_sidewalk_display_qr(char *payload);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif // SL_SIDEWALK_DISPLAY_H

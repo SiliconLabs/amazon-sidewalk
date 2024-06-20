@@ -1,9 +1,9 @@
 /***************************************************************************//**
  * @file
- * @brief Sidewalk PAL configuration
+ * @brief Sidewalk NVM3 migrator component configuration
  *******************************************************************************
  * # License
- * <b>Copyright 2023 Silicon Laboratories Inc. www.silabs.com</b>
+ * <b>Copyright 2024 Silicon Laboratories Inc. www.silabs.com</b>
  *******************************************************************************
  *
  * SPDX-License-Identifier: Zlib
@@ -28,24 +28,24 @@
  *
  ******************************************************************************/
 
-#ifndef SL_SIDEWALK_PAL_CONFIG_H
-#define SL_SIDEWALK_PAL_CONFIG_H
+#ifndef SL_SIDEWALK_NVM3_MIGRATOR_CONFIG_H
+#define SL_SIDEWALK_NVM3_MIGRATOR_CONFIG_H
 
 // <<< Use Configuration Wizard in Context Menu >>>
 
-#define SL_SIDEWALK_PAL_SWI_IMPL_METHOD_SWI_INTERRUPT   1
-#define SL_SIDEWALK_PAL_SWI_IMPL_METHOD_RTOS_THREAD     2
+// <h> Sidewalk NVM3 migrator configuration
 
-// <h> Sidewalk PAL configuration
-// <o SL_SIDEWALK_PAL_SWI_IMPL_METHOD> SWI implementation method
-// <SL_SIDEWALK_PAL_SWI_IMPL_METHOD_SWI_INTERRUPT=> SWI interrupt
-// <SL_SIDEWALK_PAL_SWI_IMPL_METHOD_RTOS_THREAD=> RTOS thread
-// <i> Default: SL_SIDEWALK_PAL_SWI_IMPL_METHOD_RTOS_THREAD
-#ifndef SL_SIDEWALK_PAL_SWI_IMPL_METHOD
-#define SL_SIDEWALK_PAL_SWI_IMPL_METHOD SL_SIDEWALK_PAL_SWI_IMPL_METHOD_SWI_INTERRUPT
+// <o SL_SIDEWALK_NVM3_MIGRATOR_ORIGINAL_DI_SIZE> Original DI size
+// <i> Size of the NVM3 Default Instance used before migration.
+// <i> Default: 24576
+#ifndef SL_SIDEWALK_NVM3_MIGRATOR_ORIGINAL_DI_SIZE
+#define SL_SIDEWALK_NVM3_MIGRATOR_ORIGINAL_DI_SIZE 24576
+#else
+#error "SL_SIDEWALK_NVM3_MIGRATOR_ORIGINAL_DI_SIZE should not be overwritten"
 #endif
+
 // </h>
 
 // <<< end of configuration section >>>
 
-#endif // SL_SIDEWALK_PAL_CONFIG_H
+#endif // SL_SIDEWALK_NVM3_MIGRATOR_CONFIG_H

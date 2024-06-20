@@ -48,6 +48,7 @@ extern "C" {
 
 #include "nvm3.h"
 #include "sid_error.h"
+#include "sid_pal_mfg_store_ifc.h"
 
 // -----------------------------------------------------------------------------
 //                              Macros and Typedefs
@@ -68,12 +69,20 @@ extern "C" {
 #define SLI_SID_NVM3_KEY_MAX_APP      (SLI_SID_NVM3_KEY_BASE + SLI_SID_NVM3_KEY_MAX_APP_REL)
 #define SLI_SID_NVM3_KEY_MIN_KV       (SLI_SID_NVM3_KEY_MAX_APP + 1)                                // 0xA2000 - 0xA8FFF
 #define SLI_SID_NVM3_KEY_MAX_KV       (SLI_SID_NVM3_KEY_MAX_APP + 1 + SLI_SID_NVM3_KEY_MAX_KV_REL)
-#define SLI_SID_NVM3_KEY_MIN_MFG      (SLI_SID_NVM3_KEY_MAX_KV + 1)
-#define SLI_SID_NVM3_KEY_MAX_MFG      (SLI_SID_NVM3_KEY_MAX_KV + 1 + SLI_SID_NVM3_KEY_MAX_MFG_REL)  // 0xA9000 - 0xAFFFF
+#define SLI_SID_NVM3_KEY_MIN_MFG      (SLI_SID_NVM3_KEY_MAX_KV + 1)                                 // 0xA9000 - 0xAFFFF
+#define SLI_SID_NVM3_KEY_MAX_MFG      (SLI_SID_NVM3_KEY_MAX_KV + 1 + SLI_SID_NVM3_KEY_MAX_MFG_REL)
 
 #define SLI_SID_NVM3_KEY_BASE_APP     SLI_SID_NVM3_KEY_MIN_APP
 #define SLI_SID_NVM3_KEY_BASE_KV      SLI_SID_NVM3_KEY_MIN_KV
 #define SLI_SID_NVM3_KEY_BASE_MFG     SLI_SID_NVM3_KEY_MIN_MFG
+
+// SiLabs-specific MFG key for the NVM3 version MFG object.
+// The range of application-specific keys starts after SID_PAL_MFG_STORE_CORE_VALUE_MAX (= 4000) according to
+// sid_pal_mfg_store_ifc.h, this is simply the first freely usable key (= 4001).
+#define SID_PAL_MFG_STORE_SL_NVM3_VERSION (SID_PAL_MFG_STORE_CORE_VALUE_MAX + 1)
+
+// Size of the NVM3 version in bytes.
+#define SID_PAL_MFG_STORE_SL_NVM3_VERSION_SIZE  4
 
 // -- DO NOT MODIFY END --
 

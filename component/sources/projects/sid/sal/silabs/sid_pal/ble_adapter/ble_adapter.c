@@ -3,7 +3,7 @@
  * @brief ble_adapter.c
  *******************************************************************************
  * # License
- * <b>Copyright 2023 Silicon Laboratories Inc. www.silabs.com</b>
+ * <b>Copyright 2024 Silicon Laboratories Inc. www.silabs.com</b>
  *******************************************************************************
  *
  * SPDX-License-Identifier: Zlib
@@ -47,14 +47,26 @@
 #include <string.h>
 #include <stddef.h>
 
-#include <sid_pal_ble_adapter_ifc.h>
-#include <sid_ble_config_ifc.h>
-#include <sid_pal_log_ifc.h>
+#if defined(SL_SIDEWALK_UNIT_TEST)
+#pragma message "Unit test enabled"
+#include "ble_adapter_mock.h"
+#include "sid_ble_config_ifc_mock.h"
+#include "sid_pal_ble_adapter_ifc_mock.h"
+#else
 #include "ble_adapter.h"
+#include "sid_ble_config_ifc.h"
+#include "sid_pal_ble_adapter_ifc.h"
+#endif
+
+#include "sid_pal_log_ifc.h"
 #include "sl_bt_api.h"
 #include "sl_bluetooth_config.h"
-#include "sl_malloc.h"
+#include "sl_memory_manager.h"
 
+#if defined(SL_SIDEWALK_UNIT_TEST)
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wincompatible-pointer-types-discards-qualifiers"
+#endif
 // -----------------------------------------------------------------------------
 //                              Macros and Typedefs
 // -----------------------------------------------------------------------------
@@ -99,22 +111,6 @@
     (ptr)[0] = (uint8_t) (_value & 0xFF);         \
     (ptr)[1] = (uint8_t) (_value >> 8);           \
   } while (0)
-
-typedef struct {
-  const sid_ble_config_t *cfg;
-  const sid_pal_ble_adapter_callbacks_t *callback;
-  uint16_t mtu_size;
-  bool is_connected;
-  uint16_t conn_id;
-  uint8_t bt_addr[BLE_ADDR_MAX_LEN];
-} sid_pal_ble_adapter_ctx_t;
-
-typedef struct {
-  uint16_t current_service_handle;          // The service declaration attribute handle
-  uint16_t *current_characteristic_handle;  // The characteristic value attribute handle
-  uint16_t *current_descriptor_handle;      // The descriptor attribute handle
-} sid_pal_ble_profile_config_t;
-
 // -----------------------------------------------------------------------------
 //                          Static Function Declarations
 // -----------------------------------------------------------------------------
@@ -154,8 +150,6 @@ static void sl_ble_adapter_on_gatt_mtu_exchanged_id(sl_bt_evt_gatt_mtu_exchanged
 static void sl_ble_init_failed(const char *msg);
 static void sl_ble_free_resources();
 static void sl_ble_abort_session(const char *msg, uint16_t session);
-static uint16_t sl_ble_evaluate_permissions(uint16_t xPermissions);
-
 // -----------------------------------------------------------------------------
 //                                Global Variables
 // -----------------------------------------------------------------------------
@@ -176,31 +170,41 @@ static struct sid_pal_ble_adapter_interface ble_ifc =
   .deinit        = ble_adapter_deinit,
 };
 
+// Advertising parameters
+static sid_ble_cfg_adv_param_t adv_timing_params;
+
+// Indicate whether BLE advertising is slow or fast
+static bool is_fast_adv_active = true;
+
+#if defined(SL_SIDEWALK_UNIT_TEST)
+extern sid_pal_ble_adapter_ctx_t ctx;
+extern sid_pal_ble_profile_config_t *ble_profile;
+extern bool is_bluetooth_started;
+extern bool is_kernel_started;
+extern bool is_adv_active;
+extern uint8_t advertising_set_handle;
+extern bd_addr adv_static_random_addr;
+extern bool have_adv_static_random_addr;
+#else
 // Current adapter context
 static sid_pal_ble_adapter_ctx_t ctx;
 // BLE profile
 static sid_pal_ble_profile_config_t *ble_profile = NULL;
-// Advertising parameters
-static sid_ble_cfg_adv_param_t adv_timing_params;
-
 // Indicate whether BLE stack is started
 static bool is_bluetooth_started = false;
 // Indicate whether kernel is started
 static bool is_kernel_started = false;
 // Indicate whether BLE advertising is active
 static bool is_adv_active = false;
-// Indicate whether BLE advertising is slow or fast
-static bool is_fast_adv_active = true;
 // The advertising set handle allocated from Bluetooth stack
 static uint8_t advertising_set_handle = SL_BT_INVALID_ADVERTISING_SET_HANDLE;
-
 // Static random address used for advertisers
 // This static random Bluetooth address is used by all advertisers that specify the
 // 'BTAddrTypeStaticRandom' address type in their configuration. The address is generated when it is
 // first needed and remains unchanged until device reboot.
 static bd_addr adv_static_random_addr = { 0 };
 static bool have_adv_static_random_addr = false;
-
+#endif
 // -----------------------------------------------------------------------------
 //                          Public Function Declarations
 // -----------------------------------------------------------------------------
@@ -308,67 +312,43 @@ static void ble_request_write_cb_fnc(uint16_t conn_id,
   (void)bt_addr;
   (void)is_prep;
 
-  if (data != NULL) {
-    sid_ble_cfg_service_identifier_t id;
-    for (uint8_t i = 0; i < ctx.cfg->num_profile; i++) {
-      id = ctx.cfg->profile[i].service.type;
-      for (uint8_t j = 0; j < ctx.cfg->profile[i].char_count; j++) {
-        if (attr_handle == ble_profile[i].current_characteristic_handle[j]) {
-          ctx.callback->data_callback(id, data, length);
-        }
+  sid_ble_cfg_service_identifier_t id;
+  for (uint8_t i = 0; i < ctx.cfg->num_profile; i++) {
+    id = ctx.cfg->profile[i].service.type;
+    for (uint8_t j = 0; j < ctx.cfg->profile[i].char_count; j++) {
+      if (attr_handle == ble_profile[i].current_characteristic_handle[j]) {
+        ctx.callback->data_callback(id, data, length);
       }
-      for (uint8_t j = 0; j < ctx.cfg->profile[i].desc_count; j++) {
-        if (attr_handle == ble_profile[i].current_descriptor_handle[j]) {
-          if (length == BLE_NOTIFY_LENGTH) {
-            uint16_t notif_data;
-            memcpy(&notif_data, data, sizeof(notif_data));
-            ctx.callback->notify_callback(id, (notif_data == BLE_NOTIFICATION_ENABLED));
-          }
-        }
-      }
-
-      if (need_resp && conn_id) {
-        // Send a response to a read/write operation
-        switch (trans_id) {
-          case SL_BT_GATTS_TRAN_TYPE_WRITE:
-          {
-            // Send response to remote
-            (void)sl_bt_gatt_server_send_user_write_response(conn_id, attr_handle, 0);
-            break;
-          }
-
-          case SL_BT_GATTS_TRAN_TYPE_PREP_WRITE:
-          {
-            // Send response to remote
-            sl_bt_gatt_server_send_user_prepare_write_response(conn_id, attr_handle, 0, offset, length, data);
-            break;
-          }
-
-          case SL_BT_GATTS_TRAN_TYPE_READ:
-          {
-            uint16_t sent_len;
-
-            // Check MTU size
-            uint16_t rsp_val_len;
-            if (sl_bt_gatt_server_get_mtu(conn_id, &rsp_val_len) != SL_STATUS_OK) {
-              break;
-            }
-            // Compare MTU and the length of the unsent Attribute value
-            if (rsp_val_len > length) {
-              rsp_val_len = length;
-            }
-            // Send response to remote
-            (void)sl_bt_gatt_server_send_user_read_response(conn_id, attr_handle, 0, rsp_val_len, data, &sent_len);
-            break;
-          }
-
-          default:
-            // Nothing to do
-            break;
-        }
-      }
-      return;
     }
+    for (uint8_t j = 0; j < ctx.cfg->profile[i].desc_count; j++) {
+      if (attr_handle == ble_profile[i].current_descriptor_handle[j]) {
+        if (length == BLE_NOTIFY_LENGTH) {
+          uint16_t notif_data;
+          memcpy(&notif_data, data, sizeof(notif_data));
+          ctx.callback->notify_callback(id, (notif_data == BLE_NOTIFICATION_ENABLED));
+        }
+      }
+    }
+
+    if (need_resp && conn_id) {
+      // Send a response to a read/write operation
+      switch (trans_id) {
+        case SL_BT_GATTS_TRAN_TYPE_WRITE:
+        {
+          // Send response to remote
+          (void)sl_bt_gatt_server_send_user_write_response(conn_id, attr_handle, 0);
+          break;
+        }
+
+        case SL_BT_GATTS_TRAN_TYPE_PREP_WRITE:
+        {
+          // Send response to remote
+          sl_bt_gatt_server_send_user_prepare_write_response(conn_id, attr_handle, 0, offset, length, data);
+          break;
+        }
+      }
+    }
+    return;
   }
 }
 
@@ -394,7 +374,9 @@ static void sl_ble_free_resources()
       ble_profile[i].current_characteristic_handle = NULL;
     }
 
-    ble_profile[i].current_service_handle = 0;
+    if (ble_profile != NULL) {
+      ble_profile[i].current_service_handle = 0;
+    }
   }
 
   if (ble_profile != NULL) {
@@ -408,26 +390,6 @@ static void sl_ble_abort_session(const char *msg, uint16_t session)
   // Cancel all changes performed in current session and close the session
   (void)sl_bt_gattdb_abort(session);
   SID_PAL_LOG_ERROR(msg);
-}
-
-static uint16_t sl_ble_evaluate_permissions(uint16_t xPermissions)
-{
-  uint16_t retVal = 0;
-
-  if (xPermissions & SL_BT_PERM_READ_ENCRYPTED) {
-    retVal |= SL_BT_GATTDB_ENCRYPTED_READ;
-  }
-  if (xPermissions & SL_BT_PERM_READ_ENCRYPTED_MITM) {
-    retVal |= SL_BT_GATTDB_AUTHENTICATED_READ;
-  }
-  if (xPermissions & SL_BT_PERM_WRITE_ENCRYPTED) {
-    retVal |= SL_BT_GATTDB_ENCRYPTED_WRITE;
-  }
-  if (xPermissions & SL_BT_PERM_WRITE_ENCRYPTED_MITM) {
-    retVal |= SL_BT_GATTDB_AUTHENTICATED_WRITE;
-  }
-
-  return retVal;
 }
 
 static sid_error_t ble_adapter_init(const sid_ble_config_t *cfg)
@@ -666,19 +628,6 @@ static sid_error_t ble_adapter_start_service(void)
           properties |= SL_BT_GATTDB_CHARACTERISTIC_WRITE_NO_RESPONSE;
         }
 
-        uint16_t xPermissions = 0;
-        if (ctx.cfg->profile[i].characteristic[j].perm.is_none) {
-          xPermissions |= SL_BT_PERM_NONE;
-        }
-        if (ctx.cfg->profile[i].characteristic[j].perm.is_read) {
-          xPermissions |= SL_BT_PERM_READ;
-        }
-        if (ctx.cfg->profile[i].characteristic[j].perm.is_write) {
-          xPermissions |= SL_BT_PERM_WRITE;
-        }
-
-        uint16_t permissions = sl_ble_evaluate_permissions(xPermissions);
-
         if (ctx.cfg->profile[i].characteristic[j].id.type == UUID_TYPE_16) {
           // 16-bit uuid
           sl_bt_uuid_16_t uuid_little_endian;
@@ -690,7 +639,7 @@ static sid_error_t ble_adapter_start_service(void)
           sl_status = sl_bt_gattdb_add_uuid16_characteristic(gattdb_session_id,
                                                              ble_profile[i].current_service_handle,
                                                              properties,
-                                                             permissions,
+                                                             0,
                                                              SL_BT_GATTDB_NO_AUTO_CCCD, // Do not create client-config automatically
                                                              uuid_little_endian,
                                                              sl_bt_gattdb_user_managed_value,
@@ -707,7 +656,7 @@ static sid_error_t ble_adapter_start_service(void)
           sl_status = sl_bt_gattdb_add_uuid128_characteristic(gattdb_session_id,
                                                               ble_profile[i].current_service_handle,
                                                               properties,
-                                                              permissions,
+                                                              0,
                                                               SL_BT_GATTDB_NO_AUTO_CCCD,  // Do not create client-config automatically
                                                               uuid_little_endian,
                                                               sl_bt_gattdb_user_managed_value,
@@ -763,7 +712,7 @@ static sid_error_t ble_adapter_start_service(void)
         (void)sl_bt_gatt_server_find_attribute(ble_profile[i].current_service_handle,
                                                UUID_LEN_16BIT,
                                                uuid_secondary_service,
-                                               &next_pri_srv);
+                                               &next_sec_srv);
 
         // Return whichever the smaller, 0 means not found
         uint16_t service_end = (next_pri_srv > next_sec_srv) ? next_sec_srv : next_pri_srv;
@@ -800,28 +749,22 @@ static sid_error_t ble_adapter_start_service(void)
           return SID_ERROR_GENERIC;
         }
 
-        uint16_t xPermissions = 0;
+        uint16_t permissions = 0;
         if (ctx.cfg->profile[i].desc[j].perm.is_none) {
-          xPermissions |= SL_BT_PERM_NONE;
+          permissions |= SL_BT_PERM_NONE;
         }
         if (ctx.cfg->profile[i].desc[j].perm.is_read) {
-          xPermissions |= SL_BT_PERM_READ;
+          permissions |= SL_BT_PERM_READ;
         }
         if (ctx.cfg->profile[i].desc[j].perm.is_write) {
-          xPermissions |= SL_BT_PERM_WRITE;
+          permissions |= SL_BT_PERM_WRITE;
         }
-
-        uint16_t permissions = sl_ble_evaluate_permissions(xPermissions);
 
         uint16_t properties = 0;
-        if ((xPermissions & SL_BT_PERM_READ)
-            || (xPermissions & SL_BT_PERM_READ_ENCRYPTED)
-            || (xPermissions & SL_BT_PERM_READ_ENCRYPTED_MITM)) {
+        if (permissions & SL_BT_PERM_READ) {
           properties |= SL_BT_GATTDB_DESCRIPTOR_READ;
         }
-        if ((xPermissions & SL_BT_PERM_WRITE)
-            || (xPermissions & SL_BT_PERM_WRITE_ENCRYPTED)
-            || (xPermissions & SL_BT_PERM_WRITE_ENCRYPTED_MITM)) {
+        if (permissions & SL_BT_PERM_WRITE) {
           properties |= SL_BT_GATTDB_DESCRIPTOR_WRITE;
         }
 
@@ -836,7 +779,7 @@ static sid_error_t ble_adapter_start_service(void)
           sl_status = sl_bt_gattdb_add_uuid16_descriptor(gattdb_session_id,
                                                          last_characteristic_handle,
                                                          properties,
-                                                         permissions,
+                                                         0,
                                                          uuid_little_endian,
                                                          sl_bt_gattdb_user_managed_value,
                                                          0, 0, NULL,  // Ignored parameters when value type is user_managed
@@ -852,7 +795,7 @@ static sid_error_t ble_adapter_start_service(void)
           sl_status = sl_bt_gattdb_add_uuid128_descriptor(gattdb_session_id,
                                                           last_characteristic_handle,
                                                           properties,
-                                                          permissions,
+                                                          0,
                                                           uuid_little_endian,
                                                           sl_bt_gattdb_user_managed_value,
                                                           0, 0, NULL, // Ignored parameters when value type is user_managed
@@ -1091,11 +1034,9 @@ static sid_error_t ble_adapter_set_adv_data(uint8_t *data, uint8_t length)
 
   // ====== Optionally append advertisement flags ======
   uint8_t flags = SL_BT_ADV_FLAG_GENERAL_DISCOVERABLE | SL_BT_ADV_FLAG_BR_EDR_NOT_SUPPORTED;
-  // Make sure the data fits. We need one extra byte for type and another for length
+  // Make sure the data fits (size_remaining should be greater or equal then entry_size)
+  // We need one extra byte for type and another for length
   entry_size = sizeof(flags) + 1 + 1;
-  if (size_remaining < entry_size) {
-    SID_PAL_LOG_WARNING("pal: adv data does not fit");
-  }
   // Set the length, type, and data
   adv_buf[adv_buf_idx] = sizeof(flags) + 1; // + 1 byte for the type
   adv_buf[adv_buf_idx + 1] = SL_BT_ADV_DATA_TYPE_FLAGS;
@@ -1106,12 +1047,10 @@ static sid_error_t ble_adapter_set_adv_data(uint8_t *data, uint8_t length)
   adv_buf_idx += entry_size;
 
   // ====== Optionally append service UUIDs ======
-  // Make sure the data fits. We need one extra byte for type and another for length
+  // Make sure the data fits (size_remaining should be greater or equal then entry_size)
+  // We need one extra byte for type and another for length
   size_t uuid_len = UUID_LEN_16BIT;
   entry_size = uuid_len + 1 + 1;
-  if (size_remaining < entry_size) {
-    SID_PAL_LOG_WARNING("pal: adv data does not fit");
-  }
   // Set the length, type, and data
   adv_buf[adv_buf_idx] = uuid_len + 1;  // + 1 byte for the type
   adv_buf[adv_buf_idx + 1] = SL_BT_ADV_DATA_TYPE_COMPLETE_16BIT_UUIDS;
@@ -1134,11 +1073,9 @@ static sid_error_t ble_adapter_set_adv_data(uint8_t *data, uint8_t length)
   memcpy(&manuf_data[2], data, length);
 
   if (manufacturer_len > 0) {
-    // Make sure the data fits. We need one extra byte for type and another for length
+    // Make sure the data fits (size_remaining should be greater or equal then entry_size)
+    // We need one extra byte for type and another for length
     entry_size = manufacturer_len + 1 + 1;
-    if (size_remaining < entry_size) {
-      SID_PAL_LOG_WARNING("pal: adv data does not fit");
-    }
     // Set the length, type, and data
     adv_buf[adv_buf_idx] = manufacturer_len + 1;  // + 1 byte for the type
     adv_buf[adv_buf_idx + 1] = SL_BT_ADV_DATA_TYPE_MANUFACTURER_DATA;
@@ -1169,11 +1106,9 @@ static sid_error_t ble_adapter_set_adv_data(uint8_t *data, uint8_t length)
 
   // ====== Optionally append device name ======
   if ((ctx.cfg->name != NULL) && (strlen(ctx.cfg->name) > 0)) {
-    // Make sure the data fits. We need one extra byte for type and another for length
+    // Make sure the data fits (size_remaining should be greater or equal then entry_size)
+    // We need one extra byte for type and another for length
     entry_size_scan_rsp = strlen(ctx.cfg->name) + 1 + 1;
-    if (size_remaining_scan_rsp < entry_size_scan_rsp) {
-      SID_PAL_LOG_WARNING("pal: adv data does not fit");
-    }
     // Set the length, type, and data
     scan_rsp_buf[scan_rsp_buf_idx] = strlen(ctx.cfg->name) + 1; // + 1 byte for the type
     scan_rsp_buf[scan_rsp_buf_idx + 1] = SL_BT_ADV_DATA_TYPE_COMPLETE_LOCAL_NAME;
@@ -1447,10 +1382,6 @@ static void sl_ble_adapter_on_gatt_server_user_write_request_id(sl_bt_evt_gatt_s
                                  event->value.data);
       }
       break;
-
-    default:
-      // Nothing to do
-      break;
   }
 }
 
@@ -1458,3 +1389,7 @@ static void sl_ble_adapter_on_gatt_mtu_exchanged_id(sl_bt_evt_gatt_mtu_exchanged
 {
   ctx.callback->mtu_callback(event->mtu);
 }
+
+#if defined(SL_SIDEWALK_UNIT_TEST)
+#pragma GCC diagnostic pop
+#endif

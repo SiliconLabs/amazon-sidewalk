@@ -44,7 +44,6 @@
 #include "app_cli_settings.h"
 
 #include "sl_sidewalk_common_config.h"
-#include "sl_malloc.h"
 
 #if (defined(SL_FSK_SUPPORTED) || defined(SL_CSS_SUPPORTED))
 #include "app_subghz_config.h"
@@ -57,6 +56,10 @@
 
 #if defined(SL_CATALOG_SIMPLE_BUTTON_PRESENT)
 #include "sl_simple_button_instances.h"
+#endif
+
+#if defined(SL_SIDEWALK_OTA_DFU_PRESENT)
+#include "sl_sidewalk_ota_dfu.h"
 #endif
 
 // -----------------------------------------------------------------------------
@@ -214,6 +217,14 @@ static void connection_request(app_context_t *context);
 //                          Public Functions Declarations
 // -----------------------------------------------------------------------------
 
+#if defined(SL_SIDEWALK_OTA_DFU_PRESENT)
+void sl_app_trigger_ota_dfu_release_buffer(void)
+{
+  queue_event(g_event_queue, EVENT_TYPE_SID_OTA_DFU_RELEASE_BUFFER);
+  app_log_info("app: ota dfu release buffer evt");
+}
+#endif
+
 // -----------------------------------------------------------------------------
 //                                Global Variables
 // -----------------------------------------------------------------------------
@@ -279,25 +290,25 @@ void main_task(void *context)
 
         case EVENT_TYPE_SID_INIT:
           if (init_sidewalk(app_context, cli_arg_str) != SL_STATUS_OK) {
-            app_log_error("app: sid init failed\n");
+            app_log_error("app: sid init failed");
           }
           break;
 
         case EVENT_TYPE_SID_START:
           if (start_sidewalk(app_context, cli_arg_str) != SL_STATUS_OK) {
-            app_log_error("app: sid start failed\n");
+            app_log_error("app: sid start failed");
           }
           break;
 
         case EVENT_TYPE_SID_STOP:
           if (stop_sidewalk(app_context, cli_arg_str) != SL_STATUS_OK) {
-            app_log_error("app: sid stop failed\n");
+            app_log_error("app: sid stop failed");
           }
           break;
 
         case EVENT_TYPE_SID_DEINIT:
           if (deinit_sidewalk(app_context) != SL_STATUS_OK) {
-            app_log_error("app: sid deinit failed\n");
+            app_log_error("app: sid deinit failed");
           }
           break;
 
@@ -393,15 +404,45 @@ void main_task(void *context)
           connection_request(app_context);
           break;
 
+#if defined(SL_SIDEWALK_OTA_DFU_PRESENT)
+        case EVENT_TYPE_SID_OTA_DFU_INIT_REQUEST:
+          sl_sid_ota_dfu_init(app_context->sidewalk_handle);
+          break;
+
+        case EVENT_TYPE_SID_OTA_DFU_DEINIT_REQUEST:
+          sl_sid_ota_dfu_deinit(app_context->sidewalk_handle);
+          break;
+
+        case EVENT_TYPE_SID_OTA_DFU_CANCEL_REQUEST:
+          sl_sid_ota_dfu_cancel(app_context->sidewalk_handle);
+          break;
+
+        case EVENT_TYPE_SID_OTA_DFU_STAT_REQUEST:
+          sl_sid_ota_dfu_stat(app_context->sidewalk_handle);
+          break;
+
+        case EVENT_TYPE_SID_OTA_DFU_PARAM_REQUEST:
+          sl_sid_ota_dfu_param(app_context->sidewalk_handle);
+          break;
+
+        case EVENT_TYPE_SID_OTA_DFU_MIN_SCRATCH_BUF_SIZE_REQUEST:
+          sl_sid_ota_dfu_min_scratch_buf_size();
+          break;
+
+        case EVENT_TYPE_SID_OTA_DFU_RELEASE_BUFFER:
+          sl_sid_ota_dfu_release_buffer();
+          break;
+#endif
+
         default:
-          app_log_error("app: unexpected evt: %d\n", (int)event);
+          app_log_error("app: unexpected evt: %d", (int)event);
           break;
       }
     }
   }
 
   // should never reach here
-  app_log_error("app: fatal error\n");
+  app_log_error("app: fatal error");
   sid_platform_deinit();
   vTaskDelete(NULL);
 }
@@ -411,6 +452,7 @@ void main_task(void *context)
  *
  * @param[in] queue The queue handle which will be used ofr the event
  * @param[in] event The event to be sent
+ * @param[in] data Data to be sent
  * @returns None
  ******************************************************************************/
 void queue_event(QueueHandle_t queue, enum event_type event)
@@ -465,15 +507,17 @@ static void on_sidewalk_msg_received(const struct sid_msg_desc *msg_desc,
   // Used for cli utility, to print rssi and snr of the last received message.
   memcpy(&LAST_MESSG_RCVD_DESC, msg_desc, sizeof(struct sid_msg_desc));
 
-  app_log_info("app: rcvd msg (type: %d, id: %u, size: %u, snr: %d, rssi: %d)\n",
+  app_log_info("app: rcvd msg (type: %d, id: %u, size: %u, snr: %d, rssi: %d)",
                msg_desc->type, msg_desc->id, msg->size, msg_desc->msg_desc_attr.rx_attr.snr, msg_desc->msg_desc_attr.rx_attr.rssi);
-  app_log_info("app: %s\n", (char *) msg->data);
+  if (msg->size != 0) {
+    app_log_info("app: %s", (char *) msg->data);
+  }
 }
 
 static void on_sidewalk_msg_sent(const struct sid_msg_desc *msg_desc, void *context)
 {
   UNUSED(context);
-  app_log_info("app: sent msg (type: %d, id: %u)\n", msg_desc->type, msg_desc->id);
+  app_log_info("app: sent msg (type: %d, id: %u)", msg_desc->type, msg_desc->id);
 }
 
 static void on_sidewalk_send_error(sid_error_t error,
@@ -481,7 +525,7 @@ static void on_sidewalk_send_error(sid_error_t error,
                                    void *context)
 {
   UNUSED(context);
-  app_log_error("app: msg send failed (type: %d, id: %u, err: %d)\n",
+  app_log_error("app: msg send failed (type: %d, id: %u, err: %d)",
                 msg_desc->type, msg_desc->id, error);
 }
 
@@ -491,21 +535,21 @@ static void on_sidewalk_status_changed(const struct sid_status *status, void *co
 
   switch (status->state) {
     case SID_STATE_READY:
-      app_log_info("app: sid status changed to STATE_SIDEWALK_READY\n");
+      app_log_info("app: sid status changed to STATE_SIDEWALK_READY");
       app_context->state = STATE_SIDEWALK_READY;
       break;
 
     case SID_STATE_NOT_READY:
-      app_log_info("app: sid status changed to STATE_SIDEWALK_NOT_READY\n");
+      app_log_info("app: sid status changed to STATE_SIDEWALK_NOT_READY");
       app_context->state = STATE_SIDEWALK_NOT_READY;
       break;
 
     case SID_STATE_ERROR:
-      app_log_error("app: sid state err: %d\n", sid_get_error(app_context->sidewalk_handle));
+      app_log_error("app: sid state err: %d", sid_get_error(app_context->sidewalk_handle));
       break;
 
     case SID_STATE_SECURE_CHANNEL_READY:
-      app_log_info("app: sid status changed to STATE_SIDEWALK_SECURE_CONNECTION\n");
+      app_log_info("app: sid status changed to STATE_SIDEWALK_SECURE_CONNECTION");
       app_context->state = STATE_SIDEWALK_SECURE_CONNECTION;
       break;
 
@@ -514,7 +558,7 @@ static void on_sidewalk_status_changed(const struct sid_status *status, void *co
       break;
   }
 
-  app_log_info("app: REG: %u, TIME: %u, LINK: %lu\n",
+  app_log_info("app: REG: %u, TIME: %u, LINK: %lu",
                status->detail.registration_status,
                status->detail.time_sync_status,
                status->detail.link_status_mask);
@@ -523,14 +567,14 @@ static void on_sidewalk_status_changed(const struct sid_status *status, void *co
 
   for (uint8_t i = 0; i < SID_LINK_TYPE_MAX_IDX; i++) {
     app_context->link_status.supported_link_mode[i] = status->detail.supported_link_modes[i];
-    app_log_info("app: Link %d Mode %p\n", i, (void *) status->detail.supported_link_modes[i]);
+    app_log_info("app: Link %d Mode %p", i, (void *) status->detail.supported_link_modes[i]);
   }
 }
 
 static void on_sidewalk_factory_reset(void *context)
 {
   UNUSED(context);
-  app_log_info("app: factory reset notif rcvd\n");
+  app_log_info("app: factory reset notif rcvd");
   // This is the callback function of the factory reset and as the last step a reset is applied.
   NVIC_SystemReset();
 }
@@ -542,21 +586,34 @@ static uint8_t parse_link_type(char *link_type_str)
   if (strstr(link_type_str, "ble") != NULL) {
 #if defined(SL_BLE_SUPPORTED)
     link_type |= SID_LINK_TYPE_1;
+#else
+    app_log_error("app: ble not available");
+    link_type = 0;
+    goto cleanup;
 #endif
   }
 
   if (strstr(link_type_str, "fsk") != NULL) {
 #if defined(SL_FSK_SUPPORTED)
     link_type |= SID_LINK_TYPE_2;
+#else
+    app_log_error("app: fsk not available");
+    link_type = 0;
+    goto cleanup;
 #endif
   }
 
   if (strstr(link_type_str, "css") != NULL) {
 #if defined(SL_CSS_SUPPORTED)
     link_type |= SID_LINK_TYPE_3;
+#else
+    app_log_error("app: css not available");
+    link_type = 0;
+    goto cleanup;
 #endif
   }
 
+  cleanup:
   return link_type;
 }
 
@@ -585,14 +642,14 @@ static void connection_request(app_context_t *context)
 {
 #if defined(SL_BLE_SUPPORTED)
   if (context->state == STATE_SIDEWALK_READY) {
-    app_log_info("app: sid ready, operation invalid\n");
+    app_log_info("app: sid ready, operation invalid");
   } else {
     sid_error_t ret = sid_ble_bcn_connection_request(context->sidewalk_handle, true);
     if (ret == SID_ERROR_NONE) {
-      app_log_info("app: conn req sent success\n");
+      app_log_info("app: conn req sent success");
       context->ble_connection_status = true;
     } else {
-      app_log_error("app: conn req failed: %d\n", ret);
+      app_log_error("app: conn req failed: %d", ret);
     }
   }
 #else
@@ -606,26 +663,29 @@ static void send(app_context_t *app_context, char *message_type_str, char *messa
   int8_t message_type = parse_message_type(message_type_str);
 
   if (message_type < 0) {
-    app_log_error("app: wrong msg type: %s\n", message_type_str);
+    app_log_error("app: wrong msg type: %s", message_type_str);
     return;
   }
 
-  app_log_info("app: sending %s\n", message_str);
+  app_log_info("app: sending %s", message_str);
 
   struct sid_msg msg = {
     .data = (uint8_t *)message_str,
     .size = strlen(message_str)
   };
-  struct sid_msg_desc desc = {
-    .type = (uint8_t)message_type,
-    .link_type = *link_type == 0 ? app_context->sid_cfg.link_mask : parse_link_type(link_type),
-  };
+
+  // The descriptor is cleared and then only partially initialized which is intentional
+  struct sid_msg_desc desc;
+  memset(&desc, 0, sizeof(desc));
+  desc.type = (uint8_t)message_type;
+  desc.link_type = *link_type == 0 ? app_context->sid_cfg.link_mask : parse_link_type(link_type);
+  desc.link_mode = SID_LINK_MODE_CLOUD;
 
   sid_error_t ret = sid_put_msg(app_context->sidewalk_handle, &msg, &desc);
   if (ret != SID_ERROR_NONE) {
-    app_log_error("app: queueing data failed: %d\n", ret);
+    app_log_error("app: queueing data failed: %d", ret);
   } else {
-    app_log_info("app: queued data msg id: %u\n", desc.id);
+    app_log_info("app: queued data msg id: %u", desc.id);
   }
 
   app_context->counter++;
@@ -676,17 +736,21 @@ static sl_status_t init_sidewalk(app_context_t *app_context, char *link_str)
       // reset context sidewalk_handle
       app_context->sidewalk_handle = NULL;
       app_context->sid_cfg.link_mask = 0;
-      app_log_error("app: sid init failed: %d\n", ret);
+      app_log_error("app: sid init failed: %d", ret);
     } else {
       // here we want to preserve the context sidewalk_handle from previous initialized link
-      app_log_error("app: sid already inited\n");
+      app_log_error("app: sid already inited");
     }
     return SL_STATUS_FAIL;
   }
-  app_log_info("app: sid init success\n");
+  app_log_info("app: sid init success");
   // update the  context sidewalk_handle with the one returned by sid_init
   app_context->sidewalk_handle = tmp_sidewalk_handle;
   current_init_link = app_context->sid_cfg.link_mask;
+
+#if defined(SL_SIDEWALK_OTA_DFU_PRESENT)
+  app_log_info("app: ota dfu over ble enabled");
+#endif
 
   return SL_STATUS_OK;
 }
@@ -703,13 +767,13 @@ static sl_status_t start_sidewalk(app_context_t *app_context, char *link_str)
 
   sid_error_t ret = sid_start(app_context->sidewalk_handle, link_mask);
   if (ret != SID_ERROR_NONE) {
-    app_log_error("app: start sid failed: %d\n", ret);
+    app_log_error("app: start sid failed: %d", ret);
     app_context->sidewalk_handle = NULL;
     app_context->sid_cfg.link_mask = 0;
 
     return SL_STATUS_FAIL;
   } else {
-    app_log_info("app: sid started\n");
+    app_log_info("app: sid started");
   }
 
   return SL_STATUS_OK;
@@ -727,13 +791,13 @@ static sl_status_t stop_sidewalk(app_context_t *app_context, char *link_str)
 
   sid_error_t ret = sid_stop(app_context->sidewalk_handle, link_mask);
   if (ret != SID_ERROR_NONE) {
-    app_log_error("app: sid stop failed: %d\n", ret);
+    app_log_error("app: sid stop failed: %d", ret);
     app_context->sidewalk_handle = NULL;
     app_context->sid_cfg.link_mask = 0;
 
     return SL_STATUS_FAIL;
   } else {
-    app_log_info("app: sid stopped\n");
+    app_log_info("app: sid stopped");
   }
 
   return SL_STATUS_OK;
@@ -743,13 +807,13 @@ static sl_status_t deinit_sidewalk(app_context_t *app_context)
 {
   sid_error_t ret = sid_deinit(app_context->sidewalk_handle);
   if (ret != SID_ERROR_NONE) {
-    app_log_error("app: sid deinit failed: %d\n", ret);
+    app_log_error("app: sid deinit failed: %d", ret);
     app_context->sidewalk_handle = NULL;
     app_context->sid_cfg.link_mask = 0;
 
     return SL_STATUS_FAIL;
   } else {
-    app_log_info("app: sid deinited\n");
+    app_log_info("app: sid deinited");
   }
 
   return SL_STATUS_OK;
@@ -762,13 +826,13 @@ static void reset_sidewalk(app_context_t *context)
   if (context->state == STATE_SIDEWALK_READY) {
     sid_error_t ret = sid_set_factory_reset(context->sidewalk_handle);
     if (ret != SID_ERROR_NONE) {
-      app_log_error("app: factory reset notif failed: %d\n", ret);
+      app_log_error("app: factory reset notif failed: %d", ret);
       vTaskDelay(pdMS_TO_TICKS(200));
       NVIC_SystemReset();
     } else {
-      app_log_info("app: wait to proceed with factory reset\n");
+      app_log_info("app: wait to proceed with factory reset");
     }
   } else {
-    app_log_error("app: Initiate/wait for curr conn to be successful before reseting sid\n");
+    app_log_error("app: Initiate/wait for curr conn to be successful before reseting sid");
   }
 }

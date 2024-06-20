@@ -3,7 +3,7 @@
  * @brief app_bluetooth.c
  *******************************************************************************
  * # License
- * <b>Copyright 2023 Silicon Laboratories Inc. www.silabs.com</b>
+ * <b>Copyright 2024 Silicon Laboratories Inc. www.silabs.com</b>
  *******************************************************************************
  *
  * SPDX-License-Identifier: Zlib
@@ -44,11 +44,10 @@
 #include "app_button_press.h"
 #include "sl_sidewalk_led_manager.h"
 #include "app_process.h"
-
 // -----------------------------------------------------------------------------
 //                              Macros and Typedefs
 // -----------------------------------------------------------------------------
-
+#define APP_BLUETOOTH_INVALID_ADV_SET_HANDLE  (0xFF)
 // -----------------------------------------------------------------------------
 //                                Global Variables
 // -----------------------------------------------------------------------------
@@ -57,8 +56,12 @@
 //                                Static Variables
 // -----------------------------------------------------------------------------
 // The advertising set handle allocated from Bluetooth stack.
-static uint8_t advertising_set_handle = 0xFF;
+static uint8_t advertising_set_handle = APP_BLUETOOTH_INVALID_ADV_SET_HANDLE;
 
+#if defined(SL_SIDEWALK_DMP_BLE_SUPPORTED)
+// BLE inited
+static bool regular_ble_inited = false;
+#endif
 // -----------------------------------------------------------------------------
 //                          Static Function Declarations
 // -----------------------------------------------------------------------------
@@ -66,7 +69,6 @@ static uint8_t advertising_set_handle = 0xFF;
 static sl_status_t update_report_characteristic(uint16_t attribute, uint8_t value);
 // Sends notification of the Report Button characteristic.
 static sl_status_t send_report_notification(uint16_t attribute);
-
 // -----------------------------------------------------------------------------
 //                          Public Function Definitions
 // -----------------------------------------------------------------------------
@@ -83,6 +85,16 @@ void app_bluetooth_init(void)
   // This is called once during start-up.                                    //
   /////////////////////////////////////////////////////////////////////////////
 }
+
+#if defined(SL_SIDEWALK_DMP_BLE_SUPPORTED)
+/**************************************************************************//**
+ * Get BLE init state.
+ *****************************************************************************/
+bool app_bluetooth_get_regular_ble_inited(void)
+{
+  return regular_ble_inited;
+}
+#endif
 
 /**************************************************************************//**
  * BLE Application Process Action.
@@ -102,6 +114,95 @@ void app_bluetooth_update_led_status(uint8_t value)
 }
 
 /**************************************************************************//**
+ * BLE init and start advertisement
+ *****************************************************************************/
+void app_bluetooth_init_and_start_advertisement(void)
+{
+  sl_status_t sc;
+  bd_addr address;
+  uint8_t address_type;
+
+  // Extract unique ID from BT Address.
+  sc = sl_bt_system_get_identity_address(&address, &address_type);
+  app_assert_status(sc);
+
+  app_log_info("app: BLE %s addr: %02X:%02X:%02X:%02X:%02X:%02X\n",
+               address_type ? "static random" : "public device",
+               address.addr[5],
+               address.addr[4],
+               address.addr[3],
+               address.addr[2],
+               address.addr[1],
+               address.addr[0]);
+
+  // Create an advertising set.
+  sc = sl_bt_advertiser_create_set(&advertising_set_handle);
+  app_assert_status(sc);
+
+  // Generate data for advertising
+  sc = sl_bt_legacy_advertiser_generate_data(advertising_set_handle,
+                                             sl_bt_advertiser_general_discoverable);
+  app_assert_status(sc);
+
+  // Set advertising interval to 1000ms.
+  sc = sl_bt_advertiser_set_timing(advertising_set_handle,
+                                   1600,  // min. adv. interval (milliseconds * 1.6)
+                                   1600,  // max. adv. interval (milliseconds * 1.6)
+                                   0,     // adv. duration
+                                   0);    // max. num. adv. events
+  app_assert_status(sc);
+
+  // Start advertising and enable connections.
+  sc = sl_bt_legacy_advertiser_start(advertising_set_handle,
+                                     sl_bt_legacy_advertiser_connectable);
+  app_assert_status(sc);
+
+#if defined(SL_SIDEWALK_DMP_BLE_SUPPORTED)
+  regular_ble_inited = true;
+
+  sl_led_turn_on(SL_SIMPLE_LED_INSTANCE(1));
+#endif
+
+  app_log_info("app: started adv");
+}
+
+/**************************************************************************//**
+ * BLE start advertisement
+ *****************************************************************************/
+void app_bluetooth_start_advertisement(void)
+{
+  sl_status_t sc;
+
+  // Generate data for advertising
+  sc = sl_bt_legacy_advertiser_generate_data(advertising_set_handle,
+                                             sl_bt_advertiser_general_discoverable);
+  app_assert_status(sc);
+
+  // Restart advertising after client has disconnected.
+  sc = sl_bt_legacy_advertiser_start(advertising_set_handle,
+                                     sl_bt_legacy_advertiser_connectable);
+  app_assert_status(sc);
+
+#if defined(SL_SIDEWALK_DMP_BLE_SUPPORTED)
+  sl_led_turn_on(SL_SIMPLE_LED_INSTANCE(1));
+#endif
+}
+
+#if defined(SL_SIDEWALK_DMP_BLE_SUPPORTED)
+/**************************************************************************//**
+ * BLE stop advertisement
+ *****************************************************************************/
+void app_bluetooth_stop_advertisement(void)
+{
+  // Stop advertising
+  sl_status_t sc = sl_bt_advertiser_stop(advertising_set_handle);
+  app_assert_status(sc);
+
+  sl_led_turn_off(SL_SIMPLE_LED_INSTANCE(1));
+}
+#endif
+
+/**************************************************************************//**
  * Bluetooth stack event handler.
  * This overrides the dummy weak implementation.
  *
@@ -110,10 +211,9 @@ void app_bluetooth_update_led_status(uint8_t value)
 void sl_bt_on_event(sl_bt_msg_t *evt)
 {
   sl_status_t sc;
-  bd_addr address;
-  uint8_t address_type;
 
   switch (SL_BT_MSG_ID(evt->header)) {
+#if defined(SL_SIDEWALK_DMP_FSK_SUPPORTED)
     // -------------------------------
     // This event indicates the device has started and the radio is ready.
     // Do not call any stack command before receiving this boot event!
@@ -125,86 +225,40 @@ void sl_bt_on_event(sl_bt_msg_t *evt)
                    evt->data.evt_system_boot.patch,
                    evt->data.evt_system_boot.build);
 
-      // Extract unique ID from BT Address.
-      sc = sl_bt_system_get_identity_address(&address, &address_type);
-      app_assert_status(sc);
-
-      app_log_info("app: BLE %s addr: %02X:%02X:%02X:%02X:%02X:%02X\n",
-                   address_type ? "static random" : "public device",
-                   address.addr[5],
-                   address.addr[4],
-                   address.addr[3],
-                   address.addr[2],
-                   address.addr[1],
-                   address.addr[0]);
-
-      // Create an advertising set.
-      sc = sl_bt_advertiser_create_set(&advertising_set_handle);
-      app_assert_status(sc);
-
-      // Generate data for advertising
-      sc = sl_bt_legacy_advertiser_generate_data(advertising_set_handle,
-                                                 sl_bt_advertiser_general_discoverable);
-      app_assert_status(sc);
-
-      // Set advertising interval to 1000ms.
-      sc = sl_bt_advertiser_set_timing(
-        advertising_set_handle,
-        1600, // min. adv. interval (milliseconds * 1.6)
-        1600, // max. adv. interval (milliseconds * 1.6)
-        0,    // adv. duration
-        0);   // max. num. adv. events
-      app_assert_status(sc);
-
-      // Start advertising and enable connections.
-      sc = sl_bt_legacy_advertiser_start(advertising_set_handle,
-                                         sl_bt_legacy_advertiser_connectable);
-      app_assert_status(sc);
-
-      app_log_info("app: started adv");
-
+      app_bluetooth_init_and_start_advertisement();
       break;
-
+#endif
     // -------------------------------
+
     // This event indicates that a new connection was opened.
     case sl_bt_evt_connection_opened_id:
       app_log_info("app: conn opened");
-
-      sc = sl_bt_connection_set_parameters(
-        evt->data.evt_connection_opened.connection,
-        80,      // min. con. interval (milliseconds * 1.25)
-        80,      // max. con. interval (milliseconds * 1.25)
-        0,       // latency
-        100,     // timeout (milliseconds * 10)
-        0x0,     // min. connection event length (milliseconds * 0.625)
-        0xffff); // max. connection event length (milliseconds * 0.625)
+#if defined(SL_SIDEWALK_DMP_FSK_SUPPORTED)
+      sc = sl_bt_connection_set_parameters(evt->data.evt_connection_opened.connection,
+                                           80,      // min. con. interval (milliseconds * 1.25)
+                                           80,      // max. con. interval (milliseconds * 1.25)
+                                           0,       // latency
+                                           100,     // timeout (milliseconds * 10)
+                                           0x0,     // min. connection event length (milliseconds * 0.625)
+                                           0xffff); // max. connection event length (milliseconds * 0.625)
       app_assert_status(sc);
 
-#ifdef SL_CATALOG_BLUETOOTH_FEATURE_POWER_CONTROL_PRESENT
+      #ifdef SL_CATALOG_BLUETOOTH_FEATURE_POWER_CONTROL_PRESENT
       // Set remote connection power reporting - needed for Power Control
-      sc = sl_bt_connection_set_remote_power_reporting(
-        evt->data.evt_connection_opened.connection,
-        sl_bt_connection_power_reporting_enable);
+      sc = sl_bt_connection_set_remote_power_reporting(evt->data.evt_connection_opened.connection,
+                                                       sl_bt_connection_power_reporting_enable);
       app_assert_status(sc);
-#endif // SL_CATALOG_BLUETOOTH_FEATURE_POWER_CONTROL_PRESENT
-
+      #endif // SL_CATALOG_BLUETOOTH_FEATURE_POWER_CONTROL_PRESENT
+#endif
       break;
 
     // -------------------------------
     // This event indicates that a connection was closed.
     case sl_bt_evt_connection_closed_id:
       app_log_info("app: conn closed");
-
-      // Generate data for advertising
-      sc = sl_bt_legacy_advertiser_generate_data(advertising_set_handle,
-                                                 sl_bt_advertiser_general_discoverable);
-      app_assert_status(sc);
-
-      // Restart advertising after client has disconnected.
-      sc = sl_bt_legacy_advertiser_start(advertising_set_handle,
-                                         sl_bt_legacy_advertiser_connectable);
-      app_assert_status(sc);
-
+      if (advertising_set_handle != APP_BLUETOOTH_INVALID_ADV_SET_HANDLE) {
+        app_bluetooth_start_advertisement();
+      }
       app_log_info("app: started adv");
 
       break;
@@ -232,8 +286,8 @@ void sl_bt_on_event(sl_bt_msg_t *evt)
         }
 #if defined(SL_SID_APP_MSG_PRESENT)
         // Toggle LED.
-        sl_sid_app_msg_dev_mgmt_toggle_led_ctx_t ctx = {
-          .param_send.led = data_recv,
+        sl_sid_app_msg_dmp_soc_light_toggle_led_ctx_t ctx = {
+          .param_send.state = data_recv,
           .hdl.operation = SL_SID_APP_MSG_OP_NTFY
         };
         app_trigger_toggle_led(&ctx);
@@ -250,8 +304,7 @@ void sl_bt_on_event(sl_bt_msg_t *evt)
       if (gattdb_report_button == evt->data.evt_gatt_server_characteristic_status.characteristic) {
         // A local Client Characteristic Configuration descriptor was changed in
         // the gattdb_report_button characteristic.
-        if (evt->data.evt_gatt_server_characteristic_status.client_config_flags
-            & sl_bt_gatt_notification) {
+        if (evt->data.evt_gatt_server_characteristic_status.client_config_flags & sl_bt_gatt_notification) {
           // The client just enabled the notification. Send notification of the
           // current button state stored in the local GATT table.
           app_log_info("app: notif enabled");
@@ -329,7 +382,7 @@ static sl_status_t send_report_notification(uint16_t attribute)
                                     sizeof(data_send),
                                     &data_send);
   if (sc == SL_STATUS_OK) {
-    app_log_append("app: send report notif (%d) : notif sent: 0x%02x", attribute, (int)data_send);
+    app_log_info("app: send report notif (%d) : notif sent: 0x%02x", attribute, (int)data_send);
   }
   return sc;
 }

@@ -40,11 +40,43 @@
 // -----------------------------------------------------------------------------
 
 #include <string.h>
+#include "sl_iostream.h"
 #include "sl_sidewalk_pdp_parser.h"
 
 // -----------------------------------------------------------------------------
 //                          Public Function Definitions
 // -----------------------------------------------------------------------------
+
+sl_sid_pdp_status_t sl_sid_pdp_receive_packet(uint8_t *rx_buf, uint16_t rx_buf_size, int16_t *rx_cnt)
+{
+  uint16_t data_len = 0;
+  uint16_t rx_len = 0;
+  *rx_cnt = 0;
+  sl_sid_pdp_status_t status = SL_SID_PDP_STATUS_SUCCESS;
+
+  while (1) {
+    // check if the buffer is full
+    if (*rx_cnt >= rx_buf_size) {
+      return SL_SID_PDP_STATUS_ERR_BUF_SIZE_TOO_SMALL;
+    }
+
+    // read 1-byte at a time and wait for the whole packet to be received
+    sl_status_t sl_st = sl_iostream_read(sl_iostream_get_default(), (void *)&rx_buf[*rx_cnt], SL_SID_PDP_IOSTREAM_READ_GRANULARITY, (size_t *)&rx_len);
+    if (sl_st == SL_STATUS_OK && rx_len == SL_SID_PDP_IOSTREAM_READ_GRANULARITY) {
+      (*rx_cnt)++;
+      if (*rx_cnt == SL_SID_PDP_MIN_REQ_PACKET_LEN) {
+        // command and data_len are received
+        data_len = *((uint16_t *)&rx_buf[SL_SID_PDP_DATA_LEN_START_IDX]);
+      }
+      if (*rx_cnt == data_len + SL_SID_PDP_MIN_REQ_PACKET_LEN) {
+        // the whole packet is received
+        break;
+      }
+    }
+  }
+  
+  return status;
+}
 
 sl_sid_pdp_status_t sl_sid_pdp_parse_req_packet(const uint8_t * const in, uint16_t in_len, const uint8_t **out, uint16_t * const out_len, uint8_t * const cmd)
 {

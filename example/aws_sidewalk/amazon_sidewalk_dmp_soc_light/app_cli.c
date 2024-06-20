@@ -104,9 +104,9 @@ void cli_get_mtu(sl_cli_command_arg_t *arguments)
 
 void cli_toggle_led(sl_cli_command_arg_t *arguments)
 {
+  (void)arguments;
 #if defined(SL_SID_APP_MSG_PRESENT)
-  sl_sid_app_msg_dev_mgmt_toggle_led_ctx_t ctx = {
-    .param_send.led = sl_cli_get_argument_uint8(arguments, 0),
+  sl_sid_app_msg_dmp_soc_light_toggle_led_ctx_t ctx = {
     .hdl.operation = SL_SID_APP_MSG_OP_NTFY
   };
   app_trigger_toggle_led(&ctx);

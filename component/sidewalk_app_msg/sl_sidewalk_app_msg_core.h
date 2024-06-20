@@ -3,7 +3,7 @@
  * @brief sidewalk application message component
  *******************************************************************************
  * # License
- * <b>Copyright 2023 Silicon Laboratories Inc. www.silabs.com</b>
+ * <b>Copyright 2024 Silicon Laboratories Inc. www.silabs.com</b>
  *******************************************************************************
  *
  * The licensor of this software is Silicon Laboratories Inc. Your use of this
@@ -17,6 +17,10 @@
 
 #ifndef SL_SID_APP_MSG_CORE_H
 #define SL_SID_APP_MSG_CORE_H
+
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 /*******************************************************************************
  *** INCLUDES
@@ -48,12 +52,12 @@
 #define SLI_SID_APP_MSG_OP_BITS                 (3)
 #define SLI_SID_APP_MSG_SEQ_BITS                (6)
 #define SLI_SID_APP_MSG_LEN_BITS                (8)
-#define SLI_SID_APP_MSG_HEADER_LEN_BYTES        ((\
-          SLI_SID_APP_MSG_PROTO_VER_BITS +      \
-          SLI_SID_APP_MSG_CMD_CLS_BITS +        \
-          SLI_SID_APP_MSG_CMD_ID_BITS +         \
-          SLI_SID_APP_MSG_OP_BITS +             \
-          SLI_SID_APP_MSG_SEQ_BITS +            \
+#define SLI_SID_APP_MSG_HEADER_LEN_BYTES        ((  \
+          SLI_SID_APP_MSG_PROTO_VER_BITS +          \
+          SLI_SID_APP_MSG_CMD_CLS_BITS +            \
+          SLI_SID_APP_MSG_CMD_ID_BITS +             \
+          SLI_SID_APP_MSG_OP_BITS +                 \
+          SLI_SID_APP_MSG_SEQ_BITS +                \
           SLI_SID_APP_MSG_LEN_BITS) / CHAR_BIT)
 #define SLI_SID_APP_MSG_MSG_LEN                 (SLI_SID_APP_MSG_MAX_MTU_SIZE - SLI_SID_APP_MSG_HEADER_LEN_BYTES)
 
@@ -190,7 +194,7 @@ sl_sid_app_msg_st_t sli_sid_app_msg_prepare_send(
  * @brief
  *   Converts the application message to be sent over the sidewalk network into
  *   a sidewalk message.
- * 
+ *
  *   This is an application level API that must be called prior to each
  *   sidewalk message transmission.
  *
@@ -207,7 +211,7 @@ sl_sid_app_msg_st_t sl_sid_app_msg_prepare_sid_msg(sl_sid_app_msg_t *app_msg, st
  *   Converts the received sidewalk message into an application message and
  *   calls the appropriate command handler which eventually triggers the
  *   appropriate command callback implemented by the application.
- * 
+ *
  *   This is an application level API that must be called following to each
  *   successful sidewalk message reception.
  *
@@ -217,5 +221,9 @@ sl_sid_app_msg_st_t sl_sid_app_msg_prepare_sid_msg(sl_sid_app_msg_t *app_msg, st
  *   Status code
  ******************************************************************************/
 sl_sid_app_msg_st_t sl_sid_app_msg_handler(const struct sid_msg *rcvd_sid_msg);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif  // SL_SID_APP_MSG_CORE_H

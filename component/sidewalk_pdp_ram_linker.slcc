@@ -4,6 +4,9 @@ description: "RAM linker script for PDP"
 package: "Flex"
 category: PDP
 quality: evaluation
+metadata:
+  sbom:
+    license: Zlib
 root_path: "component"
 
 provides:

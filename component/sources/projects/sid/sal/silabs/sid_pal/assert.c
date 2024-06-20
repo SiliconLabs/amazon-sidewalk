@@ -40,7 +40,12 @@
 // -----------------------------------------------------------------------------
 #include <sid_pal_assert_ifc.h>
 #include <sid_pal_log_ifc.h>
+#if defined(SID_PAL_ASSERT_DISABLED)
+#pragma message "Asserts are disabled."
+#else
 #include <app_assert.h>
+#pragma message "Asserts are enabled."
+#endif
 #include "cmsis_compiler.h"
 #include <stdint.h>
 
@@ -94,7 +99,12 @@ void sid_pal_assert(int line,
 __WEAK void sl_assert_app_callback(uint16_t line_num,
                                    const char * file_name)
 {
+#if defined(SID_PAL_ASSERT_DISABLED)
+  (void)line_num;
+  (void)file_name;
+#else
   SID_PAL_LOG_ERROR("pal: received a fault! %s @ %d", file_name, line_num);
+#endif
 }
 
 // -----------------------------------------------------------------------------

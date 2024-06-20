@@ -46,13 +46,14 @@
 #include <string.h>
 #include "nvm3_manager.h"
 #include "em_system.h" // for SYSTEM_GetUnique
-#include "sl_malloc.h"
+#include "sl_memory_manager.h"
 
 /* Manufacturing store write capability is not enabled by default. It
  * is currently required for internal diagnostic apps and for SWAT
  */
 #if (defined (HALO_ENABLE_DIAGNOSTICS) && HALO_ENABLE_DIAGNOSTICS) || defined(SWAT_DEVICE_TYPE) \
-  || (defined(SL_SID_PDP_FEATURE_ON) && SL_SID_PDP_FEATURE_ON)
+  || (defined(SL_SID_PDP_FEATURE_ON) && SL_SID_PDP_FEATURE_ON) \
+  || (defined(SL_CATALOG_SIDEWALK_DEVICE_BACKUP_PRESENT))
 #define ENABLE_MFG_STORE_WRITE
 #endif
 
@@ -116,6 +117,7 @@ void sid_pal_mfg_store_init(sid_pal_mfg_store_region_t mfg_store_region)
   }
 
   uint16_t obj_cnt = (uint16_t)nvm3_enumObjects(nvm3_defaultHandle, NULL, 0, SLI_SID_NVM3_KEY_MIN_MFG, SLI_SID_NVM3_KEY_MAX_MFG);
+  (void)obj_cnt;
   SID_PAL_LOG_INFO("pal: mfg store opened with %d object(s)", obj_cnt);
 }
 

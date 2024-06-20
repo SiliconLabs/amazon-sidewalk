@@ -3,7 +3,7 @@
  * @brief sl_sidewalk_utils.c
  *******************************************************************************
  * # License
- * <b>Copyright 2022 Silicon Laboratories Inc. www.silabs.com</b>
+ * <b>Copyright 2024 Silicon Laboratories Inc. www.silabs.com</b>
  *******************************************************************************
  *
  * SPDX-License-Identifier: Zlib
@@ -68,7 +68,7 @@ static bool get_raw_smsn(uint8_t *buffer, uint8_t buffer_len);
 //                                Static Variables
 // -----------------------------------------------------------------------------
 
-static uint8_t device_capabilities;
+static uint8_t device_capabilities = 0;
 
 // -----------------------------------------------------------------------------
 //                          Public Function Definitions
@@ -100,11 +100,12 @@ void sl_sidewalk_utils_get_capabilities_str(char *capablities_str, uint8_t capab
 
       // TODO: read these versions from the current software instead of hardcoding
       strcat(capablities_str, "|prot+v1");
-      strcat(capablities_str, "|sidewalk+1.14");
-      strcat(capablities_str, "|gsdk+4.2.0");
+      strcat(capablities_str, "|sidewalk+1.16");
+      strcat(capablities_str, "|gsdk+4.4.1");
 
 #if defined(SL_CATALOG_BTN0_PRESENT)
       strcat(capablities_str, "|button0+sb+Push Button 0");
+      strcat(capablities_str, "|message+st+Message");
 #endif
 
 #if defined(SL_CATALOG_BTN1_PRESENT)
@@ -127,7 +128,6 @@ void sl_sidewalk_utils_get_capabilities_str(char *capablities_str, uint8_t capab
 
 #if defined(SL_CATALOG_SIDEWALK_DISPLAY_PRESENT)
       strcat(capablities_str, "|display+at+Display");
-      strcat(capablities_str, "|message+st+Message");
 #endif
     }
   }

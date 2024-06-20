@@ -40,6 +40,9 @@
 // -----------------------------------------------------------------------------
 
 #include "app_init.h"
+#include "em_assert.h"
+#include "sl_iostream.h"
+#include "sl_iostream_handles.h"
 
 // -----------------------------------------------------------------------------
 //                          Public Function Definitions
@@ -47,4 +50,11 @@
 
 void app_init(void)
 {
+    // select RTT as default if both IOStreams are available
+    sl_iostream_t *hdl = sl_iostream_get_handle("rtt");
+    if (hdl == NULL) {
+        hdl = sl_iostream_get_handle("vcom");
+    }
+    EFM_ASSERT(hdl != NULL);
+    sl_iostream_set_default(hdl);
 }

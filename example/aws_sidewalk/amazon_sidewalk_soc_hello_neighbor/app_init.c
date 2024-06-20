@@ -51,9 +51,12 @@
 // -----------------------------------------------------------------------------
 //                              Macros and Typedefs
 // -----------------------------------------------------------------------------
-
 // Main task stack size
+#if defined(EFR32XG27)
+#define MAIN_TASK_STACK_SIZE    (3000 / sizeof(configSTACK_DEPTH_TYPE))
+#else
 #define MAIN_TASK_STACK_SIZE    (2048 / sizeof(configSTACK_DEPTH_TYPE))
+#endif // defined(EFR32XG27)
 
 // -----------------------------------------------------------------------------
 //                          Public Function Prototypes

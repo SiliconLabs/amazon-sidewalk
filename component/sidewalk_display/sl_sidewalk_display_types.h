@@ -3,7 +3,7 @@
  * @brief sl_sidewalk_display_types.h
  *******************************************************************************
  * # License
- * <b>Copyright 2022 Silicon Laboratories Inc. www.silabs.com</b>
+ * <b>Copyright 2024 Silicon Laboratories Inc. www.silabs.com</b>
  *******************************************************************************
  *
  * SPDX-License-Identifier: Zlib
@@ -38,6 +38,10 @@
 #ifndef SL_SIDEWALK_DISPLAY_TYPES_H
 #define SL_SIDEWALK_DISPLAY_TYPES_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 // -----------------------------------------------------------------------------
 //                                   Includes
 // -----------------------------------------------------------------------------
@@ -71,5 +75,9 @@ typedef struct {
 // -----------------------------------------------------------------------------
 //                          Public Function Declarations
 // -----------------------------------------------------------------------------
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif // SL_SIDEWALK_DISPLAY_TYPES_H

@@ -3,7 +3,7 @@
  * @brief app_bluetooth.h
  *******************************************************************************
  * # License
- * <b>Copyright 2023 Silicon Laboratories Inc. www.silabs.com</b>
+ * <b>Copyright 2024 Silicon Laboratories Inc. www.silabs.com</b>
  *******************************************************************************
  *
  * SPDX-License-Identifier: Zlib
@@ -65,6 +65,40 @@ void app_bluetooth_init(void);
  * @returns None
  *****************************************************************************/
 void app_bluetooth_update_led_status(uint8_t value);
+
+/**************************************************************************//**
+ * BLE init and start advertisement
+ *
+ * @param None
+ * @returns None
+ *****************************************************************************/
+void app_bluetooth_init_and_start_advertisement(void);
+
+/**************************************************************************//**
+ * BLE start advertisement
+ *
+ * @param None
+ * @returns None
+ *****************************************************************************/
+void app_bluetooth_start_advertisement(void);
+
+#if defined(SL_SIDEWALK_DMP_BLE_SUPPORTED)
+/**************************************************************************//**
+ * BLE stop advertisement
+ *
+ * @param None
+ * @returns None
+ *****************************************************************************/
+void app_bluetooth_stop_advertisement(void);
+
+/**************************************************************************//**
+ * Get BLE init state
+ *
+ * @param None
+ * @returns None
+ *****************************************************************************/
+bool app_bluetooth_get_regular_ble_inited(void);
+#endif
 
 #ifdef __cplusplus
 }

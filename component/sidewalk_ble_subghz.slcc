@@ -4,6 +4,9 @@ package: amazon_bluetooth
 description: "Simple component to gather all of the sidewalk related libraries and header files."
 category: Example|AWS IoT
 quality: production
+metadata:
+  sbom:
+    license: Zlib AND LicenseRef-amazon-sidewalk-license
 root_path: "component"
 
 provides:
@@ -59,9 +62,13 @@ source:
   - path: "ble_subghz/radio/subghz/rail/app_subghz_config.c"
     condition:
       - sl_sidewalk_radio_native
+    unless:
+      - sidewalk_dmp_ble_support
   - path: "ble_subghz/radio/subghz/semtech/app_subghz_config.c"
     condition:
       - sl_sidewalk_radio_external
+    unless:
+      - sidewalk_dmp_ble_support
 #############################################
 # PHY sources
 #############################################
@@ -84,9 +91,13 @@ template_file:
   - path: /ble_subghz/app_gpio_config.c.jinja
     condition:
     - sl_sidewalk_radio_external
+    unless:
+    - sidewalk_dmp_ble_support
   - path: /ble_subghz/app_gpio_config.c.jinja
     condition:
     - sl_sidewalk_radio_native
+    unless:
+    - sidewalk_dmp_ble_support
 
 config_file:
   - path: "ble_subghz/radio/subghz/rail/app_subghz_config.h"
@@ -102,25 +113,41 @@ config_file:
     condition:
       - device_generic_family_efr32xg24
       - sl_sidewalk_radio_external
+    unless:
+      - sidewalk_dmp_ble_support
   - path: ble_subghz/config/efr32xg28/app_gpio_config.h
     condition:
       - device_generic_family_efr32xg28
+    unless:
+      - sidewalk_dmp_ble_support
   - path: ble_subghz/config/efr32xg21/app_gpio_config.h
     condition:
       - device_generic_family_efr32xg21
       - sl_sidewalk_radio_external
     unless:
       - brd4332a
+      - sidewalk_dmp_ble_support
   - path: ble_subghz/config/kg100s/app_gpio_config.h
     condition:
       - brd4332a
       - sl_sidewalk_radio_external
+    unless:
+      - sidewalk_dmp_ble_support
   - path: ble_subghz/config/efr32xg23/app_gpio_config.h
     condition:
       - device_generic_family_efr32xg23
+    unless:
+      - sidewalk_dmp_ble_support
   - path: ble_subghz/config/efr32xg25/app_gpio_config.h
     condition:
       - device_generic_family_efr32xg25
+    unless:
+      - sidewalk_dmp_ble_support
+  - path: ble_subghz/config/efr32xg26/app_gpio_config.h
+    condition:
+      - device_generic_family_efr32xg26
+    unless:
+      - sidewalk_dmp_ble_support
 
 include:
   - path: "includes/projects/sid/sal/common/public/sid_ifc/sid_ble_cfg"
@@ -193,6 +220,9 @@ include:
   - path: "includes/projects/sid/sal/common/public/sid_ifc/sdb_api"
     file_list:
     - path: "sdb_api.h"
+  - path: "includes/projects/sid/sal/common/public/sid_ifc/sid_bulk_data_transfer_api"
+    file_list:
+    - path: "sid_bulk_data_transfer_api.h"
   - path: "includes/projects/sid/apps/sdk/silabs/efr32xg21/common/mfg_store_app_values/include/export"
     file_list:
     - path: "mfg_store_app_values.h"
@@ -268,6 +298,9 @@ define:
   - name: EFR32XG24
     condition:
       - device_generic_family_efr32xg24
+  - name: EFR32XG26
+    condition:
+      - device_generic_family_efr32xg26
   - name: EFR32XG28
     condition:
       - device_generic_family_efr32xg28
@@ -277,6 +310,9 @@ define:
   - name: EFR32XG25
     condition:
       - device_generic_family_efr32xg25
+  - name: EFR32XG27
+    condition:
+      - device_generic_family_efr32xg27
   - name: MODULE_KG100S
     value: 2
     condition:

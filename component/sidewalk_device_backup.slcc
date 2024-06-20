@@ -4,6 +4,9 @@ package: "Flex"
 description: "Provides Sidewalk device backup functions"
 category: Example|AWS IoT
 quality: production
+metadata:
+  sbom:
+    license: Zlib
 root_path: "component/sidewalk_device_backup"
 
 provides:

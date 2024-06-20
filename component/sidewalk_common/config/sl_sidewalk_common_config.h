@@ -40,6 +40,12 @@
 #define SL_SIDEWALK_LINK_FSK    2
 #define SL_SIDEWALK_LINK_CSS    3
 
+// <o SL_SIDEWALK_APP_VERSION> Application version.
+// <i> Default: 1
+#ifndef SL_SIDEWALK_APP_VERSION
+  #define SL_SIDEWALK_APP_VERSION 1
+#endif
+
 // <h> Sidewalk Common Configuration
 // <o SL_SIDEWALK_COMMON_DEFAULT_LINK_TYPE> Default link type
 // <SL_SIDEWALK_LINK_BLE=> BLE

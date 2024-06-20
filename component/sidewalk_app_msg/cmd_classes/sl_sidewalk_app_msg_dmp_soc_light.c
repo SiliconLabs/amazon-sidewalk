@@ -58,6 +58,38 @@ sl_sid_app_msg_st_t sli_sid_app_msg_dmp_soc_light_cmd_handler(sl_sid_app_msg_t *
       }
       break;
 
+    case SLI_SID_APP_MSG_CMD_ID_DMP_SOC_LIGHT_TOGGLE_LED:
+      {
+        if (msg->tag.op != SL_SID_APP_MSG_OP_SET) {
+          return SL_SID_APP_MSG_ERR_ST_APP_WRONG_OP;
+        }
+
+        sl_sid_app_msg_dmp_soc_light_toggle_led_ctx_t ctx = {
+          .param_send.state = ((sli_sid_app_msg_dmp_soc_light_toggle_led_ntfy_t *)msg->value)->state,
+          .hdl.operation = msg->tag.op,
+          .hdl.sequence = msg->tag.seq
+        };
+        sl_sid_app_msg_dmp_soc_light_toggle_led_cb(&ctx);
+      }
+      break;
+
+    case SLI_SID_APP_MSG_CMD_ID_DMP_SOC_LIGHT_BUTTON_PRESS:
+      {
+        if (msg->tag.op != SL_SID_APP_MSG_OP_SET) {
+          return SL_SID_APP_MSG_ERR_ST_APP_WRONG_OP;
+        }
+
+        sl_sid_app_msg_dmp_soc_light_button_press_ctx_t ctx = {
+          .param_send.button = ((sli_sid_app_msg_dmp_soc_light_button_press_set_t *)msg->value)->button,
+          .param_send.duration = ((sli_sid_app_msg_dmp_soc_light_button_press_set_t *)msg->value)->duration,
+          .is_emulation = true,
+          .hdl.operation = msg->tag.op,
+          .hdl.sequence = msg->tag.seq
+        };
+        sl_sid_app_msg_dmp_soc_light_button_press_cb(&ctx);
+      }
+      break;
+
     default:
       status = SL_SID_APP_MSG_ERR_ST_APP_CMD_HDL_NOT_IMPL;
       break;
@@ -94,6 +126,38 @@ sl_sid_app_msg_st_t sl_sid_app_msg_dmp_soc_light_update_counter_prepare_send(
   }
 }
 
+sl_sid_app_msg_st_t sl_sid_app_msg_dmp_soc_light_toggle_led_prepare_send(
+  sl_sid_app_msg_dmp_soc_light_toggle_led_ctx_t *ctx, sl_sid_app_msg_t *send_app_msg)
+{
+  SLI_SID_APP_MSG_CLR_PROCESSING_FLAG(ctx);
+
+  if (ctx->hdl.operation == SL_SID_APP_MSG_OP_SET) {
+    return SLI_SID_APP_MSG_PREP_SEND_ACK_FUNC(SLI_SID_APP_MSG_CMD_CLS_DMP_SOC_LIGHT, SLI_SID_APP_MSG_CMD_ID_DMP_SOC_LIGHT_TOGGLE_LED);
+  } else if (ctx->hdl.operation == SL_SID_APP_MSG_OP_NTFY) {
+    return SLI_SID_APP_MSG_PREP_SEND_PARAM_FUNC(SLI_SID_APP_MSG_CMD_CLS_DMP_SOC_LIGHT, SLI_SID_APP_MSG_CMD_ID_DMP_SOC_LIGHT_TOGGLE_LED);
+  } else {
+    return SL_SID_APP_MSG_ERR_ST_APP_WRONG_OP;
+  }
+}
+
+sl_sid_app_msg_st_t sl_sid_app_msg_dmp_soc_light_button_press_prepare_send(
+  sl_sid_app_msg_dmp_soc_light_button_press_ctx_t *ctx, sl_sid_app_msg_t *send_app_msg)
+{
+  SLI_SID_APP_MSG_CLR_PROCESSING_FLAG(ctx);
+
+  if (ctx->hdl.operation == SL_SID_APP_MSG_OP_SET) {
+    return SLI_SID_APP_MSG_PREP_SEND_ACK_FUNC(SLI_SID_APP_MSG_CMD_CLS_DMP_SOC_LIGHT, SLI_SID_APP_MSG_CMD_ID_DMP_SOC_LIGHT_BUTTON_PRESS);
+  } else if (ctx->hdl.operation == SL_SID_APP_MSG_OP_NTFY) {
+    return SLI_SID_APP_MSG_PREP_SEND_PARAM_FUNC(SLI_SID_APP_MSG_CMD_CLS_DMP_SOC_LIGHT, SLI_SID_APP_MSG_CMD_ID_DMP_SOC_LIGHT_BUTTON_PRESS);
+  } else {
+    return SL_SID_APP_MSG_ERR_ST_APP_WRONG_OP;
+  }
+}
+
 SL_WEAK void sl_sid_app_msg_dmp_soc_light_ble_start_stop_cb(sl_sid_app_msg_dmp_soc_light_ble_start_stop_ctx_t *ctx) { (void)ctx; }
 
 SL_WEAK void sl_sid_app_msg_dmp_soc_light_update_counter_cb(sl_sid_app_msg_dmp_soc_light_update_counter_ctx_t *ctx) { (void)ctx; }
+
+SL_WEAK void sl_sid_app_msg_dmp_soc_light_toggle_led_cb(sl_sid_app_msg_dmp_soc_light_toggle_led_ctx_t *ctx) { (void)ctx; }
+
+SL_WEAK void sl_sid_app_msg_dmp_soc_light_button_press_cb(sl_sid_app_msg_dmp_soc_light_button_press_ctx_t *ctx) { (void)ctx; }

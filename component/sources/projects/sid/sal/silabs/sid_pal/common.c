@@ -41,6 +41,11 @@
 #include <sid_error.h>
 #include <sid_pal_common_ifc.h>
 #include <delay.h>
+#if defined(SL_CMU_GPIO_INIT_BUG_WORKAROUND)
+// to be removed once PLATFORM_MTL-9194 change is available
+#include "sl_clock_manager.h"
+#include <sid_pal_assert_ifc.h>
+#endif
 
 #if defined(SV_ENABLED)
 extern void silabs_crypto_enable_sv(void);
@@ -51,6 +56,12 @@ extern void silabs_crypto_enable_sv(void);
 // -----------------------------------------------------------------------------
 sid_error_t sid_pal_common_init(const platform_specific_init_parameters_t *platform_init_parameters)
 {
+#if defined(SL_CMU_GPIO_INIT_BUG_WORKAROUND)
+  // to be removed once PLATFORM_MTL-9194 change is available
+  sl_status_t st  = sl_clock_manager_enable_bus_clock(SL_BUS_CLOCK_GPIO);
+  SID_PAL_ASSERT(st == SL_STATUS_OK);
+#endif
+
   if (!platform_init_parameters
 #if (defined(SL_FSK_SUPPORTED) || defined(SL_CSS_SUPPORTED))
       || !platform_init_parameters->radio_cfg

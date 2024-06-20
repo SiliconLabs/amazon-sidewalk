@@ -66,7 +66,7 @@ uint8_t cli_arg_uint8_t;
 struct sid_link_auto_connect_params cli_arg_sid_link_auto_connect_params;
 // note: this will limit the max size of uplink payload inputed from cli (BLE, FSK)
 char cli_arg_str[64];
-char cli_arg_str_2[64];
+char cli_arg_str_2[256];
 char cli_arg_str_3[16];
 
 // Queue for sending data to cli
@@ -167,6 +167,68 @@ void cli_sid_ble_connect(sl_cli_command_arg_t *arguments)
   sl_app_trigger_ble_connection_request();
 }
 
+#if defined(SL_SIDEWALK_OTA_DFU_PRESENT)
+/******************************************************************************
+ * CLI - sid ota_dfu_init
+ * Initiate OTA DFU service
+ *****************************************************************************/
+void cli_ota_dfu_init(sl_cli_command_arg_t *arguments)
+{
+  (void)arguments;
+  sl_app_trigger_ota_dfu_init_request();
+}
+
+/******************************************************************************
+ * CLI - sid ota_dfu_deinit
+ * Deinitiate OTA DFU service
+ *****************************************************************************/
+void cli_ota_dfu_deinit(sl_cli_command_arg_t *arguments)
+{
+  (void)arguments;
+  sl_app_trigger_ota_dfu_deinit_request();
+}
+
+/******************************************************************************
+ * CLI - sid ota_dfu_cancel
+ * Cancel the ongoing OTA DFU process
+ *****************************************************************************/
+void cli_ota_dfu_cancel(sl_cli_command_arg_t *arguments)
+{
+  (void)arguments;
+  sl_app_trigger_ota_dfu_cancel_request();
+}
+
+/******************************************************************************
+ * CLI - sid ota_dfu_stat
+ * Stats for the ongoing OTA DFU process
+ *****************************************************************************/
+void cli_ota_dfu_stat(sl_cli_command_arg_t *arguments)
+{
+  (void)arguments;
+  sl_app_trigger_ota_dfu_stat_request();
+}
+
+/******************************************************************************
+ * CLI - sid ota_dfu_param
+ * Parameters of the ongoing OTA DFU process
+ *****************************************************************************/
+void cli_ota_dfu_param(sl_cli_command_arg_t *arguments)
+{
+  (void)arguments;
+  sl_app_trigger_ota_dfu_param_request();
+}
+
+/******************************************************************************
+ * CLI - sid ota_dfu_min_scratch_buf_size
+ * Minimum scratch buffer size requirements of OTA DFU service
+ *****************************************************************************/
+void cli_ota_dfu_min_scratch_buf_size(sl_cli_command_arg_t *arguments)
+{
+  (void)arguments;
+  sl_app_trigger_ota_dfu_min_scratch_buf_size_request();
+}
+#endif
+
 /******************************************************************************
  * Get - sidewalk time
  *
@@ -231,7 +293,7 @@ void get_sidewalk_mtu(app_context_t *context, enum sid_link_type link_type)
     cli_settings.mtu = mtu;
     xQueueSend(g_cli_event_queue, &cli_settings, 0);
   } else {
-    app_log_error("app: get MTU err: %d\n", ret);
+    app_log_error("app: get MTU err: %d", ret);
     xQueueSend(g_cli_event_queue, &cli_settings, 0);
   }
 }
@@ -248,7 +310,7 @@ void set_link_connection_policy(app_context_t *context, uint8_t policy)
   sid_error_t ret = sid_option(context->sidewalk_handle, SID_OPTION_SET_LINK_CONNECTION_POLICY, &policy, sizeof(enum sid_link_connection_policy));
 
   if (ret != SID_ERROR_NONE) {
-    app_log_error("app: err set sidewalk_link_connection_policy, sid_option failed, returned: %d\n", ret);
+    app_log_error("app: err set sidewalk_link_connection_policy, sid_option failed, returned: %d", ret);
   }
 }
 
@@ -268,7 +330,7 @@ void get_link_connection_policy(app_context_t *context)
   if (ret == SID_ERROR_NONE) {
     cli_settings.link_connection_policy = policy;
   } else {
-    app_log_error("app: err get link conn policy: %d\n", ret);
+    app_log_error("app: err get link conn policy: %d", ret);
   }
   xQueueSend(g_cli_event_queue, &cli_settings, 0);
 }
@@ -285,7 +347,7 @@ void set_multi_link_policy(app_context_t *context, uint8_t policy)
   sid_error_t ret = sid_option(context->sidewalk_handle, SID_OPTION_SET_LINK_POLICY_MULTI_LINK_POLICY, &policy, sizeof(enum sid_link_multi_link_policy));
 
   if (ret != SID_ERROR_NONE) {
-    app_log_error("app: err set sidewalk_multi_link_policy, sid_option failed, returned: %d\n", ret);
+    app_log_error("app: err set sidewalk_multi_link_policy, sid_option failed, returned: %d", ret);
   }
 }
 
@@ -305,7 +367,7 @@ void get_multi_link_policy(app_context_t *context)
   if (ret == SID_ERROR_NONE) {
     cli_settings.multi_link_policy = policy;
   } else {
-    app_log_error("app: err get multi-link policy: %d\n", ret);
+    app_log_error("app: err get multi-link policy: %d", ret);
   }
   xQueueSend(g_cli_event_queue, &cli_settings, 0);
 }
@@ -322,7 +384,7 @@ void set_auto_connect_params(app_context_t *context, struct sid_link_auto_connec
   sid_error_t ret = sid_option(context->sidewalk_handle, SID_OPTION_SET_LINK_POLICY_AUTO_CONNECT_PARAMS, &params, sizeof(struct sid_link_auto_connect_params));
 
   if (ret != SID_ERROR_NONE) {
-    app_log_error("app: err set sidewalk_auto_connect_params, sid_option failed, returned: %d\n", ret);
+    app_log_error("app: err set sidewalk_auto_connect_params, sid_option failed, returned: %d", ret);
   }
 }
 
@@ -339,17 +401,17 @@ void get_auto_connect_params(app_context_t *context)
   cli_settings.auto_connect_params[0].link_type = SID_LINK_TYPE_1;
   sid_error_t ret = sid_option(context->sidewalk_handle, SID_OPTION_GET_LINK_POLICY_AUTO_CONNECT_PARAMS, &cli_settings.auto_connect_params[0], sizeof(struct sid_link_auto_connect_params));
   if (ret != SID_ERROR_NONE) {
-    app_log_warning("app: err get auto conn params for BLE: %d\n", ret);
+    app_log_warning("app: err get auto conn params for BLE: %d", ret);
   }
   cli_settings.auto_connect_params[1].link_type = SID_LINK_TYPE_2;
   ret = sid_option(context->sidewalk_handle, SID_OPTION_GET_LINK_POLICY_AUTO_CONNECT_PARAMS, &cli_settings.auto_connect_params[1], sizeof(struct sid_link_auto_connect_params));
   if (ret != SID_ERROR_NONE) {
-    app_log_warning("app: err get auto conn params for FSK: %d\n", ret);
+    app_log_warning("app: err get auto conn params for FSK: %d", ret);
   }
   cli_settings.auto_connect_params[2].link_type = SID_LINK_TYPE_3;
   ret = sid_option(context->sidewalk_handle, SID_OPTION_GET_LINK_POLICY_AUTO_CONNECT_PARAMS, &cli_settings.auto_connect_params[2], sizeof(struct sid_link_auto_connect_params));
   if (ret != SID_ERROR_NONE) {
-    app_log_warning("app: err get auto conn params for CSS: %d\n", ret);
+    app_log_warning("app: err get auto conn params for CSS: %d", ret);
   }
 
   xQueueSend(g_cli_event_queue, &cli_settings, 0);
@@ -373,7 +435,7 @@ void get_sidewalk_fsk_dev_prof_id(app_context_t *app_context)
     cli_settings.device_profile = dev_cfg;
     xQueueSend(g_cli_event_queue, &cli_settings, 0);
   } else {
-    app_log_error("app: err get device profile: %d\n", ret);
+    app_log_error("app: err get device profile: %d", ret);
     xQueueSend(g_cli_event_queue, &cli_settings, 0);
   }
 }
@@ -416,12 +478,14 @@ void set_sidewalk_fsk_dev_prof_id(app_context_t *app_context)
     case '1':
       dev_cfg.unicast_params.device_profile_id = SID_LINK2_PROFILE_1;
       dev_cfg.unicast_params.rx_window_count = SID_RX_WINDOW_CNT_INFINITE;
+      dev_cfg.unicast_params.wakeup_type = SID_TX_AND_RX_WAKEUP;
       break;
 
     case '2':
       dev_cfg.unicast_params.device_profile_id = SID_LINK2_PROFILE_2;
       dev_cfg.unicast_params.rx_window_count = SID_RX_WINDOW_CNT_INFINITE;
       dev_cfg.unicast_params.unicast_window_interval.sync_rx_interval_ms = SID_LINK2_RX_WINDOW_SEPARATION_1;
+      dev_cfg.unicast_params.wakeup_type = SID_TX_AND_RX_WAKEUP;
       break;
 
     default:
@@ -432,7 +496,7 @@ void set_sidewalk_fsk_dev_prof_id(app_context_t *app_context)
   sid_error_t ret = sid_option(app_context->sidewalk_handle, SID_OPTION_900MHZ_SET_DEVICE_PROFILE,
                                &dev_cfg, sizeof(dev_cfg));
   if (ret != SID_ERROR_NONE) {
-    app_log_error("app: err set fsk_dev_prof_id, sid_option failed, returned: %d\n", ret);
+    app_log_error("app: err set fsk_dev_prof_id, sid_option failed, returned: %d", ret);
   }
 }
 
@@ -453,12 +517,14 @@ void set_sidewalk_css_dev_prof_id(app_context_t *app_context)
       dev_cfg.unicast_params.device_profile_id = SID_LINK3_PROFILE_A;
       dev_cfg.unicast_params.rx_window_count = SID_RX_WINDOW_CNT_2;
       dev_cfg.unicast_params.unicast_window_interval.async_rx_interval_ms = SID_LINK3_RX_WINDOW_SEPARATION_3;
+      dev_cfg.unicast_params.wakeup_type = SID_TX_AND_RX_WAKEUP;
       break;
 
     case 'B':
       dev_cfg.unicast_params.device_profile_id = SID_LINK3_PROFILE_B;
       dev_cfg.unicast_params.rx_window_count = SID_RX_WINDOW_CNT_INFINITE;
       dev_cfg.unicast_params.unicast_window_interval.async_rx_interval_ms = SID_LINK3_RX_WINDOW_SEPARATION_3;
+      dev_cfg.unicast_params.wakeup_type = SID_TX_AND_RX_WAKEUP;
       break;
 
     default:
@@ -469,7 +535,7 @@ void set_sidewalk_css_dev_prof_id(app_context_t *app_context)
   sid_error_t ret = sid_option(app_context->sidewalk_handle, SID_OPTION_900MHZ_SET_DEVICE_PROFILE,
                                &dev_cfg, sizeof(dev_cfg));
   if (ret != SID_ERROR_NONE) {
-    app_log_error("app: err set css_dev_prof_id, sid_option failed, returned: %d\n", ret);
+    app_log_error("app: err set css_dev_prof_id, sid_option failed, returned: %d", ret);
   }
 }
 
@@ -505,7 +571,7 @@ void sl_app_trigger_sid_send(char *message_type_str, char *message_str, char *li
   }
   queue_event(g_event_queue, EVENT_TYPE_SID_SEND);
 
-  app_log_info("app: send user evt\n");
+  app_log_info("app: send user evt");
 }
 /*******************************************************************************
  * Trigger - sid reset
@@ -515,7 +581,7 @@ void sl_app_trigger_sid_send(char *message_type_str, char *message_str, char *li
 void sl_app_trigger_sid_reset(void)
 {
   queue_event(g_event_queue, EVENT_TYPE_SID_RESET);
-  app_log_info("app: reset user evt\n");
+  app_log_info("app: reset user evt");
 }
 
 /*******************************************************************************
@@ -529,7 +595,7 @@ void sl_app_trigger_sid_init(char *link_str)
   memcpy(cli_arg_str, link_str, strlen(link_str));
   queue_event(g_event_queue, EVENT_TYPE_SID_INIT);
 
-  app_log_info("app: init user evt\n");
+  app_log_info("app: init user evt");
 }
 
 /*******************************************************************************
@@ -543,7 +609,7 @@ void sl_app_trigger_sid_start(char *link_str)
   memcpy(cli_arg_str, link_str, strlen(link_str));
   queue_event(g_event_queue, EVENT_TYPE_SID_START);
 
-  app_log_info("app: start user evt\n");
+  app_log_info("app: start user evt");
 }
 
 /*******************************************************************************
@@ -557,7 +623,7 @@ void sl_app_trigger_sid_stop(char *link_str)
   memcpy(cli_arg_str, link_str, strlen(link_str));
   queue_event(g_event_queue, EVENT_TYPE_SID_STOP);
 
-  app_log_info("app: stop user evt\n");
+  app_log_info("app: stop user evt");
 }
 
 /*******************************************************************************
@@ -568,7 +634,7 @@ void sl_app_trigger_sid_stop(char *link_str)
 void sl_app_trigger_sid_deinit(void)
 {
   queue_event(g_event_queue, EVENT_TYPE_SID_DEINIT);
-  app_log_info("app: deinit user evt\n");
+  app_log_info("app: deinit user evt");
 }
 
 /*******************************************************************************
@@ -579,7 +645,7 @@ void sl_app_trigger_sid_deinit(void)
 void sl_app_trigger_sid_get_css_dev_prof_id(void)
 {
   queue_event(g_event_queue, EVENT_TYPE_SID_GET_CSS_DEV_PROF_ID);
-  app_log_info("app: get css dev prof id user evt\n");
+  app_log_info("app: get css dev prof id user evt");
 }
 
 /*******************************************************************************
@@ -592,7 +658,7 @@ void sl_app_trigger_sid_set_css_dev_prof_id(char *value)
   cli_arg_uint8_t = *value;
   queue_event(g_event_queue, EVENT_TYPE_SID_SET_CSS_DEV_PROF_ID);
 
-  app_log_info("app: set css dev prof id user evt\n");
+  app_log_info("app: set css dev prof id user evt");
 }
 
 /*******************************************************************************
@@ -603,7 +669,7 @@ void sl_app_trigger_sid_set_css_dev_prof_id(char *value)
 void sl_app_trigger_sid_get_fsk_dev_prof_id(void)
 {
   queue_event(g_event_queue, EVENT_TYPE_SID_GET_FSK_DEV_PROF_ID);
-  app_log_info("app: get fsk dev prof id user evt\n");
+  app_log_info("app: get fsk dev prof id user evt");
 }
 
 /*******************************************************************************
@@ -616,7 +682,7 @@ void sl_app_trigger_sid_set_fsk_dev_prof_id(char *value)
   cli_arg_uint8_t = *value;
   queue_event(g_event_queue, EVENT_TYPE_SID_SET_FSK_DEV_PROF_ID);
 
-  app_log_info("app: set fsk dev prof id user evt\n");
+  app_log_info("app: set fsk dev prof id user evt");
 }
 
 /*******************************************************************************
@@ -629,7 +695,7 @@ void sl_app_trigger_sid_set_dev_prof_id(uint8_t profile_id)
   cli_arg_uint8_t = profile_id;
   queue_event(g_event_queue, EVENT_TYPE_SID_SET_DEV_PROF_ID);
 
-  app_log_info("app: set dev prof id user evt\n");
+  app_log_info("app: set dev prof id user evt");
 }
 
 /*******************************************************************************
@@ -640,7 +706,7 @@ void sl_app_trigger_sid_set_dev_prof_id(uint8_t profile_id)
 void sl_app_trigger_sid_get_dev_prof_rx_win_cnt(void)
 {
   queue_event(g_event_queue, EVENT_TYPE_SID_GET_DEV_PROF_RX_WIN_CNT);
-  app_log_info("app: get dev prof rx win cnt user evt\n");
+  app_log_info("app: get dev prof rx win cnt user evt");
 }
 
 /*******************************************************************************
@@ -653,7 +719,7 @@ void sl_app_trigger_sid_set_dev_prof_rx_win_cnt(int16_t rx_win_cnt)
   cli_arg_int16_t = rx_win_cnt;
   queue_event(g_event_queue, EVENT_TYPE_SID_SET_DEV_PROF_RX_WIN_CNT);
 
-  app_log_info("app: set dev prof rx win cnt user evt\n");
+  app_log_info("app: set dev prof rx win cnt user evt");
 }
 
 /*******************************************************************************
@@ -677,7 +743,7 @@ void sl_app_trigger_sid_set_dev_prof_rx_interv_ms(uint16_t rx_interv_ms)
   cli_arg_uint16_t = rx_interv_ms;
   queue_event(g_event_queue, EVENT_TYPE_SID_SET_DEV_PROF_RX_INTERV_MS);
 
-  app_log_info("app: set dev prof rx interv ms user evt\n");
+  app_log_info("app: set dev prof rx interv ms user evt");
 }
 
 /*******************************************************************************
@@ -688,7 +754,7 @@ void sl_app_trigger_sid_set_dev_prof_rx_interv_ms(uint16_t rx_interv_ms)
 void sl_app_trigger_sid_get_dev_prof_wakeup_type(void)
 {
   queue_event(g_event_queue, EVENT_TYPE_SID_GET_DEV_PROF_WAKEUP_TYPE);
-  app_log_info("app: get dev prof wakeup type user evt\n");
+  app_log_info("app: get dev prof wakeup type user evt");
 }
 
 /*******************************************************************************
@@ -701,7 +767,7 @@ void sl_app_trigger_sid_set_dev_prof_wakeup_type(uint8_t wakeup_type)
   cli_arg_uint8_t = wakeup_type;
   queue_event(g_event_queue, EVENT_TYPE_SID_SET_DEV_PROF_WAKEUP_TYPE);
 
-  app_log_info("app: set dev prof wakeup type user evt\n");
+  app_log_info("app: set dev prof wakeup type user evt");
 }
 
 /*******************************************************************************
@@ -712,8 +778,46 @@ void sl_app_trigger_sid_set_dev_prof_wakeup_type(uint8_t wakeup_type)
 void sl_app_trigger_ble_connection_request(void)
 {
   queue_event(g_event_queue, EVENT_TYPE_SID_BLE_CONNECTION_REQUEST);
-  app_log_info("app: ble conn req user evt\n");
+  app_log_info("app: ble conn req user evt");
 }
+
+#if defined(SL_SIDEWALK_OTA_DFU_PRESENT)
+void sl_app_trigger_ota_dfu_init_request(void)
+{
+  queue_event(g_event_queue, EVENT_TYPE_SID_OTA_DFU_INIT_REQUEST);
+  app_log_info("app: ota dfu init req evt");
+}
+
+void sl_app_trigger_ota_dfu_deinit_request(void)
+{
+  queue_event(g_event_queue, EVENT_TYPE_SID_OTA_DFU_DEINIT_REQUEST);
+  app_log_info("app: ota dfu deinit req evt");
+}
+
+void sl_app_trigger_ota_dfu_cancel_request(void)
+{
+  queue_event(g_event_queue, EVENT_TYPE_SID_OTA_DFU_CANCEL_REQUEST);
+  app_log_info("app: ota dfu cancel req evt");
+}
+
+void sl_app_trigger_ota_dfu_stat_request(void)
+{
+  queue_event(g_event_queue, EVENT_TYPE_SID_OTA_DFU_STAT_REQUEST);
+  app_log_info("app: ota dfu stat req evt");
+}
+
+void sl_app_trigger_ota_dfu_param_request(void)
+{
+  queue_event(g_event_queue, EVENT_TYPE_SID_OTA_DFU_PARAM_REQUEST);
+  app_log_info("app: ota dfu param req evt");
+}
+
+void sl_app_trigger_ota_dfu_min_scratch_buf_size_request(void)
+{
+  queue_event(g_event_queue, EVENT_TYPE_SID_OTA_DFU_MIN_SCRATCH_BUF_SIZE_REQUEST);
+  app_log_info("app: ota dfu min scratch buf size req evt");
+}
+#endif
 
 /*******************************************************************************
  * Trigger send counter update
@@ -723,7 +827,7 @@ void sl_app_trigger_ble_connection_request(void)
 void sl_app_trigger_send_counter_update(void)
 {
   queue_event(g_event_queue, EVENT_TYPE_SEND_COUNTER_UPDATE);
-  app_log_info("app: send ctr update user evt\n");
+  app_log_info("app: send ctr update user evt");
 }
 
 /*******************************************************************************
@@ -734,7 +838,7 @@ void sl_app_trigger_send_counter_update(void)
 void sl_app_trigger_factory_reset(void)
 {
   queue_event(g_event_queue, EVENT_TYPE_FACTORY_RESET);
-  app_log_info("app: factory reset user evt\n");
+  app_log_info("app: factory reset user evt");
 }
 
 /*******************************************************************************
@@ -745,7 +849,7 @@ void sl_app_trigger_factory_reset(void)
 void sl_app_trigger_get_time(void)
 {
   queue_event(g_event_queue, EVENT_TYPE_GET_TIME);
-  app_log_info("app: get time user evt\n");
+  app_log_info("app: get time user evt");
 }
 
 /*******************************************************************************
@@ -756,7 +860,7 @@ void sl_app_trigger_get_time(void)
 void sl_app_trigger_get_status(void)
 {
   queue_event(g_event_queue, EVENT_TYPE_GET_STATUS);
-  app_log_info("app: get status user evt\n");
+  app_log_info("app: get status user evt");
 }
 
 /*******************************************************************************
@@ -784,7 +888,7 @@ void sl_app_trigger_get_mtu(enum sid_link_type link_type)
       break;
   }
 
-  app_log_info("app: get mtu user evt\n");
+  app_log_info("app: get mtu user evt");
 }
 
 /*******************************************************************************
@@ -797,7 +901,7 @@ void sl_app_trigger_set_link_connection_policy(enum sid_link_connection_policy p
   cli_arg_uint8_t = (uint8_t)policy;
   queue_event(g_event_queue, EVENT_TYPE_SET_LINK_CONNECTION_POLICY);
 
-  app_log_info("app: set link conn policy user evt\n");
+  app_log_info("app: set link conn policy user evt");
 }
 
 /*******************************************************************************
@@ -808,7 +912,7 @@ void sl_app_trigger_get_link_connection_policy(void)
 {
   queue_event(g_event_queue, EVENT_TYPE_GET_LINK_CONNECTION_POLICY);
 
-  app_log_info("app: get link conn policy user evt\n");
+  app_log_info("app: get link conn policy user evt");
 }
 
 /*******************************************************************************
@@ -821,7 +925,7 @@ void sl_app_trigger_set_multi_link_policy(enum sid_link_multi_link_policy policy
   cli_arg_uint8_t = (uint8_t)policy;
   queue_event(g_event_queue, EVENT_TYPE_SET_MULTI_LINK_POLICY);
 
-  app_log_info("app: set multi-link policy user evt\n");
+  app_log_info("app: set multi-link policy user evt");
 }
 
 /*******************************************************************************
@@ -832,7 +936,7 @@ void sl_app_trigger_get_multi_link_policy(void)
 {
   queue_event(g_event_queue, EVENT_TYPE_GET_MULTI_LINK_POLICY);
 
-  app_log_info("app: get multi-link policy user evt\n");
+  app_log_info("app: get multi-link policy user evt");
 }
 
 /*******************************************************************************
@@ -845,7 +949,7 @@ void sl_app_trigger_set_auto_connect_params(struct sid_link_auto_connect_params 
   cli_arg_sid_link_auto_connect_params = params;
   queue_event(g_event_queue, EVENT_TYPE_SET_AUTO_CONNECT_PARAMS);
 
-  app_log_info("app: set auto conn params user evt\n");
+  app_log_info("app: set auto conn params user evt");
 }
 
 /*******************************************************************************
@@ -856,7 +960,7 @@ void sl_app_trigger_get_auto_connect_params(void)
 {
   queue_event(g_event_queue, EVENT_TYPE_GET_AUTO_CONNECT_PARAMS);
 
-  app_log_info("app: get auto conn params user evt\n");
+  app_log_info("app: get auto conn params user evt");
 }
 
 /*******************************************************************************
@@ -871,15 +975,15 @@ void set_sidewalk_dev_prof_id(app_context_t *app_context, uint8_t id)
   sid_error_t ret = sid_option(app_context->sidewalk_handle, SID_OPTION_900MHZ_GET_DEVICE_PROFILE,
                                &dev_cfg, sizeof(dev_cfg));
   if (ret != SID_ERROR_NONE) {
-    app_log_error("app: err get device profile: %d\n", ret);
+    app_log_error("app: err get device profile: %d", ret);
   } else {
     dev_cfg.unicast_params.device_profile_id = id;
     ret = sid_option(app_context->sidewalk_handle, SID_OPTION_900MHZ_SET_DEVICE_PROFILE,
                      &dev_cfg, sizeof(dev_cfg));
     if (ret != SID_ERROR_NONE) {
-      app_log_error("app: err set device profile: %d\n", ret);
+      app_log_error("app: err set device profile: %d", ret);
     } else {
-      app_log_info("app: device profile ID set\n");
+      app_log_info("app: device profile ID set");
     }
   }
 }
@@ -895,9 +999,9 @@ void get_sidewalk_dev_prof_rx_win_cnt(app_context_t *app_context)
   sid_error_t ret = sid_option(app_context->sidewalk_handle, SID_OPTION_900MHZ_GET_DEVICE_PROFILE,
                                &dev_cfg, sizeof(dev_cfg));
   if (ret != SID_ERROR_NONE) {
-    app_log_error("app: err get device profile: %d\n", ret);
+    app_log_error("app: err get device profile: %d", ret);
   } else {
-    app_log_info("app: device profile RX window count: %d\n", dev_cfg.unicast_params.rx_window_count);
+    app_log_info("app: device profile RX window count: %d", dev_cfg.unicast_params.rx_window_count);
   }
 }
 
@@ -913,15 +1017,15 @@ void set_sidewalk_dev_prof_rx_win_cnt(app_context_t *app_context, uint16_t rx_wi
   sid_error_t ret = sid_option(app_context->sidewalk_handle, SID_OPTION_900MHZ_GET_DEVICE_PROFILE,
                                &dev_cfg, sizeof(dev_cfg));
   if (ret != SID_ERROR_NONE) {
-    app_log_error("app: err get device profile: %d\n", ret);
+    app_log_error("app: err get device profile: %d", ret);
   } else {
     dev_cfg.unicast_params.rx_window_count = rx_win_cnt;
     ret = sid_option(app_context->sidewalk_handle, SID_OPTION_900MHZ_SET_DEVICE_PROFILE,
                      &dev_cfg, sizeof(dev_cfg));
     if (ret != SID_ERROR_NONE) {
-      app_log_error("app: err set device profile: %d\n", ret);
+      app_log_error("app: err set device profile: %d", ret);
     } else {
-      app_log_info("app: device profile RX window count set\n");
+      app_log_info("app: device profile RX window count set");
     }
   }
 }
@@ -937,10 +1041,10 @@ void get_sidewalk_dev_prof_rx_interv_ms(app_context_t *app_context)
   sid_error_t ret = sid_option(app_context->sidewalk_handle, SID_OPTION_900MHZ_GET_DEVICE_PROFILE,
                                &dev_cfg, sizeof(dev_cfg));
   if (ret != SID_ERROR_NONE) {
-    app_log_error("app: err get device profile: %d\n", ret);
+    app_log_error("app: err get device profile: %d", ret);
   } else {
     // As both members of the union has same type (uint16_t) then it's not important which member is read.
-    app_log_info("app: device profile RX window separation interval in ms: %d\n",
+    app_log_info("app: device profile RX window separation interval in ms: %d",
                  dev_cfg.unicast_params.unicast_window_interval.sync_rx_interval_ms);
   }
 }
@@ -957,16 +1061,16 @@ void set_sidewalk_dev_prof_rx_interv_ms(app_context_t *app_context, uint16_t rx_
   sid_error_t ret = sid_option(app_context->sidewalk_handle, SID_OPTION_900MHZ_GET_DEVICE_PROFILE,
                                &dev_cfg, sizeof(dev_cfg));
   if (ret != SID_ERROR_NONE) {
-    app_log_error("app: err get device profile: %d\n", ret);
+    app_log_error("app: err get device profile: %d", ret);
   } else {
     // As both members of the union has same type (uint16_t) then it's not important which member is read.
     dev_cfg.unicast_params.unicast_window_interval.sync_rx_interval_ms = rx_interv_ms;
     ret = sid_option(app_context->sidewalk_handle, SID_OPTION_900MHZ_SET_DEVICE_PROFILE,
                      &dev_cfg, sizeof(dev_cfg));
     if (ret != SID_ERROR_NONE) {
-      app_log_error("app: err set device profile: %d\n", ret);
+      app_log_error("app: err set device profile: %d", ret);
     } else {
-      app_log_info("app: device profile RX window separation interval in ms set\n");
+      app_log_info("app: device profile RX window separation interval in ms set");
     }
   }
 }
@@ -982,9 +1086,9 @@ void get_sidewalk_dev_prof_wakeup_type(app_context_t *app_context)
   sid_error_t ret = sid_option(app_context->sidewalk_handle, SID_OPTION_900MHZ_GET_DEVICE_PROFILE,
                                &dev_cfg, sizeof(dev_cfg));
   if (ret != SID_ERROR_NONE) {
-    app_log_error("app: err get device profile: %d\n", ret);
+    app_log_error("app: err get device profile: %d", ret);
   } else {
-    app_log_info("app: device profile wakeup type: %d\n", dev_cfg.unicast_params.wakeup_type);
+    app_log_info("app: device profile wakeup type: %d", dev_cfg.unicast_params.wakeup_type);
   }
 }
 
@@ -1000,15 +1104,15 @@ void set_sidewalk_dev_prof_wakeup_type(app_context_t *app_context, uint8_t wakeu
   sid_error_t ret = sid_option(app_context->sidewalk_handle, SID_OPTION_900MHZ_GET_DEVICE_PROFILE,
                                &dev_cfg, sizeof(dev_cfg));
   if (ret != SID_ERROR_NONE) {
-    app_log_error("app: err get device profile: %d\n", ret);
+    app_log_error("app: err get device profile: %d", ret);
   } else {
     dev_cfg.unicast_params.wakeup_type = wakeup_type;
     ret = sid_option(app_context->sidewalk_handle, SID_OPTION_900MHZ_SET_DEVICE_PROFILE,
                      &dev_cfg, sizeof(dev_cfg));
     if (ret != SID_ERROR_NONE) {
-      app_log_error("app: err set device profile: %d\n", ret);
+      app_log_error("app: err set device profile: %d", ret);
     } else {
-      app_log_info("app: device profile wakeup type set\n");
+      app_log_info("app: device profile wakeup type set");
     }
   }
 }

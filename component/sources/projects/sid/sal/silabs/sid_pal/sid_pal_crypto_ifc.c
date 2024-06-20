@@ -40,17 +40,31 @@
 // -----------------------------------------------------------------------------
 #include "psa/crypto.h"
 #include "sid_pal_crypto_ifc.h"
-#include "sl_malloc.h"
+#include "sl_memory_manager.h"
 #include "sl_psa_crypto.h"
 #include <stdbool.h>
 #include <string.h>
 #include <stdlib.h>
+
+#if defined(EFR32XG27)
+#include "ed25519_signature.h"
+#endif // defined(EFR32XG27)
 
 // -----------------------------------------------------------------------------
 //                                Static Variables
 // -----------------------------------------------------------------------------
 static bool hal_init_done;
 static bool secure_vault_enabled = false;
+
+#if defined(EFR32XG27)
+// Static declaration of key buffers for memory usage reasons
+// Also this solution needs only one key generation call.
+// Note that in the current implementation the Ed25519 keys are exposed to this
+// layer anyway.
+static uint8_t ed25519_public_key[32];
+static uint8_t ed25519_private_key[64];
+static bool ed25519_keys_present = false;
+#endif // defined(EFR32XG27)
 
 // -----------------------------------------------------------------------------
 //                          Static Function Definitions
@@ -265,7 +279,7 @@ static sid_error_t efr32_crypto_aes_crypt(sid_pal_aes_params_t *params)
 
       ret = psa_cipher_finish(&cipher_op,
                               params->out - params->out_size,
-                              params->out_size - params->out_size,
+                              params->out_size,
                               &(params->out_size));
       if (ret != PSA_SUCCESS) {
         psa_destroy_key(key_id);
@@ -315,7 +329,7 @@ static sid_error_t efr32_crypto_aes_crypt(sid_pal_aes_params_t *params)
 
       ret = psa_cipher_finish(&cipher_op,
                               params->out - params->out_size,
-                              params->out_size - params->out_size,
+                              params->out_size,
                               &(params->out_size));
       if (ret != PSA_SUCCESS) {
         psa_destroy_key(key_id);
@@ -515,6 +529,48 @@ static sid_error_t efr32_crypto_ecc_dsa(sid_pal_dsa_params_t *params)
   if (params->in_size == 0) {
     return SID_ERROR_PARAM_OUT_OF_RANGE;
   }
+
+#if defined(EFR32XG27)
+  if (params->algo == SID_PAL_EDDSA_ED25519) {
+    if ((params->key_size == 32) && (params->sig_size == 64)) {
+      if (params->mode == SID_PAL_CRYPTO_SIGN) {
+        int res;
+        if (ed25519_keys_present == false) {
+          res = ed25519_CreateKeyPair(ed25519_public_key, ed25519_private_key, NULL, params->key);
+          if (res != 0) {
+            return SID_ERROR_GENERIC;
+          }
+          ed25519_keys_present = true;
+        }
+
+        // Always sign with the pre-generated private key.
+        res = ed25519_SignMessage(params->signature,
+                                  ed25519_private_key,
+                                  NULL,
+                                  params->in,
+                                  params->in_size);
+        if (res == 0) {
+          return SID_ERROR_NONE;
+        } else {
+          return SID_ERROR_GENERIC;
+        }
+      } else {
+        // Verify signature using the actual incoming public key.
+        int verifyResult = ed25519_VerifySignature(params->signature,
+                                                   params->key,
+                                                   params->in,
+                                                   params->in_size);
+        if (verifyResult == 1) {
+          return SID_ERROR_NONE;
+        } else {
+          return SID_ERROR_GENERIC;
+        }
+      }
+    } else {
+      return SID_ERROR_GENERIC;
+    }
+  }
+#endif // defined(EFR32XG27)
 
   key_attr = psa_key_attributes_init();
 
@@ -728,6 +784,34 @@ static sid_error_t efr32_crypto_ecc_key_gen(sid_pal_ecc_key_gen_params_t *params
   size_t prk_size;
   psa_key_usage_t key_usage_flags;
   bool destroy_key_on_exit = true;
+
+#if defined(EFR32XG27)
+  if (params->algo == SID_PAL_EDDSA_ED25519) {
+    if ((params->prk_size == 64) && (params->puk_size == 32)) {
+      if (ed25519_keys_present == false) {
+        uint8_t random[32];
+
+        sid_ret = efr32_crypto_rand(random, 32);
+        if (sid_ret != SID_ERROR_NONE) {
+          return SID_ERROR_GENERIC;
+        }
+
+        int res = ed25519_CreateKeyPair(ed25519_public_key, ed25519_private_key, NULL, random);
+        if (res != 0) {
+          return SID_ERROR_GENERIC;
+        }
+        ed25519_keys_present = true;
+      }
+
+      memcpy(params->puk, ed25519_public_key, params->puk_size);
+      memcpy(params->prk, ed25519_private_key, params->prk_size);
+
+      return SID_ERROR_NONE;
+    } else {
+      return SID_ERROR_GENERIC;
+    }
+  }
+#endif // defined(EFR32XG27)
 
   key_attr = psa_key_attributes_init();
 

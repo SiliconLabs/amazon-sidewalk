@@ -42,7 +42,8 @@
 #include "task.h"
 #include "delay.h"
 #include <sid_pal_delay_ifc.h>
-#include <em_cmu.h>
+#include <sid_pal_assert_ifc.h>
+#include "sl_clock_manager.h"
 
 // -----------------------------------------------------------------------------
 //                                Static Variables
@@ -65,7 +66,9 @@ static uint32_t get_core_freq_offset(uint32_t core_freq_coef)
 // -----------------------------------------------------------------------------
 void silabs_delay_init(void)
 {
-  core_freq_coef = CMU_ClockFreqGet(cmuClock_CORE) / 1000000;
+  sl_status_t status = sl_clock_manager_get_clock_branch_frequency(SL_CLOCK_BRANCH_SYSCLK, (uint32_t *)&core_freq_coef);
+  SID_PAL_ASSERT(status == SL_STATUS_OK);
+  core_freq_coef /= 1000000;
   core_freq_offset = get_core_freq_offset(core_freq_coef);
   CoreDebug->DEMCR |= CoreDebug_DEMCR_TRCENA_Msk;
   ITM->LAR          = 0xc5acce55;

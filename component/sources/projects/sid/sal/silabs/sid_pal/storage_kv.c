@@ -47,7 +47,7 @@
 #include <stdint.h>
 #include <string.h>
 #include "nvm3_manager.h"
-#include "sl_malloc.h"
+#include "sl_memory_manager.h"
 
 // -----------------------------------------------------------------------------
 //                              Macros and Typedefs

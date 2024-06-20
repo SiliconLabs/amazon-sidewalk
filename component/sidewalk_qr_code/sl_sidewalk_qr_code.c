@@ -88,7 +88,7 @@ bool sli_sidewalk_qr_code_is_module_pixel_dark(sli_sidewalk_qr_code_qr_t *qr_buf
 
 static void generate_qr_code(uint8_t *qr_buffer, char *text_to_encode)
 {
-  /* Too big for the stack, that is why it is static*/
+  // Too big for the stack, that is why it is static
   static uint8_t qr_code_tmp[qrcodegen_BUFFER_LEN_MAX];
 
   qrcodegen_encodeText(text_to_encode,

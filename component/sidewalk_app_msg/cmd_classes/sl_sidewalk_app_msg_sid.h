@@ -3,7 +3,7 @@
  * @brief sidewalk application message component - Sidewalk specific
  *******************************************************************************
  * # License
- * <b>Copyright 2023 Silicon Laboratories Inc. www.silabs.com</b>
+ * <b>Copyright 2024 Silicon Laboratories Inc. www.silabs.com</b>
  *******************************************************************************
  *
  * The licensor of this software is Silicon Laboratories Inc. Your use of this
@@ -17,6 +17,10 @@
 
 #ifndef SL_SID_APP_MSG_SID_H
 #define SL_SID_APP_MSG_SID_H
+
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 /*******************************************************************************
  *** INCLUDES
@@ -101,7 +105,7 @@ sl_sid_app_msg_st_t sli_sid_app_msg_sid_cmd_handler(sl_sid_app_msg_t *msg);
 /***************************************************************************//**
  * @brief
  *   Prepares corresponding application message to be sent.
- * 
+ *
  * @note
  *   Application has to declare the application message and pass its reference
  *   to the function. Allocated memory of the declared message will be used for
@@ -109,7 +113,7 @@ sl_sid_app_msg_st_t sli_sid_app_msg_sid_cmd_handler(sl_sid_app_msg_t *msg);
  *
  * @param[in] ctx Related application message context
  * @param[out] send_app_msg Application message to be sent
- * 
+ *
  * @return
  *   Status code
  ******************************************************************************/
@@ -119,7 +123,7 @@ sl_sid_app_msg_st_t sl_sid_app_msg_sid_mtu_prepare_send(
 /***************************************************************************//**
  * @brief
  *   Prepares corresponding application message to be sent.
- * 
+ *
  * @note
  *   Application has to declare the application message and pass its reference
  *   to the function. Allocated memory of the declared message will be used for
@@ -127,7 +131,7 @@ sl_sid_app_msg_st_t sl_sid_app_msg_sid_mtu_prepare_send(
  *
  * @param[in] ctx Related application message context
  * @param[out] send_app_msg Application message to be sent
- * 
+ *
  * @return
  *   Status code
  ******************************************************************************/
@@ -138,7 +142,7 @@ sl_sid_app_msg_st_t sl_sid_app_msg_sid_time_prepare_send(
  * @brief
  *   Callback function that is called when the corresponding application message
  *   is received. It has to be implemented by the application.
- * 
+ *
  * @note
  *   Context has to be copied for further operation(s) as it is no longer valid
  *   after the execution of the callback.
@@ -151,7 +155,7 @@ void sl_sid_app_msg_sid_mtu_cb(sl_sid_app_msg_sid_mtu_ctx_t *ctx);
  * @brief
  *   Callback function that is called when the corresponding application message
  *   is received. It has to be implemented by the application.
- * 
+ *
  * @note
  *   Context has to be copied for further operation(s) as it is no longer valid
  *   after the execution of the callback.
@@ -159,5 +163,9 @@ void sl_sid_app_msg_sid_mtu_cb(sl_sid_app_msg_sid_mtu_ctx_t *ctx);
  * @param[in] ctx Corresponding application message context
  ******************************************************************************/
 void sl_sid_app_msg_sid_time_cb(sl_sid_app_msg_sid_time_ctx_t *ctx);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif  // SL_SID_APP_MSG_SID_H

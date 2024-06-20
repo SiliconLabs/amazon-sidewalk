@@ -3,7 +3,7 @@
  * @brief sid_pal_serial_bus_efr32_spi_config.h
  *******************************************************************************
  * # License
- * <b>Copyright 2023 Silicon Laboratories Inc. www.silabs.com</b>
+ * <b>Copyright 2024 Silicon Laboratories Inc. www.silabs.com</b>
  *******************************************************************************
  *
  * SPDX-License-Identifier: Zlib
@@ -38,34 +38,40 @@
 #ifndef SID_PAL_SERIAL_BUS_EFR32_SPI_CONFIG_H
 #define SID_PAL_SERIAL_BUS_EFR32_SPI_CONFIG_H
 
-#include <sid_pal_serial_bus_ifc.h>
-
-#include <sid_error.h>
-
-#if defined(EFR32XG21)
-    #include "em_usart.h"
-    #define USART_INSTANCE_TYPE USART_TypeDef
-#elif defined(EFR32XG24) || defined(EFR32XG28)
-    #include "em_usart.h"
-    #define USART_INSTANCE_TYPE USART_TypeDef
-#else
-    #error UNSUPPORTED PLATFORM!
-#endif
-
-#include <stdint.h>
-
 #ifdef __cplusplus
 extern "C" {
 #endif
 
+// -----------------------------------------------------------------------------
+//                                   Includes
+// -----------------------------------------------------------------------------
+#include <stdint.h>
+#include <sid_pal_serial_bus_ifc.h>
+#include <sid_error.h>
+
+#if defined(EFR32XG21) || defined(EFR32XG24) || defined(EFR32XG26) || defined(EFR32XG28)
+  #include "em_usart.h"
+  #define USART_INSTANCE_TYPE USART_TypeDef
+#else
+  #error UNSUPPORTED PLATFORM!
+#endif
+// -----------------------------------------------------------------------------
+//                              Macros and Typedefs
+// -----------------------------------------------------------------------------
+
+// -----------------------------------------------------------------------------
+//                                Global Variables
+// -----------------------------------------------------------------------------
 struct sid_pal_serial_bus_efr32_spi_config {
   USART_INSTANCE_TYPE *peripheral_id;
 };
-
+// -----------------------------------------------------------------------------
+//                          Public Function Declarations
+// -----------------------------------------------------------------------------
 sid_error_t sid_pal_serial_bus_efr32_spi_create(const struct sid_pal_serial_bus_iface **iface, const void *cfg);
 
 #ifdef __cplusplus
-} /* extern "C" */
+}
 #endif
 
-#endif /* SID_PAL_SERIAL_BUS_EFR32_SPI_CONFIG_H */
+#endif  // SID_PAL_SERIAL_BUS_EFR32_SPI_CONFIG_H

@@ -1,10 +1,33 @@
 Silicon Labs Amazon Sidewalk Release Note
 =========================================
 
+# Release 2.1.0
+(release date 2024-06-19)
+
+*SiSDK 2024.6.0 - Amazon Sidewalk SDK 1.16.2*
+
+## New Features/Improvements
+### Silicon Labs Extension
+- Support for Simplicity SDK 2024.6.0
+- Sidewalk BLE & BLE support for DMP application
+- Software BOM support
+- Clock Manager and Memory manager support
+
+### Supported Toolchain
+- GCC version 12.2.1
+
+## Known issues
+- [1289801] Empty uplink can be sent to the cloud on xg23 and xg25 devices.
+- [1309603] Slow FSK uplink on xg28 if autoconnect mode is enabled.
+- [1289770] Downlink message gets extra binary parts if the message length can eb divided by 4.
+- [1174] - On KG100S, we see errors related to missing acknowledge `tx_st:-6` with the CLI application. However, the stack recovers after some time.
+- [47374] - Message duplicate error during FFN: `<error> msg dup: xxxxxxxxx (xxx)`. Device recovers in next FFN session.
+
 # Release 2.0.1
 (release date 2024-02-14)
 
 *GSDK 4.4.1 - Amazon Sidewalk SDK 1.16.2*
+
 
 ## New Features/Improvements
 ### Silicon Labs Extension

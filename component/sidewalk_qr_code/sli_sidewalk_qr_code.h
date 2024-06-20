@@ -3,7 +3,7 @@
  * @brief sli_sidewalk_qr_code.h
  *******************************************************************************
  * # License
- * <b>Copyright 2022 Silicon Laboratories Inc. www.silabs.com</b>
+ * <b>Copyright 2024 Silicon Laboratories Inc. www.silabs.com</b>
  *******************************************************************************
  *
  * SPDX-License-Identifier: Zlib
@@ -38,6 +38,10 @@
 #ifndef SLI_SIDEWALK_QR_CODE_H
 #define SLI_SIDEWALK_QR_CODE_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 // -----------------------------------------------------------------------------
 //                                   Includes
 // -----------------------------------------------------------------------------
@@ -66,5 +70,9 @@ typedef struct {
 
 void sli_sidewalk_qr_code_create_qr_from_str(sli_sidewalk_qr_code_qr_t *qr_buffer, char *string);
 bool sli_sidewalk_qr_code_is_module_pixel_dark(sli_sidewalk_qr_code_qr_t *qr_buffer, uint8_t x, uint8_t y);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif // SLI_SIDEWALK_QR_CODE_H

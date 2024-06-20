@@ -3,7 +3,7 @@
  * @brief sl_sidewalk_sender.h
  *******************************************************************************
  * # License
- * <b>Copyright 2022 Silicon Laboratories Inc. www.silabs.com</b>
+ * <b>Copyright 2024 Silicon Laboratories Inc. www.silabs.com</b>
  *******************************************************************************
  *
  * SPDX-License-Identifier: Zlib
@@ -37,6 +37,10 @@
 
 #ifndef SL_SIDEWALK_MESSAGE_SENDER_H
 #define SL_SIDEWALK_MESSAGE_SENDER_H
+
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 // -----------------------------------------------------------------------------
 //                                   Includes
@@ -72,5 +76,9 @@ void sl_sidewalk_sender_init(void);
 void sl_sidewalk_sender_send(struct sid_handle *sidewalk_handle);
 void sl_sidewalk_sender_sent_handler(uint16_t id, sid_error_t error);
 bool sl_sidewalk_sender_queue_message(char *message, size_t message_length, sl_sidewalk_sender_priority_type_t priority);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif // SL_SIDEWALK_MESSAGE_SENDER_H

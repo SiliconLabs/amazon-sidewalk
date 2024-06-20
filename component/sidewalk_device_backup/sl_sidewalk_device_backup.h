@@ -3,7 +3,7 @@
  * @brief sl_sidewalk_device_backup.h
  *******************************************************************************
  * # License
- * <b>Copyright 2023 Silicon Laboratories Inc. www.silabs.com</b>
+ * <b>Copyright 2024 Silicon Laboratories Inc. www.silabs.com</b>
  *******************************************************************************
  *
  * SPDX-License-Identifier: Zlib
@@ -38,6 +38,10 @@
 #ifndef SL_SIDEWALK_DEVICE_BACKUP_H
 #define SL_SIDEWALK_DEVICE_BACKUP_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 // -----------------------------------------------------------------------------
 //                                   Includes
 // -----------------------------------------------------------------------------
@@ -61,5 +65,9 @@
  * Sidewalk initialisation
  *****************************************************************************/
 void sl_sidewalk_device_backup_handle_backup_restore(void);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif // SL_SIDEWALK_DEVICE_BACKUP_H

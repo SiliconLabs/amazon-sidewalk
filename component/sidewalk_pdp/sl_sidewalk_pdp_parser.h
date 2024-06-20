@@ -38,6 +38,10 @@
 #ifndef SL_SIDEWALK_PDP_PARSER_H
 #define SL_SIDEWALK_PDP_PARSER_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 // -----------------------------------------------------------------------------
 //                                   Includes
 // -----------------------------------------------------------------------------
@@ -49,7 +53,9 @@
 //                              Macros and Typedefs
 // -----------------------------------------------------------------------------
 
-#define SL_SID_PDP_MIN_REQ_PACKET_LEN (4)
+#define SL_SID_PDP_MIN_REQ_PACKET_LEN (4)           // cmd + data_len
+#define SL_SID_PDP_DATA_LEN_START_IDX (2)           // data_len starts at index 2
+#define SL_SID_PDP_IOSTREAM_READ_GRANULARITY (1)    // read 1-byte at a time
 
 typedef struct {
   uint16_t cmd;
@@ -60,6 +66,19 @@ typedef struct {
 // -----------------------------------------------------------------------------
 //                          Public Function Declarations
 // -----------------------------------------------------------------------------
+
+/***************************************************************************//**
+ * @brief Receives whole packet from the default IOStream.
+ *
+ * @param[in] rx_buf Receive buffer
+ * @param[in] rx_buf_size Receive buffer size
+ * @param[out] rx_cnt Received packet length
+ *
+ * @return Status code
+ * @retval SL_SID_PDP_STATUS_ERR_BUF_SIZE_TOO_SMALL Buffer size is too small for the actual packet
+ * @retval SL_SID_PDP_STATUS_SUCCESS Success
+ ******************************************************************************/
+sl_sid_pdp_status_t sl_sid_pdp_receive_packet(uint8_t *rx_buf, uint16_t rx_buf_size, int16_t *rx_cnt);
 
 /***************************************************************************//**
  * @brief Parses received packet.
@@ -82,5 +101,9 @@ typedef struct {
  * @retval SL_SID_PDP_STATUS_SUCCESS Success
  ******************************************************************************/
 sl_sid_pdp_status_t sl_sid_pdp_parse_req_packet(const uint8_t * const in, uint16_t in_len, const uint8_t **out, uint16_t * const out_len, uint8_t * const cmd);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif // SL_SIDEWALK_PDP_PARSER_H

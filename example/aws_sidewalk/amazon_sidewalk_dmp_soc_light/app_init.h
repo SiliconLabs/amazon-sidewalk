@@ -3,7 +3,7 @@
  * @brief app_init.h
  *******************************************************************************
  * # License
- * <b>Copyright 2023 Silicon Laboratories Inc. www.silabs.com</b>
+ * <b>Copyright 2024 Silicon Laboratories Inc. www.silabs.com</b>
  *******************************************************************************
  *
  * SPDX-License-Identifier: Zlib
@@ -61,6 +61,9 @@ extern "C" {
 // Sidewalk Events
 enum event_type{
   EVENT_TYPE_SID_PROCESS_NEEDED = 0,
+#if defined(SL_SIDEWALK_DMP_BLE_SUPPORTED)
+  EVENT_TYPE_CONNECTION_REQUEST,
+#endif
   EVENT_TYPE_COUNTER_UPDATE,
   EVENT_TYPE_DEVICE_RESET,
   EVENT_TYPE_LINK_SWITCH,
@@ -90,13 +93,16 @@ typedef struct app_context{
   enum app_state state;
   uint8_t counter;
   uint32_t current_link_type;
+#if defined(SL_SIDEWALK_DMP_BLE_SUPPORTED)
+  bool connection_request;
+#endif
   bool is_ble_running;
 #if defined(SL_SID_APP_MSG_PRESENT)
   TimerHandle_t device_reset_timer;
   struct {
     sl_sid_app_msg_dev_mgmt_rst_dev_ctx_t rst_dev_ctx;
-    sl_sid_app_msg_dev_mgmt_button_press_ctx_t button_press_ctx;
-    sl_sid_app_msg_dev_mgmt_toggle_led_ctx_t toggle_led_ctx;
+    sl_sid_app_msg_dmp_soc_light_button_press_ctx_t button_press_ctx;
+    sl_sid_app_msg_dmp_soc_light_toggle_led_ctx_t toggle_led_ctx;
     sl_sid_app_msg_dmp_soc_light_ble_start_stop_ctx_t ble_start_stop_ctx;
     sl_sid_app_msg_dmp_soc_light_update_counter_ctx_t update_counter_ctx;
     sl_sid_app_msg_sid_mtu_ctx_t mtu_ctx;

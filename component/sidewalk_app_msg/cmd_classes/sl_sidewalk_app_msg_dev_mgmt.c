@@ -70,7 +70,7 @@ sl_sid_app_msg_st_t sli_sid_app_msg_dev_mgmt_cmd_handler(sl_sid_app_msg_t *msg)
         }
 
         sl_sid_app_msg_dev_mgmt_toggle_led_ctx_t ctx = {
-          .param_send.led = ((sli_sid_app_msg_dev_mgmt_toggle_led_set_t *)msg->value)->led,
+          .param_send.state = ((sli_sid_app_msg_dev_mgmt_toggle_led_ntfy_t *)msg->value)->state,
           .hdl.operation = msg->tag.op,
           .hdl.sequence = msg->tag.seq
         };

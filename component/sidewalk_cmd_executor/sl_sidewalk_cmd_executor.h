@@ -3,7 +3,7 @@
  * @brief sl_sidewalk_cmd_executor.h
  *******************************************************************************
  * # License
- * <b>Copyright 2022 Silicon Laboratories Inc. www.silabs.com</b>
+ * <b>Copyright 2024 Silicon Laboratories Inc. www.silabs.com</b>
  *******************************************************************************
  *
  * SPDX-License-Identifier: Zlib
@@ -38,6 +38,10 @@
 #ifndef SL_SIDEWALK_CMD_EXECUTOR_H
 #define SL_SIDEWALK_CMD_EXECUTOR_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 // -----------------------------------------------------------------------------
 //                                   Includes
 // -----------------------------------------------------------------------------
@@ -59,7 +63,7 @@
 //                          Public Function Declarations
 // -----------------------------------------------------------------------------
 
-bool sl_sidewalk_cmd_executor_recieve(char* message, size_t message_length);
+bool sl_sidewalk_cmd_executor_recieve(char *message, size_t message_length);
 
 /**************************************************************************//**
  * Triggers the execution of a received command if there is any and if it is
@@ -70,5 +74,9 @@ bool sl_sidewalk_cmd_executor_recieve(char* message, size_t message_length);
  *****************************************************************************/
 void sl_sidewalk_cmd_executor_execute(void);
 void sl_sidewalk_cmd_executor_init(void);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif // SL_SIDEWALK_CMD_EXECUTOR_H

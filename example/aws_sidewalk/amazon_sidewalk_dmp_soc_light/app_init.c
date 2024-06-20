@@ -3,7 +3,7 @@
  * @brief app_init.c
  *******************************************************************************
  * # License
- * <b>Copyright 2023 Silicon Laboratories Inc. www.silabs.com</b>
+ * <b>Copyright 2024 Silicon Laboratories Inc. www.silabs.com</b>
  *******************************************************************************
  *
  * SPDX-License-Identifier: Zlib
@@ -45,7 +45,7 @@
 #include "app_bluetooth.h"
 #include "app_button_press.h"
 
-#if (defined(SL_FSK_SUPPORTED) || defined(SL_CSS_SUPPORTED))
+#if defined(SL_SIDEWALK_DMP_FSK_SUPPORTED)
 #include "app_subghz_config.h"
 #endif
 
@@ -54,7 +54,11 @@
 // -----------------------------------------------------------------------------
 
 // Main task stack size
+#if defined(EFR32XG27)
+#define MAIN_TASK_STACK_SIZE    (3000 / sizeof(configSTACK_DEPTH_TYPE))
+#else
 #define MAIN_TASK_STACK_SIZE    (2048 / sizeof(configSTACK_DEPTH_TYPE))
+#endif // defined(EFR32XG27)
 
 // -----------------------------------------------------------------------------
 //                          Public Function Prototypes

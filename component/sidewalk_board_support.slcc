@@ -4,6 +4,9 @@ package: "Flex"
 description: "Provides Sidewalk board support functionality"
 category: Example|AWS IoT
 quality: production
+metadata:
+  sbom:
+    license: Zlib
 root_path: "component/sidewalk_board_support"
 
 provides:

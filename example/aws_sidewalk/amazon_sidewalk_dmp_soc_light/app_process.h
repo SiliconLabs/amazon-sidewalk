@@ -3,7 +3,7 @@
  * @brief app_process.h
  *******************************************************************************
  * # License
- * <b>Copyright 2023 Silicon Laboratories Inc. www.silabs.com</b>
+ * <b>Copyright 2024 Silicon Laboratories Inc. www.silabs.com</b>
  *******************************************************************************
  *
  * SPDX-License-Identifier: Zlib
@@ -47,13 +47,13 @@ extern "C" {
 // -----------------------------------------------------------------------------
 #if defined(SL_SID_APP_MSG_PRESENT)
 #define APP_DROP_REQUEST_IF_ONGOING_OTHERWISE_ACCEPT(app_action_ctx, temp_action_ctx) \
-if (app_action_ctx.hdl.processing) {                                                  \
-  app_log_warning("app: request already ongoing - drop");                             \
-  return;                                                                             \
-} else {                                                                              \
-  app_action_ctx.hdl.processing = true;                                               \
-  app_action_ctx = *temp_action_ctx;                                                  \
-}
+  if (app_action_ctx.hdl.processing) {                                                \
+    app_log_warning("app: request already ongoing - drop");                           \
+    return;                                                                           \
+  } else {                                                                            \
+    app_action_ctx.hdl.processing = true;                                             \
+    app_action_ctx = *temp_action_ctx;                                                \
+  }
 #endif
 
 // -----------------------------------------------------------------------------
@@ -67,6 +67,18 @@ if (app_action_ctx.hdl.processing) {                                            
  * Main task
  ******************************************************************************/
 void main_thread(void *context);
+
+#if defined(SL_SIDEWALK_DMP_BLE_SUPPORTED)
+/*******************************************************************************
+ * Application function to trigger connection request
+ ******************************************************************************/
+void app_trigger_connection_request(void);
+
+/*******************************************************************************
+ * Application function to connect, update and send counter
+ ******************************************************************************/
+void app_trigger_connect_and_send(void);
+#endif
 
 #if defined(SL_SID_APP_MSG_PRESENT)
 /*******************************************************************************
@@ -92,7 +104,7 @@ void app_trigger_mtu(sl_sid_app_msg_sid_mtu_ctx_t *ctx);
 /*******************************************************************************
  * Application function to trigger LED toggle
  ******************************************************************************/
-void app_trigger_toggle_led(sl_sid_app_msg_dev_mgmt_toggle_led_ctx_t *ctx);
+void app_trigger_toggle_led(sl_sid_app_msg_dmp_soc_light_toggle_led_ctx_t *ctx);
 
 /*******************************************************************************
  * Application function to start/stop ble

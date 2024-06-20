@@ -4,6 +4,9 @@ package: "Flex"
 description: "Production device provisioner API"
 category: PDP
 quality: evaluation
+metadata:
+  sbom:
+    license: Zlib
 root_path: "component"
 
 provides:
@@ -88,6 +91,8 @@ define:
   - name: "NVM3_DEFAULT_NVM_SIZE"
     value: "24576"
   - name: "SL_SID_PDP_FEATURE_ON"
+    value: "1"
+  - name: "SL_RAMFUNC_DISABLE"
     value: "1"
 
 template_contribution:

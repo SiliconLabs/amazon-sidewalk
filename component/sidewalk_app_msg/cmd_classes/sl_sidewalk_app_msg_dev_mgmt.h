@@ -3,7 +3,7 @@
  * @brief sidewalk application message component - device management
  *******************************************************************************
  * # License
- * <b>Copyright 2023 Silicon Laboratories Inc. www.silabs.com</b>
+ * <b>Copyright 2024 Silicon Laboratories Inc. www.silabs.com</b>
  *******************************************************************************
  *
  * The licensor of this software is Silicon Laboratories Inc. Your use of this
@@ -17,6 +17,10 @@
 
 #ifndef SL_SID_APP_MSG_DEV_MGMT_H
 #define SL_SID_APP_MSG_DEV_MGMT_H
+
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 /*******************************************************************************
  *** INCLUDES
@@ -186,7 +190,7 @@ sl_sid_app_msg_st_t sli_sid_app_msg_dev_mgmt_cmd_handler(sl_sid_app_msg_t *msg);
 /***************************************************************************//**
  * @brief
  *   Prepares corresponding application message to be sent.
- * 
+ *
  * @note
  *   Application has to declare the application message and pass its reference
  *   to the function. Allocated memory of the declared message will be used for
@@ -194,7 +198,7 @@ sl_sid_app_msg_st_t sli_sid_app_msg_dev_mgmt_cmd_handler(sl_sid_app_msg_t *msg);
  *
  * @param[in] ctx Related application message context
  * @param[out] send_app_msg Application message to be sent
- * 
+ *
  * @return
  *   Status code
  ******************************************************************************/
@@ -204,7 +208,7 @@ sl_sid_app_msg_st_t sl_sid_app_msg_dev_mgmt_rst_dev_prepare_send(
 /***************************************************************************//**
  * @brief
  *   Prepares corresponding application message to be sent.
- * 
+ *
  * @note
  *   Application has to declare the application message and pass its reference
  *   to the function. Allocated memory of the declared message will be used for
@@ -212,7 +216,7 @@ sl_sid_app_msg_st_t sl_sid_app_msg_dev_mgmt_rst_dev_prepare_send(
  *
  * @param[in] ctx Related application message context
  * @param[out] send_app_msg Application message to be sent
- * 
+ *
  * @return
  *   Status code
  ******************************************************************************/
@@ -222,7 +226,7 @@ sl_sid_app_msg_st_t sl_sid_app_msg_dev_mgmt_button_press_prepare_send(
 /***************************************************************************//**
  * @brief
  *   Prepares corresponding application message to be sent.
- * 
+ *
  * @note
  *   Application has to declare the application message and pass its reference
  *   to the function. Allocated memory of the declared message will be used for
@@ -230,7 +234,7 @@ sl_sid_app_msg_st_t sl_sid_app_msg_dev_mgmt_button_press_prepare_send(
  *
  * @param[in] ctx Related application message context
  * @param[out] send_app_msg Application message to be sent
- * 
+ *
  * @return
  *   Status code
  ******************************************************************************/
@@ -241,7 +245,7 @@ sl_sid_app_msg_st_t sl_sid_app_msg_dev_mgmt_toggle_led_prepare_send(
  * @brief
  *   Callback function that is called when the corresponding application message
  *   is received. It has to be implemented by the application.
- * 
+ *
  * @note
  *   Context has to be copied for further operation(s) as it is no longer valid
  *   after the execution of the callback.
@@ -254,7 +258,7 @@ void sl_sid_app_msg_dev_mgmt_rst_dev_cb(sl_sid_app_msg_dev_mgmt_rst_dev_ctx_t *c
  * @brief
  *   Callback function that is called when the corresponding application message
  *   is received. It has to be implemented by the application.
- * 
+ *
  * @note
  *   Context has to be copied for further operation(s) as it is no longer valid
  *   after the execution of the callback.
@@ -267,7 +271,7 @@ void sl_sid_app_msg_dev_mgmt_button_press_cb(sl_sid_app_msg_dev_mgmt_button_pres
  * @brief
  *   Callback function that is called when the corresponding application message
  *   is received. It has to be implemented by the application.
- * 
+ *
  * @note
  *   Context has to be copied for further operation(s) as it is no longer valid
  *   after the execution of the callback.
@@ -275,5 +279,9 @@ void sl_sid_app_msg_dev_mgmt_button_press_cb(sl_sid_app_msg_dev_mgmt_button_pres
  * @param[in] ctx Corresponding application message context
  ******************************************************************************/
 void sl_sid_app_msg_dev_mgmt_toggle_led_cb(sl_sid_app_msg_dev_mgmt_toggle_led_ctx_t *ctx);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif  // SL_SID_APP_MSG_DEV_MGMT_H

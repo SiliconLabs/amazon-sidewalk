@@ -39,9 +39,15 @@
 //                                   Includes
 // -----------------------------------------------------------------------------
 #include <stdbool.h>
-#include "app_log.h"
+#include <stddef.h>
 #include "sid_clock_ifc.h"
+#if (defined(APP_LOG_ENABLE) && (APP_LOG_ENABLE == 1)) || !defined(APP_LOG_ENABLE)
+#pragma message "Logs are enabled."
+#include "app_log.h"
 #include "app_log_config.h"   // APP_LOG_ENABLE
+#else
+#pragma message "Logs are disabled."
+#endif
 #include "sid_pal_log_ifc.h"  // SID_PAL_LOG_ENABLED
 
 #if defined(SID_PAL_LOG_ENABLED) && defined(APP_LOG_ENABLE)
@@ -188,5 +194,7 @@ uint32_t get_time_now(void)
  ******************************************************************************/
 void _app_log_time()
 {
+#if (APP_LOG_ENABLE == 1)
   app_log_append("[%08lu]" APP_LOG_SEPARATOR, get_time_now());
+#endif
 }

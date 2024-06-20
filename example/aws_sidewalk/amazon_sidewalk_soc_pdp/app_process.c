@@ -40,9 +40,10 @@
 // -----------------------------------------------------------------------------
 
 #include <string.h>
+#include <stdbool.h>
 #include <stdint.h>
 #include "app_process.h"
-#include "sl_iostream_rtt.h"
+#include "sl_iostream.h"
 #include "sl_sidewalk_pdp_common.h"
 #include "sl_sidewalk_pdp_parser.h"
 #include "sl_sidewalk_pdp_priv_key_prov.h"
@@ -81,29 +82,18 @@ static void send_response(uint32_t status, uint32_t data_len, const uint8_t *dat
 //                          Public Function Definitions
 // -----------------------------------------------------------------------------
 
-void assertEFM(const char *file, int line)
-{
-  (void)file;
-  (void)line;
-  while (1)
-    ;
-}
-
 void app_process(void)
 {
-  uint16_t rx_len = 0;
-  sl_status_t sl_st;
-
-  sl_st = sl_iostream_read(sl_iostream_rtt_handle, (void *)rx_pkt, SL_SID_PDP_RX_BUF_SIZE, (size_t *)&rx_len);
-  if (sl_st == SL_STATUS_OK && rx_len > 0) {
+  int16_t rx_len = 0;
+  sl_sid_pdp_status_t sl_sid_pdp_st = sl_sid_pdp_receive_packet(rx_pkt, SL_SID_PDP_RX_BUF_SIZE, &rx_len);
+  if (sl_sid_pdp_st == SL_SID_PDP_STATUS_SUCCESS && rx_len > 0) {
     const uint8_t *req = NULL;
     uint16_t req_len = 0;
     uint16_t tx_len = 0;
     uint8_t cmd;
-    sl_sid_pdp_status_t sl_sid_pdp_st;
 
     // parse received packet into request
-    sl_sid_pdp_st = sl_sid_pdp_parse_req_packet(rx_pkt, rx_len, &req, &req_len, &cmd);
+    sl_sid_pdp_st = sl_sid_pdp_parse_req_packet(rx_pkt, (uint16_t)rx_len, &req, &req_len, &cmd);
     if (sl_sid_pdp_st != SL_SID_PDP_STATUS_SUCCESS) {
       goto cleanup;
     }
@@ -125,8 +115,8 @@ void app_process(void)
 
 static void send_response(uint32_t status, uint32_t data_len, const uint8_t *data)
 {
-  sl_iostream_write(sl_iostream_rtt_handle, (const void *)&status, sizeof(status));
+  sl_iostream_write(sl_iostream_get_default(), (const void *)&status, sizeof(status));
   if (data_len != 0 && data != NULL) {
-    sl_iostream_write(sl_iostream_rtt_handle, (const void *)data, data_len);
+    sl_iostream_write(sl_iostream_get_default(), (const void *)data, data_len);
   }
 }

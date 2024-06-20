@@ -3,7 +3,7 @@
  * @brief sl_sidewalk_sensor.h
  *******************************************************************************
  * # License
- * <b>Copyright 2022 Silicon Laboratories Inc. www.silabs.com</b>
+ * <b>Copyright 2024 Silicon Laboratories Inc. www.silabs.com</b>
  *******************************************************************************
  *
  * SPDX-License-Identifier: Zlib
@@ -38,6 +38,10 @@
 #ifndef SL_SIDEWALK_SENSOR_H
 #define SL_SIDEWALK_SENSOR_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 // -----------------------------------------------------------------------------
 //                                   Includes
 // -----------------------------------------------------------------------------
@@ -52,7 +56,7 @@
 //                              Macros and Typedefs
 // -----------------------------------------------------------------------------
 
-#define SL_SIDEWALK_SENSOR_REPORT_MSG_MAX_SIZE_BYTES 64
+#define SL_SIDEWALK_SENSOR_REPORT_MSG_MAX_SIZE_BYTES  (64)
 
 // -----------------------------------------------------------------------------
 //                                Global Variables
@@ -74,7 +78,12 @@ void sl_sidewalk_sensor_init(void);
  * @param sensor Type of the sensor whose information is to be sent (e.g.,
  *               temperature, button)
  * @param value The information to be sent from the sensor
+ * @param priority Priority information
  *****************************************************************************/
 void sl_sidewalk_sensor_report(sl_sidewalk_sensor_type_t sensor, char *value, sl_sidewalk_sender_priority_type_t priority);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif // SL_SIDEWALK_SENSOR_H

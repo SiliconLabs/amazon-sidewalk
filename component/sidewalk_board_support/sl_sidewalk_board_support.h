@@ -72,4 +72,4 @@ void sl_sidewalk_start_temperature_timer(void);
 }
 #endif
 
-#endif
+#endif  // SL_SIDEWALK_BOARD_SUPPORT_H

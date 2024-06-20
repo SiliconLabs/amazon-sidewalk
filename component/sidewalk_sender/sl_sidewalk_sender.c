@@ -3,7 +3,7 @@
  * @brief sl_sidewalk_sender.c
  *******************************************************************************
  * # License
- * <b>Copyright 2022 Silicon Laboratories Inc. www.silabs.com</b>
+ * <b>Copyright 2024 Silicon Laboratories Inc. www.silabs.com</b>
  *******************************************************************************
  *
  * SPDX-License-Identifier: Zlib
@@ -68,7 +68,7 @@ typedef struct {
 //                          Static Function Declarations
 // -----------------------------------------------------------------------------
 
-static uint16_t put_message(struct sid_handle *sidewalk_handle, char* payload, uint16_t payload_length);
+static uint16_t put_message(struct sid_handle *sidewalk_handle, char *payload, uint16_t payload_length);
 
 // -----------------------------------------------------------------------------
 //                                Global Variables
@@ -96,7 +96,6 @@ void sl_sidewalk_sender_send(struct sid_handle *sidewalk_handle)
   static sidewalk_sender_msg_t message_to_send;
   static TickType_t current_time;
 
-  // for(uint8_t queue_ix = SL_SIDEWALK_SENDER_TYPE_PRIORITY_HIGH; queue_ix >= 0 ; queue_ix--)
   for (int8_t queue_ix = SL_SIDEWALK_SENDER_TYPE_PRIORITY_HIGH; queue_ix >= 0; queue_ix--) {
     if (xQueueReceive(sender_queues[queue_ix], &message_to_send, 0) == pdTRUE) {
       current_time = xTaskGetTickCount();
@@ -183,8 +182,7 @@ static uint16_t put_message(struct sid_handle *sidewalk_handle, char *payload, u
     .size = strlen(payload)
   };
 
-  // The descriptor is cleared and then only partially initialized which is
-  // intentional
+  // The descriptor is cleared and then only partially initialized which is intentional
   struct sid_msg_desc desc;
   memset(&desc, 0, sizeof(desc));
   desc.type = SID_MSG_TYPE_NOTIFY;

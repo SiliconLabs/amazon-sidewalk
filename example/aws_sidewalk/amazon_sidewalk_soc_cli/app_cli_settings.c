@@ -724,7 +724,7 @@ sl_status_t sl_app_settings_get_started_link(char *value_str,
     // Finally display value to user
     sl_sidewalk_cli_util_settings_get_string(value_str, key_str, entry);
   } else {
-    printf("Error while trying to get link\n");
+    printf("Error while trying to get link");
     ret = SID_ERROR_GENERIC;
   }
 
@@ -743,7 +743,7 @@ sl_status_t sl_app_settings_set_region(const char *value_str,
                                        const sl_sidewalk_cli_util_entry_t *entry)
 {
   sl_sidewalk_cli_util_set_string(value_str, key_str, entry);
-  printf("Attribute not supported for now.\n");
+  printf("Attribute not supported for now.");
 
   return SL_STATUS_NOT_SUPPORTED;
 }
@@ -788,7 +788,7 @@ sl_status_t sl_app_settings_get_state(char *value_str,
     // Finally display value to user
     sl_sidewalk_cli_util_settings_get_string(value_str, key_str, entry);
   } else {
-    printf("Error while trying to get state\n");
+    printf("Error while trying to get state");
     ret = SID_ERROR_GENERIC;
   }
 
@@ -814,7 +814,7 @@ sl_status_t sl_app_settings_get_time(char *value_str,
     // Finally display value to user
     sl_sidewalk_cli_util_settings_get_string(value_str, key_str, entry);
   } else {
-    printf("Error while trying to get time\n");
+    printf("Error while trying to get time");
   }
 
   return SID_ERROR_NONE;
@@ -834,7 +834,7 @@ sl_status_t sl_app_settings_set_wakeup_type(const char *value_str,
   (void)value_str;
   (void)key_str;
   (void)entry;
-  printf("Attribute not supported for now.\n");
+  printf("Attribute not supported for now.");
 
   return SL_STATUS_OK;
 }
@@ -884,7 +884,7 @@ sl_status_t sl_app_settings_set_link_connection_policy(const char *value_str,
         || strcmp(value_str, (char *) "ac\0") == 0
         || strcmp(value_str, (char *) "ml\0") == 0)) {
     printf("[ERROR] Trying to set an incorrect value for link connection policy: %s\n" \
-           "Correct values are: 'no' for none, 'ac' for auto connect or 'ml' for multi-link\n", value_str);
+           "Correct values are: 'no' for none, 'ac' for auto connect or 'ml' for multi-link", value_str);
     return SL_STATUS_FAIL;
   } else { // User has chosen a valid argument ...
     // Discard the end of line character '\0'
@@ -932,7 +932,7 @@ sl_status_t sl_app_settings_get_link_connection_policy(char *value_str,
     sl_sidewalk_cli_util_settings_get_string(value_str, key_str, entry);
     return SL_STATUS_OK;
   } else {
-    printf("Error while trying to get link connection policy\n");
+    printf("Error while trying to get link connection policy");
     return SL_STATUS_FAIL;
   }
 }
@@ -945,13 +945,13 @@ sl_status_t sl_app_settings_set_multi_link_policy(const char *value_str,
   (void)entry;
 
   // Check if value wanted to be set is correct
-  if (!(strcmp(value_str, (char *) "def\0") == 0 ||
-        strcmp(value_str, (char *) "pow\0") == 0 ||
-        strcmp(value_str, (char *) "per\0") == 0 ||
-        strcmp(value_str, (char *) "lat\0") == 0 ||
-        strcmp(value_str, (char *) "rel\0") == 0)) {
+  if (!(strcmp(value_str, (char *) "def\0") == 0
+        || strcmp(value_str, (char *) "pow\0") == 0
+        || strcmp(value_str, (char *) "per\0") == 0
+        || strcmp(value_str, (char *) "lat\0") == 0
+        || strcmp(value_str, (char *) "rel\0") == 0)) {
     printf("[ERROR] Trying to set an incorrect value for multi-link policy: %s\n" \
-           "Correct values are: 'def' for default, 'pow' for power save, 'per' for performance, 'lat' for latency or 'rel' for reliability\n", value_str);
+           "Correct values are: 'def' for default, 'pow' for power save, 'per' for performance, 'lat' for latency or 'rel' for reliability", value_str);
     return SL_STATUS_FAIL;
   } else { // User has chosen a valid argument ...
     // Discard the end of line character '\0'
@@ -1006,12 +1006,12 @@ sl_status_t sl_app_settings_get_multi_link_policy(char *value_str,
         sprintf(s_multi_link_policy, "%s", "def\0");
         break;
     }
-    
+
     sl_sidewalk_cli_util_set_string(s_multi_link_policy, key_str, entry);
     sl_sidewalk_cli_util_settings_get_string(value_str, key_str, entry);
     return SL_STATUS_OK;
   } else {
-    printf("Error while trying to get link connection policy\n");
+    printf("Error while trying to get link connection policy");
     return SL_STATUS_FAIL;
   }
 }
@@ -1047,7 +1047,7 @@ sl_status_t sl_app_settings_set_auto_connect_params(const char *value_str,
         link_type = SID_LINK_TYPE_3;
       } else {
         printf("[ERROR] Trying to set an incorrect value for auto connect link type parameter: %s\n" \
-        "Correct values are: 'ble', 'fsk' or 'css'\n", token);
+               "Correct values are: 'ble', 'fsk' or 'css'", token);
         break;
       }
     } else if (token_no == 2) {
@@ -1058,7 +1058,7 @@ sl_status_t sl_app_settings_set_auto_connect_params(const char *value_str,
         enabled = false;
       } else {
         printf("[ERROR] Trying to set an incorrect value for auto connect link enabled parameter: %s\n" \
-        "Correct values are: '1', or '0'\n", token);
+               "Correct values are: '1', or '0'", token);
         break;
       }
     } else if (token_no == 3) {
@@ -1066,23 +1066,23 @@ sl_status_t sl_app_settings_set_auto_connect_params(const char *value_str,
       char *end_ptr;
       priority = strtoul(token, &end_ptr, 10);
       if (priority == 0 && token == end_ptr) {
-          printf("[ERROR] Trying to set an incorrect value for auto connect priority parameter: %s\n" \
-          "Value must contain only numerical characters\n", token);
-          break;
+        printf("[ERROR] Trying to set an incorrect value for auto connect priority parameter: %s\n" \
+               "Value must contain only numerical characters", token);
+        break;
       }
     } else if (token_no == 4) {
       // link timeout
       char *end_ptr;
       timeout = strtoul(token, &end_ptr, 10);
       if (timeout == 0 && token == end_ptr) {
-          printf("[ERROR] Trying to set an incorrect value for auto connect timeout parameter: %s\n" \
-          "Value must contain only numerical characters\n", token);
-          break;
+        printf("[ERROR] Trying to set an incorrect value for auto connect timeout parameter: %s\n" \
+               "Value must contain only numerical characters", token);
+        break;
       }
       success = true;
       break;
     } else {
-      printf("[ERROR] Trying to set an incorrect value for auto connect parameters: %s\n", value_str);
+      printf("[ERROR] Trying to set an incorrect value for auto connect parameters: %s", value_str);
       break;
     }
     token = strtok(NULL, ",");
@@ -1116,24 +1116,24 @@ sl_status_t sl_app_settings_get_auto_connect_params(char *value_str,
   // Wait for data from sidewalk thread
   if (xQueueReceive(g_cli_event_queue, &settings, pdMS_TO_TICKS(2000))) {
     sprintf(auto_connect_params, "%s,%d,%d,%d,%s,%d,%d,%d,%s,%d,%d,%d",
-      "ble",
-      settings.auto_connect_params[0].enable,
-      settings.auto_connect_params[0].priority,
-      settings.auto_connect_params[0].connection_attempt_timeout_seconds,
-      "fsk",
-      settings.auto_connect_params[1].enable,
-      settings.auto_connect_params[1].priority,
-      settings.auto_connect_params[1].connection_attempt_timeout_seconds,
-      "css",
-      settings.auto_connect_params[2].enable,
-      settings.auto_connect_params[2].priority,
-      settings.auto_connect_params[2].connection_attempt_timeout_seconds);
+            "ble",
+            settings.auto_connect_params[0].enable,
+            settings.auto_connect_params[0].priority,
+            settings.auto_connect_params[0].connection_attempt_timeout_seconds,
+            "fsk",
+            settings.auto_connect_params[1].enable,
+            settings.auto_connect_params[1].priority,
+            settings.auto_connect_params[1].connection_attempt_timeout_seconds,
+            "css",
+            settings.auto_connect_params[2].enable,
+            settings.auto_connect_params[2].priority,
+            settings.auto_connect_params[2].connection_attempt_timeout_seconds);
 
     sl_sidewalk_cli_util_set_string(auto_connect_params, key_str, entry);
     sl_sidewalk_cli_util_settings_get_string(value_str, key_str, entry);
     return SL_STATUS_OK;
   } else {
-    printf("Error while trying to get auto connect parameters\n");
+    printf("Error while trying to get auto connect parameters");
     return SL_STATUS_FAIL;
   }
 }
@@ -1157,7 +1157,7 @@ sl_status_t sl_app_settings_get_mtu_fsk(char *value_str,
     // Finally display value to user
     sl_sidewalk_cli_util_settings_get_integer(value_str, key_str, entry);
   } else {
-    printf("Error while trying to get mtu\n");
+    printf("Error while trying to get mtu");
   }
 
   return SL_STATUS_OK;
@@ -1183,7 +1183,7 @@ sl_status_t sl_app_settings_get_mtu_css(char *value_str,
     // Finally display value to user
     sl_sidewalk_cli_util_settings_get_integer(value_str, key_str, entry);
   } else {
-    printf("Error while trying to get mtu\n");
+    printf("Error while trying to get mtu");
   }
 
   return SL_STATUS_OK;
@@ -1209,7 +1209,7 @@ sl_status_t sl_app_settings_get_mtu_ble(char *value_str,
     // Finally display value to user
     sl_sidewalk_cli_util_settings_get_integer(value_str, key_str, entry);
   } else {
-    printf("Error while trying to get mtu\n");
+    printf("Error while trying to get mtu");
   }
 
   return SL_STATUS_OK;
@@ -1242,7 +1242,7 @@ sl_status_t sl_app_settings_get_random_mac(char *value_str,
       break;
 
     default:
-      printf("[CLI] Unsupported BLE_CFG for MAC address.\n");
+      printf("[CLI] Unsupported BLE_CFG for MAC address.");
       sprintf(s_random_mac, "UNKOWN");
       break;
   }
@@ -1296,7 +1296,7 @@ sl_status_t sl_app_settings_get_fsk_power_profile(char *value_str,
     // Finally display value to user
     sl_sidewalk_cli_util_settings_get_string(value_str, key_str, entry);
   } else {
-    printf("Error while trying to get dev_profile_id\n");
+    printf("Error while trying to get dev_profile_id");
   }
 
   return SL_STATUS_OK;
@@ -1313,7 +1313,7 @@ sl_status_t sl_app_settings_set_fsk_power_profile(const char *value_str,
   // Check if value wanted to be set is correct
   if (!(strcmp(value_str, (char *) "1\0") == 0 || strcmp(value_str, (char *) "2\0") == 0)) {
     printf("[ERROR] Trying to set an incorrect value for FSK power profile: %s\n" \
-           "Correct values are: '1' or '2'\n", value_str);
+           "Correct values are: '1' or '2'", value_str);
     ret = SL_STATUS_FAIL;
   } else { // User has chosen a valid argument ...
     // Discard the end of line character '\0'
@@ -1363,7 +1363,7 @@ sl_status_t sl_app_settings_get_css_power_profile(char *value_str,
     // Finally display value to user
     sl_sidewalk_cli_util_settings_get_string(value_str, key_str, entry);
   } else {
-    printf("Error while trying to get dev_profile_id\n");
+    printf("Error while trying to get dev_profile_id");
   }
 
   return SL_STATUS_OK;
@@ -1381,7 +1381,7 @@ sl_status_t sl_app_settings_set_css_power_profile(const char *value_str,
   if (!(strcmp(value_str, (char *) "A\0") == 0
         || strcmp(value_str, (char *) "B\0") == 0)) {
     printf("[ERROR] Trying to set an incorrect value for CSS power profile: %s\n" \
-           "Correct values are: 'A' or 'B''\n", value_str);
+           "Correct values are: 'A' or 'B''", value_str);
     ret = SL_STATUS_FAIL;
   } else { // User has chosen a valid argument ...
     // Discard the end of line character '\0'
@@ -1461,7 +1461,7 @@ sl_status_t sl_app_settings_get_fsk_rx_window_count(char *value_str,
     // Finally display value to user
     sl_sidewalk_cli_util_settings_get_integer(value_str, key_str, entry);
   } else {
-    printf("Error while trying to get dev_profile_id\n");
+    printf("Error while trying to get dev_profile_id");
   }
 
   return SL_STATUS_OK;
@@ -1486,7 +1486,7 @@ sl_status_t sl_app_settings_get_fsk_rx_window_separation(char *value_str,
     // Finally display value to user
     sl_sidewalk_cli_util_settings_get_integer(value_str, key_str, entry);
   } else {
-    printf("Error while trying to get dev_profile_id\n");
+    printf("Error while trying to get dev_profile_id");
   }
 
   return SL_STATUS_OK;
@@ -1513,7 +1513,7 @@ sl_status_t sl_app_settings_get_css_rx_window_separation(char *value_str,
     // Finally display value to user
     sl_sidewalk_cli_util_settings_get_integer(value_str, key_str, entry);
   } else {
-    printf("Error while trying to get dev_profile_id\n");
+    printf("Error while trying to get dev_profile_id");
   }
 
   return SL_STATUS_OK;
@@ -1538,7 +1538,7 @@ sl_status_t sl_app_settings_get_css_rx_window_count(char *value_str,
     // Finally display value to user
     sl_sidewalk_cli_util_settings_get_integer(value_str, key_str, entry);
   } else {
-    printf("Error while trying to get dev_profile_id\n");
+    printf("Error while trying to get dev_profile_id");
   }
 
   return SL_STATUS_OK;
@@ -1561,7 +1561,7 @@ sl_status_t sl_app_settings_set_css_rx_window_count(const char *value_str,
         || (sid_rx_window == SID_RX_WINDOW_CNT_4)
         || (sid_rx_window == SID_RX_WINDOW_CNT_5))) {
     printf("[ERROR] Trying to set an incorrect value for \"CSS power profile A\" rx window count: %s\n"
-           "Correct values are: SID_RX_WINDOW_CNT_x, where x can be 2, 3, 4, 5'\n",
+           "Correct values are: SID_RX_WINDOW_CNT_x, where x can be 2, 3, 4, 5'",
            value_str);
     ret = SL_STATUS_FAIL;
   } else { // User has chosen a valid argument ...

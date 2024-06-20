@@ -61,7 +61,6 @@
 
 #if defined(SL_SEGMENT_LCD)
 #include "sl_segmentlcd.h"
-#include "em_cmu.h"
 #endif
 
 #include "sl_sidewalk_board_support.h"

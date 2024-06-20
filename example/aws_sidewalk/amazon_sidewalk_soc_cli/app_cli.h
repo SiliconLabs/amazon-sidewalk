@@ -61,7 +61,7 @@ extern int16_t cli_arg_int16_t;
 extern uint16_t cli_arg_uint16_t;
 extern uint8_t cli_arg_uint8_t;
 extern char cli_arg_str[64];
-extern char cli_arg_str_2[64];
+extern char cli_arg_str_2[256];
 extern char cli_arg_str_3[16];
 extern struct sid_link_auto_connect_params cli_arg_sid_link_auto_connect_params;
 
@@ -380,6 +380,56 @@ void sl_app_trigger_sid_set_dev_prof_wakeup_type(uint8_t wakeup_type);
  * @returns None
  ******************************************************************************/
 void sl_app_trigger_ble_connection_request(void);
+
+#if defined(SL_SIDEWALK_OTA_DFU_PRESENT)
+/*******************************************************************************
+ * Function to trigger OTA DFU initialize request
+ *
+ * @param[in] void
+ * @returns None
+ ******************************************************************************/
+void sl_app_trigger_ota_dfu_init_request(void);
+
+/*******************************************************************************
+ * Function to trigger OTA DFU deinitialize request
+ *
+ * @param[in] void
+ * @returns None
+ ******************************************************************************/
+void sl_app_trigger_ota_dfu_deinit_request(void);
+
+/*******************************************************************************
+ * Function to trigger OTA DFU cancel request
+ *
+ * @param[in] void
+ * @returns None
+ ******************************************************************************/
+void sl_app_trigger_ota_dfu_cancel_request(void);
+
+/*******************************************************************************
+ * Function to trigger OTA DFU stat request
+ *
+ * @param[in] void
+ * @returns None
+ ******************************************************************************/
+void sl_app_trigger_ota_dfu_stat_request(void);
+
+/*******************************************************************************
+ * Function to trigger OTA DFU param request
+ *
+ * @param[in] void
+ * @returns None
+ ******************************************************************************/
+void sl_app_trigger_ota_dfu_param_request(void);
+
+/*******************************************************************************
+ * Function to trigger OTA DFU min. scratch buf. size request
+ *
+ * @param[in] void
+ * @returns None
+ ******************************************************************************/
+void sl_app_trigger_ota_dfu_min_scratch_buf_size_request(void);
+#endif
 
 /*******************************************************************************
  * Application function to update counter and send

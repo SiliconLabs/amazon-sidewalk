@@ -1,36 +1,36 @@
 project_name: amazon_sidewalk_dmp_soc_light
 package: amazon_bluetooth
 quality: evaluation
-label: Amazon Sidewalk - SoC Dynamic Multiprotocol Light
+label: Amazon Sidewalk - SoC Dynamic Multiprotocol Light (BLE)
 description: >
   This is a Dynamic Multiprotocol reference application demonstrating a light bulb that can be switched via Bluetooth. Can be tested with the EFR Connect mobile app.
-  Simultaneously this sample application leverages the Amazon Sidewalk protocol to connect to the cloud using FSK radio layer.
+  Simultaneously this sample application leverages the Amazon Sidewalk protocol to connect to the cloud using BLE radio layer.
   The application connects to AWS and send or receive messages on button push.
 category: Example|AWS IoT
 
 sdk_extension:
   - id: sidewalk
-    version: 2.0.1
+    version: 2.1.0
 
 source:
-  - path: main.c
-  - path: app_init.c
-  - path: app_process.c
-  - path: app_cli.c
-  - path: app_bluetooth.c
+  - path: ../main.c
+  - path: ../app_init.c
+  - path: ../app_process.c
+  - path: ../app_cli.c
+  - path: ../app_bluetooth.c
 include:
   - path: .
     file_list:
-    - path: app_init.h
-    - path: app_process.h
-    - path: app_bluetooth.h
+    - path: ../app_init.h
+    - path: ../app_process.h
+    - path: ../app_bluetooth.h
 component:
 #############################################
 # Sidewalk extension components
 #############################################
 - id: sidewalk_ble_subghz
   from: sidewalk
-- id: sidewalk_dmp_support
+- id: sidewalk_dmp_ble_support
   from: sidewalk
 - id: sidewalk_common
   from: sidewalk
@@ -50,9 +50,6 @@ component:
 - id: iostream_rtt
 - id: sl_system
 - id: iostream_retarget_stdio
-- id: gpiointerrupt
-- id: device_init_lfxo
-- id: device_init_hfxo
 - id: simple_button
   instance: [btn0, btn1]
 - id: simple_led
@@ -63,7 +60,6 @@ component:
 - id: device_init
 - id: iostream_stdlib_config
 - id: sleeptimer
-- id: udelay
 - id: psa_crypto
 - id: psa_its
 - id: psa_crypto_ecc
@@ -83,10 +79,11 @@ component:
 - id: app_assert
 - id: freertos
 - id: freertos_heap_4
-- id: device_init_dpll
 - id: printf
 - id: rail_lib_multiprotocol
-- id: rail_util_pa
+- id: silabs_core_sl_malloc
+- id: gpiointerrupt
+- id: clock_manager
 
 requires:
   - name: bluetooth_stack
@@ -111,11 +108,13 @@ requires:
     condition: [device_supports_bluetooth]
 
 define:
-  - name: SL_SIDEWALK_DMP_SUPPORTED
+  - name: SL_SIDEWALK_DMP_BLE_SUPPORTED
 
 configuration:
   - name: SL_SIDEWALK_COMMON_DEFAULT_LINK_TYPE
-    value: SL_SIDEWALK_LINK_FSK
+    value: SL_SIDEWALK_LINK_BLE
+  - name: SL_SLEEPTIMER_PERIPHERAL
+    value: SL_SLEEPTIMER_PERIPHERAL_DEFAULT
   - name: SL_BOARD_ENABLE_VCOM
     value: 0
   - name: SL_IOSTREAM_USART_VCOM_RESTRICT_ENERGY_MODE_TO_ALLOW_RECEPTION
@@ -125,25 +124,25 @@ configuration:
     value: 0
     condition: [iostream_uart]
   - name: configMINIMAL_STACK_SIZE
-    value: 2048
+    value: 160
   - name: configTOTAL_HEAP_SIZE
-    value: 20480
-  - name: configTIMER_TASK_STACK_DEPTH
-    value: 1024
-  - name: SL_HEAP_SIZE
-    value: 15360
+    value: 11264
   - name: SL_STACK_SIZE
     value: 4096
+  - name: SL_HEAP_SIZE
+    value: 2048
   - name: NVM3_DEFAULT_NVM_SIZE
     value: 24576
-  - name: SL_BT_CONFIG_BUFFER_SIZE
-    value: 6300
   - name: SL_BT_RTOS_LINK_LAYER_TASK_STACK_SIZE
-    value: 2000
+    value: 1000
   - name: SL_BT_RTOS_HOST_STACK_TASK_STACK_SIZE
-    value: 4000
+    value: 2000
   - name: SL_BT_RTOS_EVENT_HANDLER_STACK_SIZE
-    value: 4000
+    value: 2240
+  - name: SL_BT_CONFIG_BUFFER_SIZE
+    value: 3150
+  - name: configTIMER_TASK_STACK_DEPTH
+    value: 160
   - name: APP_LOG_AUTO_NL
     value: 1
   - name: SL_BT_CONFIG_MIN_TX_POWER
@@ -160,9 +159,11 @@ configuration:
     value: '"<error>"'
   - name: APP_LOG_LEVEL_CRITICAL_PREFIX
     value: '"<critical>"'
+  - name: SL_BT_CONFIG_USER_ADVERTISERS
+    value: 2
 
 readme:
-  - path: ../../../documentation/example/amazon_sidewalk_dmp_soc_light/readme.md
+  - path: ../../../../documentation/example/amazon_sidewalk_dmp_soc_light/readme.md
 
 ui_hints:
   highlight:
@@ -172,21 +173,21 @@ ui_hints:
       focus: true
 
 config_file:
-  - path: ../../../tools/cloudformation/public/CF_minimal_sidewalk.json
+  - path: ../../../../tools/cloudformation/public/CF_minimal_sidewalk.json
     directory: sidewalk
-  - path: ../../configurator/fsk/sidewalk.asconf
+  - path: ../../../configurator/ble/sidewalk.asconf
     directory: sidewalk
-  - path: ../../mfg.runconf
+  - path: ../../../mfg.runconf
     directory: sidewalk
   - override:
       component: gatt_configuration
       file_id: gatt_configuration_file_id
-    path: gatt_configuration.btconf
+    path: ../gatt_configuration.btconf
     directory: btconf
 
 tag:
-  - hardware:rf:band:2400|915
-  - hardware:device:sdid:235
+  - hardware:rf:band:2400
+  - hardware:device:sdid:215
 
 filter:
   - name: "Wireless Technology"
@@ -197,48 +198,53 @@ filter:
     value: ["SoC"]
   - name: "Project Difficulty"
     value: ["Beginner"]
-
 #-------------- Template Contribution ----------------
 template_contribution:
+- name: bluetooth_on_event
+  value:
+    include: ble_adapter.h
+    function: sl_ble_adapter_on_event
+- name: event_handler
+  value:
+    event: kernel_start
+    include: ble_adapter.h
+    handler: sl_ble_adapter_on_kernel_start
 #------------------ CLI commands ---------------------
- - name: cli_command
-   value:
-      name: send
-      handler: cli_send
-      help: "Updates counter value and sends it to the cloud"
- - name: cli_command
-   value:
-      name: reset
-      handler: cli_reset
-      argument:
-       - type: uint32
-         help: "Duration in milliseconds (0 for immediate)"
-       - type: uint8
-         help: "Reset type (1: device software reset, 2: factory reset)"
-      help: "Device software reset or factory reset"
- - name: cli_command
-   value:
-      name: get_time
-      handler: cli_get_time
-      help: "Gets current time"
- - name: cli_command
-   value:
-      name: get_mtu
-      handler: cli_get_mtu
-      argument:
-       - type: uint8
-         help: "Link type (1: BLE, 2: FSK, 4: CSS)"
-      help: "Gets MTU of the specified link"
- - name: cli_command
-   value:
-      name: toggle_led
-      handler: cli_toggle_led
-      argument:
-       - type: uint8
-         help: "Led no (0: Led0, 1: Led1)"
-      help: "Toggle LED"
- - name: cli_command
-   value:
-      name: ble_start_stop
-      handler: cli_ble_start_stop
-      help: "Enable/Disable BLE stack"
+- name: cli_command
+  value:
+    name: send
+    handler: cli_send
+    help: "Updates counter value and sends it to the cloud"
+- name: cli_command
+  value:
+    name: reset
+    handler: cli_reset
+    argument:
+    - type: uint32
+      help: "Duration in milliseconds (0 for immediate)"
+    - type: uint8
+      help: "Reset type (1: device software reset, 2: factory reset)"
+    help: "Device software reset or factory reset"
+- name: cli_command
+  value:
+    name: get_time
+    handler: cli_get_time
+    help: "Gets current time"
+- name: cli_command
+  value:
+    name: get_mtu
+    handler: cli_get_mtu
+    argument:
+    - type: uint8
+      help: "Link type (1: BLE, 2: FSK, 4: CSS)"
+    help: "Gets MTU of the specified link"
+- name: cli_command
+  value:
+    name: toggle_led
+    handler: cli_toggle_led
+    help: "Toggle LED0"
+- name: cli_command
+  value:
+    name: ble_start_stop
+    handler: cli_ble_start_stop
+    help: "Enable/Disable BLE stack"

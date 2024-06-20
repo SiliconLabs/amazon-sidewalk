@@ -40,7 +40,6 @@
 #include "app_log.h"
 #include "sid_api.h"
 #include "sl_sidewalk_common_config.h"
-#include "sl_malloc.h"
 #include "app_button_press.h"
 
 #if defined(SL_BOARD_SUPPORT)
@@ -290,7 +289,7 @@ static uint32_t link_type_to_link_mask(uint8_t link_type)
   }
 }
 
-void main_thread(void * context)
+void main_thread(void *context)
 {
   // Creating application context
   (void)context;
@@ -317,7 +316,7 @@ void main_thread(void * context)
   struct sid_config config =
   {
     .link_mask = 0,
-    .callbacks   = &event_callbacks,
+    .callbacks = &event_callbacks,
     .link_config = NULL,
     .sub_ghz_link_config = NULL,
   };
@@ -577,7 +576,9 @@ static void on_sidewalk_msg_received(const struct sid_msg_desc *msg_desc,
 {
   UNUSED(context);
   app_log_info("app: rcvd msg (type: %d, id: %u, size: %u)", (int)msg_desc->type, msg_desc->id, msg->size);
-  app_log_info("app: %s", (char *) msg->data);
+  if (msg->size != 0) {
+    app_log_info("app: %s", (char *) msg->data);
+  }
 }
 
 static void on_sidewalk_msg_sent(const struct sid_msg_desc *msg_desc,
@@ -763,7 +764,7 @@ static void get_time(app_context_t *context)
 static void get_mtu(app_context_t *context)
 {
   size_t mtu;
-  sid_error_t ret = sid_get_mtu(context->sidewalk_handle, SID_LINK_TYPE_2, &mtu);
+  sid_error_t ret = sid_get_mtu(context->sidewalk_handle, application_context.current_link_type, &mtu);
   if (ret == SID_ERROR_NONE) {
     app_log_info("app: curr mtu: %d", mtu);
   } else {

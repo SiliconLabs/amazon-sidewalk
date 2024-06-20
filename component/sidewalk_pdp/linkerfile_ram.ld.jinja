@@ -129,20 +129,6 @@ SECTIONS
   /* Start placing output sections which are loaded into RAM */
   . = ORIGIN(RAM);
 
-  .stack ALIGN(8):
-  {
-    __StackLimit = .;
-    KEEP(*(.stack*))
-    . = ALIGN(4);
-    __StackTop = .;
-    PROVIDE(__stack = __StackTop);
-  } > RAM
-
-  .text :
-  {
-    *(.text.Reset_Handler)
-  } > RAM
-
   .text :
   {
     . = ALIGN(8);
@@ -157,6 +143,16 @@ SECTIONS
     linker_code_begin = .;
     *(.text*)
     linker_code_end = .;
+
+    . = ALIGN(8);
+
+    __StackLimit = .;
+    KEEP(*(.stack*))
+    . = ALIGN(8);
+    __StackTop = .;
+    PROVIDE(__stack = __StackTop);
+
+    . = ALIGN(8);
 
     KEEP(*(.init))
     KEEP(*(.fini))

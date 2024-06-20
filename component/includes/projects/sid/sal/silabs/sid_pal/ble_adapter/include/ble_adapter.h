@@ -3,7 +3,7 @@
  * @brief ble_adapter.h
  *******************************************************************************
  * # License
- * <b>Copyright 2023 Silicon Laboratories Inc. www.silabs.com</b>
+ * <b>Copyright 2024 Silicon Laboratories Inc. www.silabs.com</b>
  *******************************************************************************
  *
  * SPDX-License-Identifier: Zlib
@@ -45,11 +45,31 @@ extern "C" {
 //                                   Includes
 // -----------------------------------------------------------------------------
 #include "sl_bt_api.h"
+#include "sid_error.h"
+
+#if defined(SL_SIDEWALK_UNIT_TEST)
+#include "sid_pal_ble_adapter_ifc_mock.h"
+#else
+#include "sid_pal_ble_adapter_ifc.h"
+#endif
 
 // -----------------------------------------------------------------------------
 //                              Macros and Typedefs
 // -----------------------------------------------------------------------------
+typedef struct {
+  uint16_t current_service_handle;          // The service declaration attribute handle
+  uint16_t *current_characteristic_handle;  // The characteristic value attribute handle
+  uint16_t *current_descriptor_handle;      // The descriptor attribute handle
+} sid_pal_ble_profile_config_t;
 
+typedef struct {
+  const sid_ble_config_t *cfg;
+  const sid_pal_ble_adapter_callbacks_t *callback;
+  uint16_t mtu_size;
+  bool is_connected;
+  uint16_t conn_id;
+  uint8_t bt_addr[BLE_ADDR_MAX_LEN];
+} sid_pal_ble_adapter_ctx_t;
 // -----------------------------------------------------------------------------
 //                                Global Variables
 // -----------------------------------------------------------------------------
@@ -57,6 +77,7 @@ extern "C" {
 // -----------------------------------------------------------------------------
 //                          Public Function Declarations
 // -----------------------------------------------------------------------------
+sid_error_t sid_pal_ble_adapter_create(sid_pal_ble_adapter_interface_t *handle);
 void sl_ble_adapter_on_event(sl_bt_msg_t *evt);
 void sl_ble_adapter_on_kernel_start(void);
 

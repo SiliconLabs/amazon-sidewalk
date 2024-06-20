@@ -3,7 +3,7 @@
  * @brief sidewalk application message component
  *******************************************************************************
  * # License
- * <b>Copyright 2023 Silicon Laboratories Inc. www.silabs.com</b>
+ * <b>Copyright 2024 Silicon Laboratories Inc. www.silabs.com</b>
  *******************************************************************************
  *
  * The licensor of this software is Silicon Laboratories Inc. Your use of this
@@ -18,6 +18,10 @@
 #ifndef SL_SID_APP_MSG_CMD_CLS_H
 #define SL_SID_APP_MSG_CMD_CLS_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 /*******************************************************************************
  *** MACROS AND TYPEDEFS
  ******************************************************************************/
@@ -30,5 +34,9 @@ enum sli_sid_app_msg_cmd_cls {
   SLI_SID_APP_MSG_CMD_CLS_SID,            // sidewalk specific
   SLI_SID_APP_MSG_CMD_CLS_DMP_SOC_LIGHT   // DMP SOC Light application
 };
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif  // SL_SID_APP_MSG_CMD_CLS_H

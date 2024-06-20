@@ -4,6 +4,9 @@ package: "Flex"
 description: "Simple component to gather all of the sidewalk related libraries and header files."
 category: Example|AWS IoT
 quality: production
+metadata:
+  sbom:
+    license: LicenseRef-amazon-sidewalk-license
 root_path: "component"
 
 config_file:
@@ -22,6 +25,9 @@ provides:
     condition:
       - device_generic_family_efr32xg24
       - spidrv
+  - name: sl_sidewalk_radio_external
+    condition:
+      - device_generic_family_efr32xg26
 #######################################
 # FAMILIES WITH NATIVE SUBGHZ RADIO
 #######################################
@@ -49,11 +55,19 @@ provides:
       - device_supports_bluetooth
   - name: sl_sidewalk_radio_ble
     condition:
+      - device_generic_family_efr32xg26
+      - device_supports_bluetooth
+  - name: sl_sidewalk_radio_ble
+    condition:
       - device_generic_family_efr32xg28
+      - device_supports_bluetooth
+  - name: sl_sidewalk_radio_ble
+    condition:
+      - device_generic_family_efr32xg27
       - device_supports_bluetooth
 
 requires:
-  - name: "sidewalk_pal"
+  - name: "sidewalk_pal_swi"
 
 define:
   - name: DUAL_LINK_SUPPORT
@@ -69,21 +83,31 @@ define:
   - name: SL_RADIO_NATIVE
     condition:
     - sl_sidewalk_radio_native
+    unless:
+    - sidewalk_dmp_ble_support
   - name: SL_RADIO_EXTERNAL
     condition:
     - sl_sidewalk_radio_external
+    unless:
+    - sidewalk_dmp_ble_support
   - name: SL_BLE_SUPPORTED
     condition:
       - sl_sidewalk_radio_ble
   - name: SL_FSK_SUPPORTED
     condition:
     - sl_sidewalk_radio_external
+    unless:
+    - sidewalk_dmp_ble_support
   - name: SL_FSK_SUPPORTED
     condition:
     - sl_sidewalk_radio_native
+    unless:
+    - sidewalk_dmp_ble_support
   - name: SL_CSS_SUPPORTED
     condition:
       - sl_sidewalk_radio_external
+    unless:
+      - sidewalk_dmp_ble_support
   - name: RADIO_DRIVER_RAIL
     value: 1
     condition:
@@ -116,7 +140,9 @@ library:
       - efr32mg24a010f768im48
       - efr32mg24a020f768im40
       - brd2600a
-      - sidewalk_dmp_support
+      - sidewalk_dmp_fsk_support
+      - sidewalk_dmp_ble_support
+      - device_generic_family_efr32xg27
   - path: "ble_subghz/lib/sl_lib_ble_subghz.a"
     condition:
       - sl_sidewalk_radio_ble
@@ -126,42 +152,59 @@ library:
       - efr32mg24a010f768im48
       - efr32mg24a020f768im40
       - brd2600a
-      - sidewalk_dmp_support
+      - sidewalk_dmp_fsk_support
+      - sidewalk_dmp_ble_support
+      - device_generic_family_efr32xg27
   - path: "ble_subghz/lib/sl_lib_ble.a"
     condition:
       - sl_sidewalk_radio_ble
     unless:
       - sl_sidewalk_radio_native
       - brd2600a
-      - sidewalk_dmp_support
+      - sidewalk_dmp_fsk_support
   - path: "ble_subghz/lib/sl_lib_ble.a"
     condition:
       - sl_sidewalk_radio_ble
     unless:
       - sl_sidewalk_radio_external
       - brd2600a
-      - sidewalk_dmp_support
+      - sidewalk_dmp_fsk_support
+  - path: "ble_subghz/lib/sl_lib_ble.a"
+    condition:
+      - sidewalk_dmp_ble_support
+    unless:
+      - sidewalk_dmp_fsk_support
   - path: "ble_subghz/lib/sl_lib_subghz.a"
     condition:
       - sl_sidewalk_radio_native
     unless:
       - sl_sidewalk_radio_ble
+      - sidewalk_dmp_ble_support
   - path: "ble_subghz/lib/sl_lib_subghz.a"
     condition:
       - sl_sidewalk_radio_external
     unless:
       - sl_sidewalk_radio_ble
+      - sidewalk_dmp_ble_support
   - path: "ble_subghz/lib/sl_lib_subghz.a"
     condition:
       - brd2600a
+    unless:
+      - sidewalk_dmp_ble_support
   - path: "ble_subghz/lib/sl_lib_subghz.a"
     condition:
-      - sidewalk_dmp_support
+      - sidewalk_dmp_fsk_support
+    unless:
+      - sidewalk_dmp_ble_support
   - path: "ble_subghz/lib/sl_lib_radio_sx126x.a"
     condition:
       - sl_sidewalk_radio_external
+    unless:
+      - sidewalk_dmp_ble_support
 
 toolchain_settings:
+  - option: optimize
+    value: size
   - option: gcc_compiler_option
     value: -DCORE_ATOMIC_METHOD=CORE_ATOMIC_METHOD_PRIMASK
   - option: gcc_compiler_option
@@ -186,6 +229,10 @@ toolchain_settings:
     value: -fno-builtin
   - option: gcc_compiler_option
     value: -fdiagnostics-color=always
+  - option: gcc_linker_option
+    value: "-Wl,--gc-sections"
+  - option: gcc_linker_option
+    value: "-Wl,--print-memory-usage"
 
 template_contribution:
 #---------------- Component Catalog ------------------
@@ -193,4 +240,3 @@ template_contribution:
     value: sidewalk_common
 ui_hints:
   visibility: never
-

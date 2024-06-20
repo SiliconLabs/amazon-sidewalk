@@ -38,6 +38,10 @@
 #ifndef SL_PDP_SIDEWALK_COMMON_H
 #define SL_PDP_SIDEWALK_COMMON_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 // -----------------------------------------------------------------------------
 //                                   Includes
 // -----------------------------------------------------------------------------
@@ -71,6 +75,7 @@ typedef enum {
   SL_SID_PDP_STATUS_ERR_OUT_ARGS_NOT_VALID,
   // Parser status
   SL_SID_PDP_STATUS_ERR_PKT_LEN_TOO_SMALL,
+  SL_SID_PDP_STATUS_ERR_BUF_SIZE_TOO_SMALL,
   SL_SID_PDP_STATUS_ERR_CMD_UNKNOWN,
   // Silabs platform related status
   SL_SID_PDP_STATUS_ERR_NVM3_OPEN,
@@ -88,5 +93,9 @@ typedef enum {
   SL_SID_PDP_STATUS_ERR_ON_DEV_CERT_GEN_WRITE_APP_KEY,
   SL_SID_PDP_STATUS_ERR_ON_DEV_CERT_GEN_COMMIT
 } sl_sid_pdp_status_t;
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif // SL_PDP_SIDEWALK_COMMON_H

@@ -41,10 +41,11 @@
 
 #ifdef DEBUG_PDP
 #include <stdio.h>
-#endif /* DEBUG_PDP */
+#endif  // DEBUG_PDP
 #include <sid_pal_crypto_ifc.h>
 #include <sid_pal_mfg_store_ifc.h>
 #include <string.h>
+#include "sl_string.h"
 #include "sl_sidewalk_pdp_on_dev_cert_gen.h"
 
 // -----------------------------------------------------------------------------
@@ -68,7 +69,7 @@ sl_sid_pdp_status_t sl_sid_pdp_on_dev_cert_gen_init(const uint8_t * const in, ui
     goto cleanup;
   }
 
-  sid_pal_mfg_store_region_t mfg_store_region;
+  sid_pal_mfg_store_region_t mfg_store_region = {0};
   sid_pal_mfg_store_init(mfg_store_region);
 
   sid_ret = sid_on_dev_cert_init();
@@ -109,11 +110,11 @@ sl_sid_pdp_status_t sl_sid_pdp_on_dev_cert_gen_gen_smsn(const uint8_t * const in
   }
 
   // Note on device-type. It gets transformed into "Amazon-id" which is <device-type>-PRODUCTION
-  uint16_t dev_type_total_len = req.dev_type_len + strlen(SL_SID_PDP_CERT_DEV_TYPE_SUFFIX) + 1;
+  uint16_t dev_type_total_len = req.dev_type_len + (uint16_t)sl_strlen(SL_SID_PDP_CERT_DEV_TYPE_SUFFIX) + 1;
   char dev_type_production[dev_type_total_len];
   memset(dev_type_production, 0, dev_type_total_len);
   memcpy(&dev_type_production[0], (const char *)req.dev_type, req.dev_type_len);
-  memcpy(&dev_type_production[req.dev_type_len], SL_SID_PDP_CERT_DEV_TYPE_SUFFIX, strlen(SL_SID_PDP_CERT_DEV_TYPE_SUFFIX));
+  memcpy(&dev_type_production[req.dev_type_len], SL_SID_PDP_CERT_DEV_TYPE_SUFFIX, sl_strlen(SL_SID_PDP_CERT_DEV_TYPE_SUFFIX));
 
   uint16_t dsn_total_len = req.dsn_len + 1;
   char dsn[dsn_total_len];

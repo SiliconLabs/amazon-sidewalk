@@ -38,6 +38,10 @@
 #ifndef SL_SIDEWALK_UTILS_H
 #define SL_SIDEWALK_UTILS_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 // -----------------------------------------------------------------------------
 //                                   Includes
 // -----------------------------------------------------------------------------
@@ -53,11 +57,11 @@
 
 // The SMSN size as string length: each bytes contains two chars and the end of
 // string character is added also.
-#define SL_SIDEWALK_UTILS_SMSN_STR_LENGTH ((SID_PAL_MFG_STORE_SMSN_SIZE * 2) + 1)
+#define SL_SIDEWALK_UTILS_SMSN_STR_LENGTH             ((SID_PAL_MFG_STORE_SMSN_SIZE * 2) + 1)
 #define SL_SIDEWALK_UTILS_CAPABILITIES_STR_MAX_LENGTH (255)
-#define SL_SIDEWALK_UTILS_MAX_STORED_COMMANDS_NUM 5
-#define SL_SIDEWALK_UTILS_MAX_COMMAND_LENGTH_CHAR 255
-#define SL_SIDEWALK_UTILS_MAX_PENDING_MESSAGES_NUM 5
+#define SL_SIDEWALK_UTILS_MAX_STORED_COMMANDS_NUM     (5)
+#define SL_SIDEWALK_UTILS_MAX_COMMAND_LENGTH_CHAR     (255)
+#define SL_SIDEWALK_UTILS_MAX_PENDING_MESSAGES_NUM    (5)
 
 // -----------------------------------------------------------------------------
 //                                Global Variables
@@ -83,9 +87,13 @@ void sl_sidewalk_utils_get_smsn_as_str(char *smsn_buffer, uint16_t smsn_buffer_l
 /**************************************************************************//**
  * This function provides the enabled capabilities as a string.
  *
- * @param my_param The output buffer for the capabilities as string
- * @param my_param Length of the output buffer
+ * @param capablities_str The output buffer for the capabilities as string
+ * @param capablities_str_length Length of the output buffer
  *****************************************************************************/
 void sl_sidewalk_utils_get_capabilities_str(char *capablities_str, uint8_t capablities_str_length);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif // SL_SIDEWALK_UTILS_H

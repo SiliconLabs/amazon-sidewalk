@@ -11,6 +11,9 @@ description: >
   Button press duration for various lengths is configurable.
 category: "Application|Utility"
 quality: "production"
+metadata:
+  sbom:
+    license: Zlib
 root_path: "component/overridden_gsdk_components/app/common/util/app_button_press"
 config_file:
   - path: "config/app_button_press_config.h"

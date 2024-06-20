@@ -38,6 +38,10 @@
 #ifndef SL_SIDEWALK_PDP_PRIV_KEY_PROV_H
 #define SL_SIDEWALK_PDP_PRIV_KEY_PROV_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 // -----------------------------------------------------------------------------
 //                                   Includes
 // -----------------------------------------------------------------------------
@@ -135,5 +139,9 @@ sl_sid_pdp_status_t sl_sid_pdp_priv_key_prov_write_nvm3(const uint8_t * const in
  * @retval SL_SID_PDP_STATUS_SUCCESS Success
  ******************************************************************************/
 sl_sid_pdp_status_t sl_sid_pdp_priv_key_prov_inject_key(const uint8_t * const in, uint16_t in_len, uint8_t * const out, uint16_t out_size, uint16_t * const out_len);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif // SL_SIDEWALK_PDP_PRIV_KEY_PROV_H

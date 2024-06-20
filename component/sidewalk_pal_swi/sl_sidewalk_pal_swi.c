@@ -42,7 +42,7 @@
 #include <em_core.h>
 #include <sid_pal_swi_ifc.h>
 #include <sid_pal_log_ifc.h>
-#include "sl_sidewalk_pal_config.h"
+#include "sl_sidewalk_pal_swi_config.h"
 #if (SL_SIDEWALK_PAL_SWI_IMPL_METHOD == SL_SIDEWALK_PAL_SWI_IMPL_METHOD_RTOS_THREAD)
 #include <FreeRTOS.h>
 #include <task.h>

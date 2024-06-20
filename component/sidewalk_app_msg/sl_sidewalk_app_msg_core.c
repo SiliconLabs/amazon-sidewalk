@@ -32,8 +32,7 @@ static sl_sid_app_msg_st_t serialize(sl_sid_app_msg_t *msg, uint8_t **pkt, uint1
 static sl_sid_app_msg_st_t deserialize(sl_sid_app_msg_t **msg, uint8_t *pkt, uint16_t pkt_len);
 static sl_sid_app_msg_st_t validate(sl_sid_app_msg_t *msg);
 static sl_sid_app_msg_st_t receive(sl_sid_app_msg_t **rcvd_app_msg, const struct sid_msg *rcvd_sid_msg);
-static inline sl_sid_app_msg_st_t sli_sid_app_msg_prepare_op_for_send(
-  sl_sid_app_msg_op_t op_rcv, sl_sid_app_msg_op_t *op_send);
+static sl_sid_app_msg_st_t sli_sid_app_msg_prepare_op_for_send(sl_sid_app_msg_op_t op_rcv, sl_sid_app_msg_op_t *op_send);
 
 /*******************************************************************************
  *** GLOBAL FUNCTIONS
@@ -174,8 +173,7 @@ static sl_sid_app_msg_st_t receive(sl_sid_app_msg_t **app_msg, const struct sid_
   return SL_SID_APP_MSG_ERR_ST_SUCCESS;
 }
 
-static inline sl_sid_app_msg_st_t sli_sid_app_msg_prepare_op_for_send(
-  sl_sid_app_msg_op_t op_rcv, sl_sid_app_msg_op_t *op_send)
+static sl_sid_app_msg_st_t sli_sid_app_msg_prepare_op_for_send(sl_sid_app_msg_op_t op_rcv, sl_sid_app_msg_op_t *op_send)
 {
   if (op_rcv == SL_SID_APP_MSG_OP_NTFY) {
     *op_send = SL_SID_APP_MSG_OP_NTFY;

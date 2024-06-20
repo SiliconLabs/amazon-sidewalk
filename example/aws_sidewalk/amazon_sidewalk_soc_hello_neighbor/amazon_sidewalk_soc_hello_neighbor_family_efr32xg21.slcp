@@ -7,7 +7,7 @@ category: Example|AWS IoT
 
 sdk_extension:
   - id: sidewalk
-    version: 2.0.1
+    version: 2.1.0
 
 source:
   - path: main.c
@@ -45,9 +45,9 @@ component:
 - id: cli
   instance: [inst]
 - id: device_init
+- id: clock_manager
 - id: iostream_stdlib_config
 - id: sleeptimer
-- id: udelay
 - id: psa_crypto
 - id: psa_its
 - id: psa_crypto_ecc
@@ -67,9 +67,9 @@ component:
 - id: app_assert
 - id: freertos
 - id: freertos_heap_4
-- id: device_init_dpll
 - id: printf
 - id: rail_lib_multiprotocol
+- id: memory_manager
 
 configuration:
   - name: SL_SIDEWALK_COMMON_DEFAULT_LINK_TYPE
@@ -91,25 +91,25 @@ configuration:
     value: 0
     condition: [iostream_uart]
   - name: configMINIMAL_STACK_SIZE
-    value: 2048
+    value: 160
   - name: configTOTAL_HEAP_SIZE
-    value: 20480
+    value: 15360
   - name: SL_STACK_SIZE
     value: 4096
   - name: SL_HEAP_SIZE
-    value: 15360
+    value: 2048
   - name: NVM3_DEFAULT_NVM_SIZE
     value: 24576
   - name: SL_BT_RTOS_LINK_LAYER_TASK_STACK_SIZE
-    value: 2000
+    value: 1000
   - name: SL_BT_RTOS_HOST_STACK_TASK_STACK_SIZE
-    value: 4000
+    value: 2000
   - name: SL_BT_RTOS_EVENT_HANDLER_STACK_SIZE
     value: 4000
   - name: SL_BT_CONFIG_BUFFER_SIZE
-    value: 6300
+    value: 3150
   - name: configTIMER_TASK_STACK_DEPTH
-    value: 1024
+    value: 160
   - name: APP_LOG_AUTO_NL
     value: 1
   - name: SL_BT_CONFIG_MIN_TX_POWER

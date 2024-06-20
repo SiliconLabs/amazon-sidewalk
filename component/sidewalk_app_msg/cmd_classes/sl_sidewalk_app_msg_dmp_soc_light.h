@@ -3,7 +3,7 @@
  * @brief sidewalk application message component - DMP SOC Light application
  *******************************************************************************
  * # License
- * <b>Copyright 2023 Silicon Laboratories Inc. www.silabs.com</b>
+ * <b>Copyright 2024 Silicon Laboratories Inc. www.silabs.com</b>
  *******************************************************************************
  *
  * The licensor of this software is Silicon Laboratories Inc. Your use of this
@@ -17,6 +17,10 @@
 
 #ifndef SL_SID_APP_MSG_DMP_SOC_LIGHT_H
 #define SL_SID_APP_MSG_DMP_SOC_LIGHT_H
+
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 /*******************************************************************************
  *** INCLUDES
@@ -45,7 +49,21 @@ typedef enum {
   //               optional: current counter value
   //    2. dev -> cloud (ntfy)
   //       ntfy_t: sli_sid_app_msg_dmp_soc_light_update_counter_ntfy_t
-  SLI_SID_APP_MSG_CMD_ID_DMP_SOC_LIGHT_UPDATE_COUNTER
+  SLI_SID_APP_MSG_CMD_ID_DMP_SOC_LIGHT_UPDATE_COUNTER,
+  // button press
+  //    1. cloud -> dev (set) --- dev -> cloud (ack)
+  //       set_t:  sli_sid_app_msg_dmp_soc_light_button_press_set_t
+  //       ack_t:  sl_sid_app_msg_ack_msg_t
+  //    2. dev -> cloud (ntfy)
+  //       ntfy_t: sli_sid_app_msg_dmp_soc_light_button_press_ntfy_t
+  SLI_SID_APP_MSG_CMD_ID_DMP_SOC_LIGHT_BUTTON_PRESS,
+  // toggle led
+  //    1. cloud -> dev (set) --- dev -> cloud (ack)
+  //       set_t:  sli_sid_app_msg_dmp_soc_light_toggle_led_set_t
+  //       ack_t:  sl_sid_app_msg_ack_msg_t
+  //    2. dev -> cloud (ntfy)
+  //       ntfy_t: sli_sid_app_msg_dmp_soc_light_toggle_led_ntfy_t
+  SLI_SID_APP_MSG_CMD_ID_DMP_SOC_LIGHT_TOGGLE_LED
 } sli_sid_app_msg_cmd_id_dmp_soc_light_t;
 
 // Protocol level structures
@@ -62,8 +80,31 @@ typedef struct {
   uint8_t counter;
 } SL_ATTRIBUTE_PACKED sli_sid_app_msg_dmp_soc_light_update_counter_ntfy_t;
 
+// toggle led (ntfy)
+typedef struct {
+  uint8_t state: 8; // sl_led_state_t
+} SL_ATTRIBUTE_PACKED sli_sid_app_msg_dmp_soc_light_toggle_led_ntfy_t;
+
+// toggle led (set)
+typedef struct {
+  uint8_t led;
+} SL_ATTRIBUTE_PACKED sli_sid_app_msg_dmp_soc_light_toggle_led_set_t;
+
+// button press (set)
+typedef struct {
+  uint8_t button: 3;
+  uint8_t duration: 2;  // APP_BUTTON_PRESS_DURATION_* defines in app_button_press.h
+  uint8_t rfu: 3;
+} SL_ATTRIBUTE_PACKED sli_sid_app_msg_dmp_soc_light_button_press_set_t;
+
 // Update counter send parameters for application access
 typedef sli_sid_app_msg_dmp_soc_light_update_counter_ntfy_t sl_sid_app_msg_dmp_soc_light_update_counter_param_send_t;
+
+// toggle led send parameters for application access
+typedef sli_sid_app_msg_dmp_soc_light_toggle_led_ntfy_t sl_sid_app_msg_dmp_soc_light_toggle_led_param_send_t;
+
+// button press send parameters for application access
+typedef sli_sid_app_msg_dmp_soc_light_button_press_set_t sl_sid_app_msg_dmp_soc_light_button_press_param_send_t;
 
 // Application level structures
 typedef struct {
@@ -78,6 +119,19 @@ typedef struct {
   sl_sid_app_msg_dmp_soc_light_update_counter_param_send_t param_send;
 } sl_sid_app_msg_dmp_soc_light_update_counter_ctx_t;
 
+typedef struct {
+  sl_sid_app_msg_handler_t hdl;
+  sl_sid_app_msg_ack_msg_t param_ack;
+  sl_sid_app_msg_dmp_soc_light_toggle_led_param_send_t param_send;
+} sl_sid_app_msg_dmp_soc_light_toggle_led_ctx_t;
+
+typedef struct {
+  sl_sid_app_msg_handler_t hdl;
+  sl_sid_app_msg_ack_msg_t param_ack;
+  sl_sid_app_msg_dmp_soc_light_button_press_param_send_t param_send;
+  bool is_emulation;
+} sl_sid_app_msg_dmp_soc_light_button_press_ctx_t;
+
 /*******************************************************************************
  *** PUBLIC FUNCTIONS
  ******************************************************************************/
@@ -87,7 +141,7 @@ sl_sid_app_msg_st_t sli_sid_app_msg_dmp_soc_light_cmd_handler(sl_sid_app_msg_t *
 /***************************************************************************//**
  * @brief
  *   Prepares corresponding application message to be sent.
- * 
+ *
  * @note
  *   Application has to declare the application message and pass its reference
  *   to the function. Allocated memory of the declared message will be used for
@@ -95,7 +149,7 @@ sl_sid_app_msg_st_t sli_sid_app_msg_dmp_soc_light_cmd_handler(sl_sid_app_msg_t *
  *
  * @param[in] ctx Related application message context
  * @param[out] send_app_msg Application message to be sent
- * 
+ *
  * @return
  *   Status code
  ******************************************************************************/
@@ -105,7 +159,7 @@ sl_sid_app_msg_st_t sl_sid_app_msg_dmp_soc_light_ble_start_stop_prepare_send(
 /***************************************************************************//**
  * @brief
  *   Prepares corresponding application message to be sent.
- * 
+ *
  * @note
  *   Application has to declare the application message and pass its reference
  *   to the function. Allocated memory of the declared message will be used for
@@ -113,7 +167,7 @@ sl_sid_app_msg_st_t sl_sid_app_msg_dmp_soc_light_ble_start_stop_prepare_send(
  *
  * @param[in] ctx Related application message context
  * @param[out] send_app_msg Application message to be sent
- * 
+ *
  * @return
  *   Status code
  ******************************************************************************/
@@ -122,9 +176,45 @@ sl_sid_app_msg_st_t sl_sid_app_msg_dmp_soc_light_update_counter_prepare_send(
 
 /***************************************************************************//**
  * @brief
+ *   Prepares corresponding application message to be sent.
+ *
+ * @note
+ *   Application has to declare the application message and pass its reference
+ *   to the function. Allocated memory of the declared message will be used for
+ *   serialization.
+ *
+ * @param[in] ctx Related application message context
+ * @param[out] send_app_msg Application message to be sent
+ *
+ * @return
+ *   Status code
+ ******************************************************************************/
+sl_sid_app_msg_st_t sl_sid_app_msg_dmp_soc_light_toggle_led_prepare_send(
+  sl_sid_app_msg_dmp_soc_light_toggle_led_ctx_t *ctx, sl_sid_app_msg_t *send_app_msg);
+
+/***************************************************************************//**
+ * @brief
+ *   Prepares corresponding application message to be sent.
+ *
+ * @note
+ *   Application has to declare the application message and pass its reference
+ *   to the function. Allocated memory of the declared message will be used for
+ *   serialization.
+ *
+ * @param[in] ctx Related application message context
+ * @param[out] send_app_msg Application message to be sent
+ *
+ * @return
+ *   Status code
+ ******************************************************************************/
+sl_sid_app_msg_st_t sl_sid_app_msg_dmp_soc_light_button_press_prepare_send(
+  sl_sid_app_msg_dmp_soc_light_button_press_ctx_t *ctx, sl_sid_app_msg_t *send_app_msg);
+
+/***************************************************************************//**
+ * @brief
  *   Callback function that is called when the corresponding application message
  *   is received. It has to be implemented by the application.
- * 
+ *
  * @note
  *   Context has to be copied for further operation(s) as it is no longer valid
  *   after the execution of the callback.
@@ -137,7 +227,7 @@ void sl_sid_app_msg_dmp_soc_light_ble_start_stop_cb(sl_sid_app_msg_dmp_soc_light
  * @brief
  *   Callback function that is called when the corresponding application message
  *   is received. It has to be implemented by the application.
- * 
+ *
  * @note
  *   Context has to be copied for further operation(s) as it is no longer valid
  *   after the execution of the callback.
@@ -145,5 +235,35 @@ void sl_sid_app_msg_dmp_soc_light_ble_start_stop_cb(sl_sid_app_msg_dmp_soc_light
  * @param[in] ctx Corresponding application message context
  ******************************************************************************/
 void sl_sid_app_msg_dmp_soc_light_update_counter_cb(sl_sid_app_msg_dmp_soc_light_update_counter_ctx_t *ctx);
+
+/***************************************************************************//**
+ * @brief
+ *   Callback function that is called when the corresponding application message
+ *   is received. It has to be implemented by the application.
+ *
+ * @note
+ *   Context has to be copied for further operation(s) as it is no longer valid
+ *   after the execution of the callback.
+ *
+ * @param[in] ctx Corresponding application message context
+ ******************************************************************************/
+void sl_sid_app_msg_dmp_soc_light_toggle_led_cb(sl_sid_app_msg_dmp_soc_light_toggle_led_ctx_t *ctx);
+
+/***************************************************************************//**
+ * @brief
+ *   Callback function that is called when the corresponding application message
+ *   is received. It has to be implemented by the application.
+ *
+ * @note
+ *   Context has to be copied for further operation(s) as it is no longer valid
+ *   after the execution of the callback.
+ *
+ * @param[in] ctx Corresponding application message context
+ ******************************************************************************/
+void sl_sid_app_msg_dmp_soc_light_button_press_cb(sl_sid_app_msg_dmp_soc_light_button_press_ctx_t *ctx);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif  // SL_SID_APP_MSG_DMP_SOC_LIGHT_H

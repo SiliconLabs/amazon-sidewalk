@@ -42,6 +42,7 @@
 #include "sid_pal_common_ifc.h"
 #include "sid_api.h"
 #include "sl_system_kernel.h"
+#include "sl_sidewalk_common_config.h"
 
 #if (defined(SL_FSK_SUPPORTED) || defined(SL_CSS_SUPPORTED))
 #include "app_subghz_config.h"
@@ -53,6 +54,8 @@
 // Main task stack size
 #if defined(SL_EFR32XG24_LITE_SUPPORTED)
 #define MAIN_TASK_STACK_SIZE    (2048 / sizeof(configSTACK_DEPTH_TYPE))
+#elif defined(EFR32XG27)
+#define MAIN_TASK_STACK_SIZE    (3000 / sizeof(configSTACK_DEPTH_TYPE))
 #else
 #define MAIN_TASK_STACK_SIZE    (4096 / sizeof(configSTACK_DEPTH_TYPE))
 #endif
@@ -88,7 +91,7 @@ void app_init(void)
   // Initialize the Silabs system
   sl_system_init();
 
-  app_log_info("app: app started\n");
+  app_log_info("app: cli v%d", SL_SIDEWALK_APP_VERSION);
 
   platform_parameters_t platform_parameters = {
 #if defined(SL_RADIO_NATIVE)
@@ -100,9 +103,9 @@ void app_init(void)
 
   sid_error_t ret_code = sid_platform_init(&platform_parameters);
   if (ret_code != SID_ERROR_NONE) {
-    app_log_error("app: sid platform init err: %d\n", ret_code);
+    app_log_error("app: sid platform init err: %d", ret_code);
   }
-  app_assert(ret_code == SID_ERROR_NONE, "app: sid platform init failed\n");
+  app_assert(ret_code == SID_ERROR_NONE, "app: sid platform init failed");
 
   // Application context creation
   static app_context_t app_context =
@@ -119,7 +122,7 @@ void app_init(void)
                                   &app_context,
                                   1,
                                   &app_context.main_task);
-  app_assert(status == pdPASS, "app: main task creation failed\n");
+  app_assert(status == pdPASS, "app: main task creation failed");
 
   // Start the kernel. Task(s) created in app_init() will start running.
   sl_system_kernel_start();
