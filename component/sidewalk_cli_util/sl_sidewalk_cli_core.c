@@ -37,6 +37,7 @@
 #include <string.h>
 
 #include "sl_cli.h"
+#include "sl_sidewalk_log_app.h"
 #include "sl_sidewalk_cli_core.h"
 #include "sl_sidewalk_cli_util.h"
 #include "sl_cmsis_os2_common.h"
@@ -125,17 +126,17 @@ void sl_sidewalk_cli_util_set_settings(sl_cli_command_arg_t *arguments)
 
   if (argument_count == 0 || (!strcmp(sl_cli_get_argument_string(arguments, 0), "help") && argument_count == 1)) {
     if (sl_sidewalk_cli_util_help(NULL, 0) != SL_STATUS_OK) {
-      printf("[Failed: unable to get the set help]\r\n");
+      SL_SID_LOG_APP_ERROR("[Failed: unable to get the set help]");
     }
   } else if (argument_count == 0 || (!strcmp(sl_cli_get_argument_string(arguments, argument_count - 1), "help"))) {
     domain_and_key = (char *) sl_cli_get_argument_string(arguments, 0);
     value = NULL;
     if (sl_sidewalk_cli_util_help(domain_and_key, 0) != SL_STATUS_OK) {
-      printf("[Failed: unable to get the get help of : %s]\r\n", domain_and_key);
+      SL_SID_LOG_APP_ERROR("[Failed: unable to get the get help of : %s]", domain_and_key);
     }
   } else {
     if (sl_cli_get_argument_count(arguments) != 2) {
-      printf("[Failed: incorrect number of arguments]\r\n");
+      SL_SID_LOG_APP_ERROR("[Failed: incorrect number of arguments]");
       cli_mutex_unlock();
       return;
     }
@@ -144,13 +145,13 @@ void sl_sidewalk_cli_util_set_settings(sl_cli_command_arg_t *arguments)
     value = sl_cli_get_argument_string(arguments, 1);
 
     if (value == NULL || domain_and_key == NULL) {
-      printf("[Failed: missing %s]\r\n", value == NULL ? "value" : "key");
+      SL_SID_LOG_APP_ERROR("[Failed: missing %s]", value == NULL ? "value" : "key");
       cli_mutex_unlock();
       return;
     }
 
     if (sl_sidewalk_cli_util_set(domain_and_key, value) != SL_STATUS_OK) {
-      printf("[Failed: unable to set the key: %s]\r\n", domain_and_key);
+      SL_SID_LOG_APP_ERROR("[Failed: unable to set the key: %s]", domain_and_key);
     }
 
 #if (SIDEWALK_CLI_AUTO_SAVE)
@@ -174,23 +175,23 @@ void sl_sidewalk_cli_util_get_settings(sl_cli_command_arg_t *arguments)
 
   if (argument_count == 0 || (!strcmp(sl_cli_get_argument_string(arguments, 0), "help") && argument_count == 1)) {
     if (sl_sidewalk_cli_util_help(NULL, 1) != SL_STATUS_OK) {
-      printf("[Failed: unable to get the get help]\r\n");
+      SL_SID_LOG_APP_ERROR("[Failed: unable to get the get help]");
     }
   } else if (argument_count == 0 || (!strcmp(sl_cli_get_argument_string(arguments, argument_count - 1), "help"))) {
     domain_and_key = (char *) sl_cli_get_argument_string(arguments, 0);
     if (sl_sidewalk_cli_util_help(domain_and_key, 1) != SL_STATUS_OK) {
-      printf("[Failed: unable to get the set help of : %s]\r\n", domain_and_key);
+      SL_SID_LOG_APP_ERROR("[Failed: unable to get the set help of : %s]", domain_and_key);
     }
   } else {
     if (sl_cli_get_argument_count(arguments) != 1) {
-      printf("[Failed: incorrect number of arguments]\r\n");
+      SL_SID_LOG_APP_ERROR("[Failed: incorrect number of arguments]");
       cli_mutex_unlock();
       return;
     }
 
     domain_and_key = (char *) sl_cli_get_argument_string(arguments, 0);
     if (sl_sidewalk_cli_util_get(domain_and_key) != SL_STATUS_OK) {
-      printf("[Failed: unable to get the key: %s]\r\n", domain_and_key);
+      SL_SID_LOG_APP_ERROR("[Failed: unable to get the key: %s]", domain_and_key);
     }
   }
 
@@ -209,9 +210,9 @@ void sl_sidewalk_cli_util_save_settings(sl_cli_command_arg_t *arguments)
 
   ret = sl_sidewalk_cli_util_save();
   if (ret == SL_STATUS_OK) {
-    printf("[Settings saved]\r\n");
+    SL_SID_LOG_APP_INFO("[Settings saved]");
   } else {
-    printf("[Failed to save settings: %lu]\r\n", ret);
+    SL_SID_LOG_APP_ERROR("[Failed to save settings: %lu]", ret);
   }
 
   cli_mutex_unlock();
@@ -227,7 +228,7 @@ void sl_sidewalk_cli_util_reset_settings(sl_cli_command_arg_t *arguments)
   cli_mutex_lock();
 
   sl_sidewalk_cli_util_reset();
-  printf("[Settings reset]\r\n");
+  SL_SID_LOG_APP_INFO("[Settings reset]");
 
   cli_mutex_unlock();
 }

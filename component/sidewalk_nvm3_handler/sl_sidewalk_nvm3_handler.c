@@ -45,8 +45,8 @@
 #include "nvm3_hal_flash.h"
 #include "nvm3_default.h"
 #include "nvm3_default_config.h"
-#include "app_log.h"
 #include "nvm3_manager.h"
+#include "sl_sidewalk_log_pal.h"
 
 // -----------------------------------------------------------------------------
 //                              Macros and Typedefs
@@ -82,7 +82,7 @@ void sl_sidewalk_nvm3_handler_init(void)
 {
   // Open nvm3 part for read/write
   if (nvm3_open(nvm3_defaultHandle, nvm3_defaultInit) != ECODE_NVM3_OK) {
-    app_log_warning("NVM3 init failed");
+    SL_SID_LOG_PAL_WARNING("pal nvm: NVM3 init failed");
   }
 }
 

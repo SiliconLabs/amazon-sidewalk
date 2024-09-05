@@ -39,7 +39,6 @@
 //                                   Includes
 // -----------------------------------------------------------------------------
 
-#include <printf.h>
 #include <stdlib.h>
 #include <string.h>
 

@@ -11,6 +11,11 @@ root_path: "component/sidewalk_led_manager"
 
 provides:
   - name: "sidewalk_led_manager"
+requires:
+  - name: "sl_common"
+  - name: "simple_led"
+  - name: "sidewalk_log_pal_rtt"
+  - name: "led"
 source:
   - path: "sl_sidewalk_led_manager.c"
 include:

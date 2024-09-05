@@ -14,7 +14,7 @@ This OOB demonstration relies on AWS resources in the cloud that have already be
 
 If the KG100S radio board has been erased, the original demo functionality can be restored by flashing the pre-compiled *Amazon Sidewalk - SoC Bluetooth sub-GHz OOB* application image to the device.
 
-> **⚠ WARNING ⚠**: The OOB demo relies on device-specific credentials pre-flashed to the USERDATA page on your device. This page is not affected by masserase operations, but can be explicitly erased by a targeted page erase. [Credentials Backup/Restore Feature](https://docs.silabs.com/amazon-sidewalk/latest/sidewalk-developers-guide/application-development#credentials-backup-restore-feature) describes a process by which these credentials are used to restore a working out-of-the-box demo application after a masserase. However, care should be taken to NOT perform a page erase of USERDATA, or the OOB demo cannot be restored.
+> **⚠ WARNING ⚠**: The OOB demo relies on device-specific credentials pre-flashed to the USERDATA page on your device. This page is not affected by masserase operations, but can be explicitly erased by a targeted page erase. [Credentials Backup/Restore Feature](https://docs.silabs.com/amazon-sidewalk/latest/sidewalk-app-development/#credentials-backup-restore-feature) describes a process by which these credentials are used to restore a working out-of-the-box demo application after a masserase. However, care should be taken to NOT perform a page erase of USERDATA, or the OOB demo cannot be restored.
 
 To recover the demo application, perform the following tasks in Simplicity Studio:
 

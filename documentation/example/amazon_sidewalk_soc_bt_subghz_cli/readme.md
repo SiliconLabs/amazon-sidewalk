@@ -144,7 +144,7 @@ Settings in the *css* section are directly related to the Sidewalk CSS stack beh
 
 ## Interacting with the Cloud
 
-Gain additional insight on network activity from the cloud perspective by using the techniques described in [Getting Started: Interacting with the Cloud](https://docs.silabs.com/amazon-sidewalk/latest/interacting-with-the-cloud).
+Gain additional insight on network activity from the cloud perspective by using the techniques described in [Getting Started: Interacting with the Cloud](https://docs.silabs.com/amazon-sidewalk/latest/sidewalk-getting-started/interacting-with-the-cloud).
 
 ## Report Bugs & Get Support
 

@@ -72,18 +72,17 @@ struct sl_sidewalk_cli_util_entry_t;
  * @brief Function pointer for setter function
  *****************************************************************************/
 
-
 typedef sl_status_t (*sl_sidewalk_cli_util_set_key_handler)(const char *value_str,
-                                                       const char *key_str,
-                                                       const struct sl_sidewalk_cli_util_entry_t *entry);
+                                                            const char *key_str,
+                                                            const struct sl_sidewalk_cli_util_entry_t *entry);
 
 /**************************************************************************//**
  * @brief Function pointer for getter function
  *****************************************************************************/
 
 typedef sl_status_t (*sl_sidewalk_cli_util_get_key_handler)(char *value_str,
-                                                       const char *key_str,
-                                                       const struct sl_sidewalk_cli_util_entry_t *entry);
+                                                            const char *key_str,
+                                                            const struct sl_sidewalk_cli_util_entry_t *entry);
 
 /**************************************************************************//**
  * @brief Structure for settings entry
@@ -138,7 +137,6 @@ void sl_sidewalk_cli_util_settings_init(void);
  *****************************************************************************/
 sl_status_t sl_sidewalk_cli_util_save(void);
 
-
 /**************************************************************************//**
  * @brief Reset settings.
  * @details This function deletes settings by NVM and reverts their default value.
@@ -180,8 +178,8 @@ sl_status_t sl_sidewalk_cli_util_help(char *const domain_and_key, bool get);
  * @return sl_status_t SL_STATUS_OK on success, SL_STATUS_FAIL on error
  *****************************************************************************/
 sl_status_t sl_sidewalk_cli_util_set_string(const char *value_str,
-                                       const char *key_str,
-                                       const sl_sidewalk_cli_util_entry_t *entry);
+                                            const char *key_str,
+                                            const sl_sidewalk_cli_util_entry_t *entry);
 
 /**************************************************************************//**
  * @brief Get string from app settings.
@@ -192,8 +190,8 @@ sl_status_t sl_sidewalk_cli_util_set_string(const char *value_str,
  * @return sl_status_t SL_STATUS_OK on success, SL_STATUS_FAIL on error
  *****************************************************************************/
 sl_status_t sl_sidewalk_cli_util_settings_get_string(char *value_str,
-                                       const char *key_str,
-                                       const sl_sidewalk_cli_util_entry_t *entry);
+                                                     const char *key_str,
+                                                     const sl_sidewalk_cli_util_entry_t *entry);
 
 /**************************************************************************//**
  * @brief Set an integer in app settings.
@@ -204,8 +202,8 @@ sl_status_t sl_sidewalk_cli_util_settings_get_string(char *value_str,
  * @return sl_status_t SL_STATUS_OK on success, SL_STATUS_FAIL on error
  *****************************************************************************/
 sl_status_t sl_sidewalk_cli_util_set_integer(const char *value_str,
-                                        const char *key_str,
-                                        const sl_sidewalk_cli_util_entry_t *entry);
+                                             const char *key_str,
+                                             const sl_sidewalk_cli_util_entry_t *entry);
 
 /**************************************************************************//**
  * @brief Get an integer from app settings.
@@ -216,9 +214,8 @@ sl_status_t sl_sidewalk_cli_util_set_integer(const char *value_str,
  * @return sl_status_t SL_STATUS_OK on success, SL_STATUS_FAIL on error
  *****************************************************************************/
 sl_status_t sl_sidewalk_cli_util_settings_get_integer(char *value_str,
-                                        const char *key_str,
-                                        const sl_sidewalk_cli_util_entry_t *entry);
-
+                                                      const char *key_str,
+                                                      const sl_sidewalk_cli_util_entry_t *entry);
 
 #ifdef __cplusplus
 }

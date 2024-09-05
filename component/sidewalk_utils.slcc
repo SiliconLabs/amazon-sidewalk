@@ -11,6 +11,9 @@ root_path: "component/sidewalk_utils"
 
 provides:
   - name: "sidewalk_utils"
+requires:
+  - name: "component_catalog"
+  - name: "sidewalk_ble_subghz"
 source:
   - path: "sl_sidewalk_utils.c"
 include:

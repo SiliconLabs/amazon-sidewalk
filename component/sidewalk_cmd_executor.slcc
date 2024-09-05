@@ -13,6 +13,12 @@ provides:
   - name: "sidewalk_cmd_executor"
 requires:
   - name: "sidewalk_sender"
+  - name: "freertos"
+  - name: "sl_common"
+  - name: "sidewalk_utils"
+  - name: "simple_led"
+  - name: "sidewalk_log_app_rtt"
+  - name: "sidewalk_ble_subghz"
 source:
   - path: "sl_sidewalk_cmd_executor.c"
 include:

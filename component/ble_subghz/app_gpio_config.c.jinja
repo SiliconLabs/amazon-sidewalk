@@ -38,6 +38,10 @@ struct GPIO_LookupItem gpio_lookup_table[] =
                             .Pin          = {{pinout['pin']}},
                             .callback     = NULL,
                             .callbackarg  = NULL,
+                            .PinConfig    = {   .dir = SID_PAL_GPIO_DIRECTION_INPUT,
+                                                .input_mode = SID_PAL_GPIO_INPUT_DISCONNECT,
+                                                .output_mode = SID_PAL_GPIO_OUTPUT_PUSH_PULL,
+                                                .pull_mode = SID_PAL_GPIO_PULL_NONE},
                             .mode         = gpioModeDisabled,
                             .irq          = { .falling = false, .rising = false } },
 

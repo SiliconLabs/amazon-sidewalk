@@ -59,7 +59,7 @@ class ProvisionWrapper:
         else:
             self.commander = commander_executable
 
-        self.DEFAULT_BOARDS = ['xg21', 'xg24', 'xg28', 'xg23', 'xg25']
+        self.DEFAULT_BOARDS = ['xg21', 'xg23', 'xg24', 'xg25', 'xg26', 'xg27', 'xg28']
 
     def generate_mfg(self, target_family, output_dir, input_type, wireless_device_path=None, device_profile_path=None,
                      certificate_json=None, offset_addr=None):
@@ -74,7 +74,7 @@ class ProvisionWrapper:
         board = self.hardware_platform
 
         if board == BoardType.SiLabs or board == BoardType.All:
-            logger.info("  Generating MFG.S37 For SiLabs xG21, xG23, xG25, xG24 and xG28")
+            logger.info("  Generating MFG.S37 For SiLabs xG21, xG23, xG24, xG25, xG26, xG27 and xG28")
             sl_mfg_nvm3 = os.path.join(output_dir, "SiLabs_MFG.nvm3")
             sl_generic_mfg_s37 = os.path.join(output_dir, 'mfg.s37')
 

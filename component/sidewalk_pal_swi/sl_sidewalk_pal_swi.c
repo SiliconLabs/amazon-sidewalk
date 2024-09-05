@@ -41,24 +41,50 @@
 #include <em_device.h>
 #include <em_core.h>
 #include <sid_pal_swi_ifc.h>
-#include <sid_pal_log_ifc.h>
 #include "sl_sidewalk_pal_swi_config.h"
-#if (SL_SIDEWALK_PAL_SWI_IMPL_METHOD == SL_SIDEWALK_PAL_SWI_IMPL_METHOD_RTOS_THREAD)
+
+#if defined(SL_SIDEWALK_UNIT_TEST)
+  #include "sl_sidewalk_log_pal_mock.h"
+#else
+  #include "sl_sidewalk_log_pal.h"
+#endif
+
+#if defined(SL_SIDEWALK_PAL_SWI_IMPL_METHOD) && (SL_SIDEWALK_PAL_SWI_IMPL_METHOD == SL_SIDEWALK_PAL_SWI_IMPL_METHOD_RTOS_THREAD)
 #include <FreeRTOS.h>
 #include <task.h>
 #include <semphr.h>
 #else // SL_SIDEWALK_PAL_SWI_IMPL_METHOD_SWI_INTERRUPT
-#include <stddef.h>
+  #include <stddef.h>
+  #if defined(SL_CATALOG_POWER_MANAGER_PRESENT)
+    #include "sl_power_manager.h"
+  #endif
 #endif // SL_SIDEWALK_PAL_SWI_IMPL_METHOD_RTOS_THREAD
 
 // -----------------------------------------------------------------------------
 //                              Macros and Typedefs
 // -----------------------------------------------------------------------------
-#if (SL_SIDEWALK_PAL_SWI_IMPL_METHOD == SL_SIDEWALK_PAL_SWI_IMPL_METHOD_RTOS_THREAD)
-#define SWI_TASK_STACK_SIZE    (2048 / sizeof(configSTACK_DEPTH_TYPE))
-#else // SL_SIDEWALK_PAL_SWI_IMPL_METHOD_SWI_INTERRUPT
-#define SWI3_PRIORITY 5
-#endif // SL_SIDEWALK_PAL_SWI_IMPL_METHOD_RTOS_THREAD
+
+/*
+ * Workaround for an issue related to HFXO_RESTORE_LL_ACK_MISS_WORKAROUND.
+ * This workaround is only applicable when using an external radio and not using RADIO_DRIVER_RAIL.
+ * By default, this workaround is enabled.
+ * To disable this workaround, set HFXO_RESTORE_LL_ACK_MISS_WORKAROUND to 0 in the project configuration.
+ *
+ * Issue: In certain scenarios, after waking up the radio from EM2 and transmitting data, the MCU does not receive the ACK.
+ * This issue occurs because the MCU clock is latched on the HFRCO clock frequency (20 MHz) instead of the HFXO frequency.
+ *
+ * Workaround: To address this issue, the MCU clock frequency is restored to HFXO before processing the SWI ISR.
+ * This is achieved by adding an EM1 requirement before processing the SWI ISR and removing the EM1 requirement after processing the SWI ISR.
+ */
+#ifndef HFXO_RESTORE_LL_ACK_MISS_WORKAROUND
+  #if defined(SL_CATALOG_POWER_MANAGER_PRESENT)
+    #if defined(SL_RADIO_EXTERNAL) || !(defined(RADIO_DRIVER_RAIL) && RADIO_DRIVER_RAIL)
+      #define HFXO_RESTORE_LL_ACK_MISS_WORKAROUND 1
+    #endif
+  #else // POWER_MANAGER
+    #error "HFXO_RESTORE_LL_ACK_MISS_WORKAROUND not possible - dependency missing to power manager!"
+  #endif
+#endif // HFXO_RESTORE_LL_ACK_MISS_WORKAROUND
 
 // -----------------------------------------------------------------------------
 //                                Static Variables
@@ -66,7 +92,7 @@
 #if defined(SL_SIDEWALK_UNIT_TEST)
 extern bool is_init;
 extern sid_pal_swi_cb_t swi_callback;
-#if (SL_SIDEWALK_PAL_SWI_IMPL_METHOD == SL_SIDEWALK_PAL_SWI_IMPL_METHOD_RTOS_THREAD)
+#if defined(SL_SIDEWALK_PAL_SWI_IMPL_METHOD) && (SL_SIDEWALK_PAL_SWI_IMPL_METHOD == SL_SIDEWALK_PAL_SWI_IMPL_METHOD_RTOS_THREAD)
 #pragma message "Unit test enabled"
 extern SemaphoreHandle_t trigger;
 extern TaskHandle_t task_handle;
@@ -74,16 +100,16 @@ extern TaskHandle_t task_handle;
 #else
 static bool is_init = false;
 static sid_pal_swi_cb_t swi_callback = NULL;
-#if (SL_SIDEWALK_PAL_SWI_IMPL_METHOD == SL_SIDEWALK_PAL_SWI_IMPL_METHOD_RTOS_THREAD)
+#if defined(SL_SIDEWALK_PAL_SWI_IMPL_METHOD) && (SL_SIDEWALK_PAL_SWI_IMPL_METHOD == SL_SIDEWALK_PAL_SWI_IMPL_METHOD_RTOS_THREAD)
 static SemaphoreHandle_t trigger = NULL;
 static TaskHandle_t task_handle = NULL;
 #endif // SL_SIDEWALK_PAL_SWI_IMPL_METHOD_RTOS_THREAD
-#endif
+#endif // SL_SIDEWALK_UNIT_TEST
 
 // -----------------------------------------------------------------------------
 //                          Static Function Definitions
 // -----------------------------------------------------------------------------
-#if (SL_SIDEWALK_PAL_SWI_IMPL_METHOD == SL_SIDEWALK_PAL_SWI_IMPL_METHOD_RTOS_THREAD)
+#if defined(SL_SIDEWALK_PAL_SWI_IMPL_METHOD) && (SL_SIDEWALK_PAL_SWI_IMPL_METHOD == SL_SIDEWALK_PAL_SWI_IMPL_METHOD_RTOS_THREAD)
 static void swi_thread(void *context)
 {
   (void)context;
@@ -96,7 +122,7 @@ static void swi_thread(void *context)
     }
   }
 
-  SID_PAL_LOG_ERROR("pal: swi thread fatal err");
+  SL_SID_LOG_PAL_ERROR("pal swi: thread fatal err");
   task_handle = NULL;
   vTaskDelete(NULL);
 }
@@ -106,6 +132,9 @@ void SW3_IRQHandler(void)
   if (swi_callback != NULL) {
     swi_callback();
   }
+#if defined(HFXO_RESTORE_LL_ACK_MISS_WORKAROUND) && (HFXO_RESTORE_LL_ACK_MISS_WORKAROUND == 1)
+  sl_power_manager_remove_em_requirement(SL_POWER_MANAGER_EM1);
+#endif
 }
 #endif // SL_SIDEWALK_PAL_SWI_IMPL_METHOD_RTOS_THREAD
 
@@ -118,7 +147,7 @@ sid_error_t sid_pal_swi_init(void)
     return SID_ERROR_NONE;
   }
 
-#if (SL_SIDEWALK_PAL_SWI_IMPL_METHOD == SL_SIDEWALK_PAL_SWI_IMPL_METHOD_RTOS_THREAD)
+#if defined(SL_SIDEWALK_PAL_SWI_IMPL_METHOD) && (SL_SIDEWALK_PAL_SWI_IMPL_METHOD == SL_SIDEWALK_PAL_SWI_IMPL_METHOD_RTOS_THREAD)
   trigger = xSemaphoreCreateBinary();
   if (trigger == NULL) {
     return SID_ERROR_OOM;
@@ -129,13 +158,13 @@ sid_error_t sid_pal_swi_init(void)
     return SID_ERROR_OOM;
   }
 
-  SID_PAL_LOG_INFO("pal: swi task init ok");
+  SL_SID_LOG_PAL_INFO("pal swi: task init ok");
 #else
   NVIC_ClearPendingIRQ(SW3_IRQn);
   NVIC_SetPriority(SW3_IRQn, SWI3_PRIORITY);
   NVIC_EnableIRQ(SW3_IRQn);
 
-  SID_PAL_LOG_INFO("pal: swi interrupt init ok");
+  SL_SID_LOG_PAL_INFO("pal swi: interrupt init ok");
 #endif // SL_SIDEWALK_PAL_SWI_IMPL_METHOD_RTOS_THREAD
 
   is_init = true;
@@ -159,7 +188,7 @@ sid_error_t sid_pal_swi_start(sid_pal_swi_cb_t event_callback)
   }
   swi_callback = event_callback;
 
-#if SL_SIDEWALK_PAL_SWI_IMPL_METHOD == SL_SIDEWALK_PAL_SWI_IMPL_METHOD_SWI_INTERRUPT
+#if defined(SL_SIDEWALK_PAL_SWI_IMPL_METHOD) && (SL_SIDEWALK_PAL_SWI_IMPL_METHOD == SL_SIDEWALK_PAL_SWI_IMPL_METHOD_SWI_INTERRUPT)
   NVIC_ClearPendingIRQ(SW3_IRQn);
   NVIC_EnableIRQ(SW3_IRQn);
 #endif // SL_SIDEWALK_PAL_SWI_IMPL_METHOD_SWI_INTERRUPT
@@ -169,7 +198,7 @@ sid_error_t sid_pal_swi_start(sid_pal_swi_cb_t event_callback)
 
 sid_error_t sid_pal_swi_stop(void)
 {
-#if SL_SIDEWALK_PAL_SWI_IMPL_METHOD == SL_SIDEWALK_PAL_SWI_IMPL_METHOD_SWI_INTERRUPT
+#if defined(SL_SIDEWALK_PAL_SWI_IMPL_METHOD) && (SL_SIDEWALK_PAL_SWI_IMPL_METHOD == SL_SIDEWALK_PAL_SWI_IMPL_METHOD_SWI_INTERRUPT)
   NVIC_ClearPendingIRQ(SW3_IRQn);
   NVIC_DisableIRQ(SW3_IRQn);
 #endif // SL_SIDEWALK_PAL_SWI_IMPL_METHOD_SWI_INTERRUPT
@@ -183,7 +212,7 @@ inline sid_error_t sid_pal_swi_trigger(void)
     return SID_ERROR_INVALID_STATE;
   }
 
-#if (SL_SIDEWALK_PAL_SWI_IMPL_METHOD == SL_SIDEWALK_PAL_SWI_IMPL_METHOD_RTOS_THREAD)
+#if defined(SL_SIDEWALK_PAL_SWI_IMPL_METHOD) && (SL_SIDEWALK_PAL_SWI_IMPL_METHOD == SL_SIDEWALK_PAL_SWI_IMPL_METHOD_RTOS_THREAD)
   // note: to avoid giving a semaphore that is already given
   if (uxSemaphoreGetCount(trigger) > 0) {
     return SID_ERROR_NONE;
@@ -200,10 +229,15 @@ inline sid_error_t sid_pal_swi_trigger(void)
   }
 
   if (semaphore_give_status != pdTRUE) {
-    SID_PAL_LOG_ERROR("pal: swi semaphore cannot be given: %d", semaphore_give_status);
+    SL_SID_LOG_PAL_ERROR("pal swi: semaphore cannot be given: %d", semaphore_give_status);
     return SID_ERROR_NOT_FOUND;
   }
 #else // SL_SIDEWALK_PAL_SWI_IMPL_METHOD_SWI_INTERRUPT
+
+#if defined(HFXO_RESTORE_LL_ACK_MISS_WORKAROUND) && (HFXO_RESTORE_LL_ACK_MISS_WORKAROUND == 1)
+  sl_power_manager_add_em_requirement(SL_POWER_MANAGER_EM1);
+#endif
+
   NVIC_SetPendingIRQ(SW3_IRQn);
 #endif // SL_SIDEWALK_PAL_SWI_IMPL_METHOD_RTOS_THREAD
 
@@ -218,7 +252,7 @@ sid_error_t sid_pal_swi_deinit(void)
 
   sid_pal_swi_stop();
 
-#if (SL_SIDEWALK_PAL_SWI_IMPL_METHOD == SL_SIDEWALK_PAL_SWI_IMPL_METHOD_RTOS_THREAD)
+#if defined(SL_SIDEWALK_PAL_SWI_IMPL_METHOD) && (SL_SIDEWALK_PAL_SWI_IMPL_METHOD == SL_SIDEWALK_PAL_SWI_IMPL_METHOD_RTOS_THREAD)
   if (task_handle != NULL) {
     vTaskDelete(task_handle);
   }

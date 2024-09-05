@@ -23,7 +23,7 @@
 #include "sid_pal_uptime_ifc.h"
 #include "sid_pal_timer_ifc.h"
 #include "sid_time_ops.h"
-#include "sid_pal_log_ifc.h"
+#include "sl_sidewalk_log_pal.h"
 #include "sid_pal_assert_ifc.h"
 #include "sl_sidewalk_pal_btl_ifc.h"
 #include "btl_interface.h"
@@ -80,7 +80,7 @@ static void reboot_timer_cb(void *arg, sid_pal_timer_t *src)
   (void)arg;
   (void)src;
 
-  SID_PAL_LOG_INFO("btl_ifc: rebooting");
+  SL_SID_LOG_PAL_INFO("pal bootloader: rebooting");
   bootloader_rebootAndInstall();
 }
 
@@ -109,7 +109,7 @@ static void erase_storage_slot_if_needed(void)
   bool not_empty = false;
   int32_t ret = BOOTLOADER_OK;
   uint32_t num_blocks = ctx.slot_info.length / READ_BLOCK_SIZE;
-  
+
   memset(buffer, 0, sizeof(buffer));
   memset(buffer_withFF, 0xff, sizeof(buffer_withFF));
 
@@ -124,23 +124,23 @@ static void erase_storage_slot_if_needed(void)
   }
 
   if (ret != BOOTLOADER_OK) {
-    SID_PAL_LOG_ERROR("btl_ifc: bootloader_readStorage failed, addr: 0x%x, err: 0x%x", (ctx.slot_info.address + offset), ret);
+    SL_SID_LOG_PAL_ERROR("pal bootloader: bootloader_readStorage failed, addr: 0x%x, err: 0x%x", (ctx.slot_info.address + offset), ret);
     return;
   } else if (not_empty) {
-    SID_PAL_LOG_WARNING("btl_ifc: bootloader slot 0 not empty");
+    SL_SID_LOG_PAL_WARNING("pal bootloader: bootloader slot 0 not empty");
     ret = bootloader_eraseRawStorage(ctx.slot_info.address, ctx.slot_info.length);
     if (ret != BOOTLOADER_OK) {
-      SID_PAL_LOG_ERROR("btl_ifc: bootloader_eraseRawStorage failed, start_addr: 0x%x, size: 0x%x, err: 0x%x",
-                        ctx.slot_info.address,
-                        ctx.slot_info.length,
-                        ret);
+      SL_SID_LOG_PAL_ERROR("pal bootloader: bootloader_eraseRawStorage failed, start_addr: 0x%x, size: 0x%x, err: 0x%x",
+                           ctx.slot_info.address,
+                           ctx.slot_info.length,
+                           ret);
       return;
     }
-    SID_PAL_LOG_INFO("btl_ifc: bootloader slot 0 erased, start_addr: 0x%x, size: 0x%x",
-                     ctx.slot_info.address,
-                     ctx.slot_info.length);
+    SL_SID_LOG_PAL_INFO("pal bootloader: bootloader slot 0 erased, start_addr: 0x%x, size: 0x%x",
+                        ctx.slot_info.address,
+                        ctx.slot_info.length);
   } else {
-    SID_PAL_LOG_INFO("btl_ifc: bootloader slot 0 ready");
+    SL_SID_LOG_PAL_INFO("pal bootloader: bootloader slot 0 ready");
   }
 }
 #endif
@@ -169,23 +169,23 @@ static bool erase_page_if_needed(uint32_t flash_addr, uint32_t offset)
   }
 
   if (ret != BOOTLOADER_OK) {
-    SID_PAL_LOG_ERROR("btl_ifc: bootloader_readStorage failed, addr: 0x%x, err: 0x%x", (ctx.slot_info.address + offset), ret);
+    SL_SID_LOG_PAL_ERROR("pal bootloader: bootloader_readStorage failed, addr: 0x%x, err: 0x%x", (ctx.slot_info.address + offset), ret);
     return false;
   } else if (not_empty) {
-    SID_PAL_LOG_WARNING("btl_ifc: bootloader slot 0 page not empty, addr: 0x%x", (ctx.slot_info.address + offset));
+    SL_SID_LOG_PAL_WARNING("pal bootloader: bootloader slot 0 page not empty, addr: 0x%x", (ctx.slot_info.address + offset));
     ret = bootloader_eraseRawStorage(ctx.slot_info.address + offset, FLASH_PAGE_SIZE);
     if (ret != BOOTLOADER_OK) {
-      SID_PAL_LOG_ERROR("btl_ifc: bootloader_eraseRawStorage failed, start_addr: 0x%x, size: 0x%x, err: 0x%x",
-                        (ctx.slot_info.address + offset),
-                        FLASH_PAGE_SIZE,
-                        ret);
+      SL_SID_LOG_PAL_ERROR("pal bootloader: bootloader_eraseRawStorage failed, start_addr: 0x%x, size: 0x%x, err: 0x%x",
+                           (ctx.slot_info.address + offset),
+                           FLASH_PAGE_SIZE,
+                           ret);
       return false;
     }
-    SID_PAL_LOG_INFO("btl_ifc: bootloader slot 0 page erased, start_addr: 0x%x, size: 0x%x",
-                     (ctx.slot_info.address + offset),
-                     FLASH_PAGE_SIZE);
+    SL_SID_LOG_PAL_INFO("pal bootloader: bootloader slot 0 page erased, start_addr: 0x%x, size: 0x%x",
+                        (ctx.slot_info.address + offset),
+                        FLASH_PAGE_SIZE);
   } else {
-    SID_PAL_LOG_INFO("btl_ifc: bootloader slot 0 page ready, addr: 0x%x", (ctx.slot_info.address + offset));
+    SL_SID_LOG_PAL_INFO("pal bootloader: bootloader slot 0 page ready, addr: 0x%x", (ctx.slot_info.address + offset));
   }
   return true;
 }
@@ -198,36 +198,36 @@ static bool erase_page_if_needed(uint32_t flash_addr, uint32_t offset)
 void sid_pal_btl_ifc_init(void)
 {
   if (ctx.init) {
-    SID_PAL_LOG_WARNING("btl_ifc: already initialized");
+    SL_SID_LOG_PAL_WARNING("pal bootloader: already initialized");
     return;
   }
 
   int32_t ret = bootloader_init();
   if (ret != BOOTLOADER_OK) {
-    SID_PAL_LOG_ERROR("btl_ifc: bootloader_init failed, err: %x", ret);
+    SL_SID_LOG_PAL_ERROR("pal bootloader: bootloader_init failed, err: %x", ret);
     return;
   }
 
   BootloaderInformation_t bootloader_info;
   bootloader_getInfo(&bootloader_info);
-  SID_PAL_LOG_INFO("btl_ifc: gecko bootloader v%lu.%lu",
-                   (bootloader_info.version & 0xFF000000) >> 24,
-                   (bootloader_info.version & 0x00FF0000) >> 16);
+  SL_SID_LOG_PAL_INFO("pal bootloader: gecko bootloader v%lu.%lu",
+                      (bootloader_info.version & 0xFF000000) >> 24,
+                      (bootloader_info.version & 0x00FF0000) >> 16);
 
   ret = bootloader_getStorageSlotInfo(0, &ctx.slot_info);
   if (ret != BOOTLOADER_OK) {
-    SID_PAL_LOG_ERROR("btl_ifc: bootloader_getStorageSlotInfo failed, err: %x", ret);
+    SL_SID_LOG_PAL_ERROR("pal bootloader: bootloader_getStorageSlotInfo failed, err: %x", ret);
     return;
   }
   if (ctx.slot_info.address + ctx.slot_info.length >= nvm3_start_addr) {
-    SID_PAL_LOG_ERROR("btl_ifc: bootloader slot 0 overlaps with the nvm3 instance, nvm3_start_addr: 0x%x",
-                      nvm3_start_addr);
+    SL_SID_LOG_PAL_ERROR("pal bootloader: bootloader slot 0 overlaps with the nvm3 instance, nvm3_start_addr: 0x%x",
+                         nvm3_start_addr);
     return;
   }
-  SID_PAL_LOG_INFO("btl_ifc: bootloader slot 0 start_addr: 0x%x, end_addr: 0x%x, size: 0x%x",
-                   ctx.slot_info.address,
-                   (ctx.slot_info.address + ctx.slot_info.length),
-                   ctx.slot_info.length);
+  SL_SID_LOG_PAL_INFO("pal bootloader: bootloader slot 0 start_addr: 0x%x, end_addr: 0x%x, size: 0x%x",
+                      ctx.slot_info.address,
+                      (ctx.slot_info.address + ctx.slot_info.length),
+                      ctx.slot_info.length);
 
 #if defined(SL_SIDEWALK_ERASE_FLASH_ON_INIT) && SL_SIDEWALK_ERASE_FLASH_ON_INIT
   erase_storage_slot_if_needed();
@@ -235,7 +235,7 @@ void sid_pal_btl_ifc_init(void)
 
   ctx.init = true;
   sid_pal_timer_init(&ctx.reboot_timer, reboot_timer_cb, NULL);
-  SID_PAL_LOG_INFO("btl_ifc: bootloader interface initialized");
+  SL_SID_LOG_PAL_INFO("pal bootloader: bootloader interface initialized");
 }
 
 uint32_t sid_pal_btl_ifc_get_free_space(void)
@@ -250,10 +250,10 @@ bool sid_pal_btl_ifc_write(uint32_t offset, void *data, uint32_t data_len)
   uint32_t flash_addr = ctx.slot_info.address + offset;
 
   if ((flash_addr + data_len) >= nvm3_start_addr) {
-    SID_PAL_LOG_ERROR("btl_ifc: write addr overlaps with the nvm3 instance, nvm3_start_addr: 0x%x, flash_addr: 0x%x, data_len: 0x%x",
-                      nvm3_start_addr,
-                      flash_addr,
-                      data_len);
+    SL_SID_LOG_PAL_ERROR("pal bootloader: write addr overlaps with the nvm3 instance, nvm3_start_addr: 0x%x, flash_addr: 0x%x, data_len: 0x%x",
+                         nvm3_start_addr,
+                         flash_addr,
+                         data_len);
     return false;
   }
 
@@ -265,11 +265,11 @@ bool sid_pal_btl_ifc_write(uint32_t offset, void *data, uint32_t data_len)
 
   int32_t ret = bootloader_writeStorage(0, offset, data, data_len);
   if (ret != BOOTLOADER_OK) {
-    SID_PAL_LOG_ERROR("btl_ifc: bootloader_writeStorage failed, err: 0x%x, flash_addr: 0x%x, data_len: 0x%x", ret, offset, data_len);
+    SL_SID_LOG_PAL_ERROR("pal bootloader: bootloader_writeStorage failed, err: 0x%x, flash_addr: 0x%x, data_len: 0x%x", ret, offset, data_len);
     return false;
   }
 
-  SID_PAL_LOG_INFO("btl_ifc: %d bytes written to flash_addr 0x%x", data_len, flash_addr);
+  SL_SID_LOG_PAL_INFO("pal bootloader: %d bytes written to flash_addr 0x%x", data_len, flash_addr);
   return true;
 }
 
@@ -279,25 +279,25 @@ bool sid_pal_btl_ifc_finalize(uint32_t data_len, uint32_t expected_crc)
 
   uint32_t calculated_crc = sid_pal_btl_ifc_crc32_compute((uint8_t *)ctx.slot_info.address, data_len, NULL);
   if (calculated_crc != expected_crc) {
-    SID_PAL_LOG_ERROR("btl_ifc: crc error, calculated_crc: 0x%x, expected_crc: 0x%x", calculated_crc, expected_crc);
+    SL_SID_LOG_PAL_ERROR("pal bootloader: crc error, calculated_crc: 0x%x, expected_crc: 0x%x", calculated_crc, expected_crc);
     return false;
   }
-  SID_PAL_LOG_INFO("btl_ifc: crc check ok, crc: 0x%x, data_len: 0x%x", calculated_crc, data_len);
+  SL_SID_LOG_PAL_INFO("pal bootloader: crc check ok, crc: 0x%x, data_len: 0x%x", calculated_crc, data_len);
 
   ret = bootloader_setImageToBootload(0);
   if (ret != BOOTLOADER_OK) {
-    SID_PAL_LOG_ERROR("btl_ifc: bootloader_setImageToBootload failed, err: 0x%x", ret);
+    SL_SID_LOG_PAL_ERROR("pal bootloader: bootloader_setImageToBootload failed, err: 0x%x", ret);
     return false;
   }
 
-  SID_PAL_LOG_INFO("btl_ifc: file transfer complete, rebooting in %ld secs", REBOOT_RESET_TIMER_VALUE);
+  SL_SID_LOG_PAL_INFO("pal bootloader: file transfer complete, rebooting in %ld secs", REBOOT_RESET_TIMER_VALUE);
   trigger_reset_timeout();
   return true;
 }
 
 void sid_pal_btl_ifc_reboot(void)
 {
-  SID_PAL_LOG_INFO("btl_ifc: rebooting in %ld secs", REBOOT_RESET_TIMER_VALUE);
+  SL_SID_LOG_PAL_INFO("pal bootloader: rebooting in %ld secs", REBOOT_RESET_TIMER_VALUE);
   trigger_reset_timeout();
 }
 

@@ -74,7 +74,7 @@ sl_sid_pdp_status_t sl_sid_pdp_receive_packet(uint8_t *rx_buf, uint16_t rx_buf_s
       }
     }
   }
-  
+
   return status;
 }
 

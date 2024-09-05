@@ -33,9 +33,3 @@ class Part:
 
   def get_mfg_page_size(self) -> int:
     return 0x6000
-
-  def get_stack_size(self) -> int:
-    return 0x1000
-
-  def get_ram_start_addr(self) -> int:
-    return 0x20000000

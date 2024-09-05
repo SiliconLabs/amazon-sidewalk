@@ -650,7 +650,7 @@ static sid_error_t efr32_crypto_ecc_dsa(sid_pal_dsa_params_t *params)
       }
       break;
 
-    case SID_PAL_CRYPTO_VERIFY:
+    case SID_PAL_CRYPTO_VERIFY: {
       if (params->algo == SID_PAL_EDDSA_ED25519) {
         ret = psa_import_key(&key_attr, params->key, params->key_size,
                              &key_id);
@@ -692,7 +692,7 @@ static sid_error_t efr32_crypto_ecc_dsa(sid_pal_dsa_params_t *params)
         return SID_ERROR_GENERIC;
       }
       break;
-
+    }
     default:
       return SID_ERROR_INVALID_ARGS;
   }

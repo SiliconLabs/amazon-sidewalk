@@ -37,10 +37,10 @@
 #include "app_process.h"
 #include "app_init.h"
 #include "app_assert.h"
-#include "app_log.h"
 #include "sid_api.h"
 #include "sl_bt_api.h"
 #include "sl_sidewalk_common_config.h"
+#include "sl_sidewalk_utils.h"
 #include "app_button_press.h"
 #include "sl_sidewalk_nvm3_handler.h"
 
@@ -296,6 +296,11 @@ void main_thread(void *context)
   struct sid_config config =
   {
     .link_mask = 0,
+    .dev_ch = {
+      .type = SID_END_DEVICE_TYPE_STATIC,
+      .power_type = SID_END_DEVICE_POWERED_BY_LINE_POWER_ONLY,
+      .qualification_id = 0x0002,
+    },
     .callbacks = &event_callbacks,
     .link_config = NULL,
     .sub_ghz_link_config = NULL,
@@ -303,15 +308,27 @@ void main_thread(void *context)
 
   // Queue creation for the sidewalk events
   g_app_ctx.event_queue = xQueueCreate(MSG_QUEUE_LEN, sizeof(enum event_type));
-  app_assert(g_app_ctx.event_queue != NULL, "app: queue creation failed");
+  app_assert(g_app_ctx.event_queue != NULL, "queue creation failed");
 
 #if defined(SL_SID_APP_MSG_PRESENT)
   // Timer creation for the device reset
   g_app_ctx.device_reset_timer = xTimerCreate("tmr", 1 /* ticks */, pdFALSE /* auto-reload */, (void *)0, dev_reset_timer_cb);
   if (g_app_ctx.device_reset_timer == NULL) {
-    app_log_error("app: device reset timer create failed");
+    SL_SID_LOG_APP_ERROR("device reset timer creation failed");
     goto error;
   }
+#endif
+
+#if defined(SL_BLE_SUPPORTED)
+  SL_SID_LOG_APP_INFO("BLE link supported");
+#endif
+
+#if defined(SL_FSK_SUPPORTED)
+  SL_SID_LOG_APP_INFO("FSK link supported");
+#endif
+
+#if defined(SL_CSS_SUPPORTED)
+  SL_SID_LOG_APP_INFO("CSS link supported");
 #endif
 
 #if defined(SL_SIDEWALK_DMP_FSK_SUPPORTED)
@@ -354,39 +371,40 @@ void main_thread(void *context)
       // State machine for Sidewalk events
       switch (event) {
         case EVENT_TYPE_SID_PROCESS_NEEDED:
+          SL_SID_LOG_APP_DEBUG("sidewalk process event");
           sid_process(g_app_ctx.sidewalk_handle);
           break;
 
         case EVENT_TYPE_COUNTER_UPDATE:
-          app_log_info("app: ctr update evt");
+          SL_SID_LOG_APP_INFO("counter update event");
           #if defined(SL_SID_APP_MSG_PRESENT)
           exec_counter_update(&g_app_ctx);
           #endif
           break;
 
         case EVENT_TYPE_TIME:
-          app_log_info("app: get time evt");
+          SL_SID_LOG_APP_INFO("get time event");
           #if defined(SL_SID_APP_MSG_PRESENT)
           exec_time(&g_app_ctx);
           #endif
           break;
 
         case EVENT_TYPE_MTU:
-          app_log_info("app: get MTU evt");
+          SL_SID_LOG_APP_INFO("get MTU event");
           #if defined(SL_SID_APP_MSG_PRESENT)
           exec_mtu(&g_app_ctx);
           #endif
           break;
 
         case EVENT_TYPE_DEVICE_RESET:
-          app_log_info("app: device reset evt");
+          SL_SID_LOG_APP_INFO("factory reset event");
           #if defined(SL_SID_APP_MSG_PRESENT)
           exec_device_reset(&g_app_ctx);
           #endif
           break;
 
         case EVENT_TYPE_DEV_REGISTERED:
-          app_log_info("app: device registered evt");
+          SL_SID_LOG_APP_INFO("device registered event");
           if (SL_SIDEWALK_COMMON_DEFAULT_LINK_TYPE != SL_SIDEWALK_COMMON_REGISTRATION_LINK) {
             if (init_and_start_link(&g_app_ctx, &config, link_type_to_link_mask(SL_SIDEWALK_COMMON_DEFAULT_LINK_TYPE)) != 0) {
               goto error;
@@ -395,21 +413,21 @@ void main_thread(void *context)
           break;
 
         case EVENT_TYPE_TOGGLE_LED:
-          app_log_info("app: toggle led evt");
+          SL_SID_LOG_APP_INFO("toggle LED event");
           #if defined(SL_SID_APP_MSG_PRESENT)
           sl_sidewalk_led_manager_toggle_led(0);
           #endif
           break;
 
         case EVENT_TYPE_BLE_START_STOP:
-          app_log_info("app: ble start/stop evt");
+          SL_SID_LOG_APP_INFO("BLE start/stop event");
           #if defined(SL_SID_APP_MSG_PRESENT)
           exec_ble_start_stop(&g_app_ctx);
           #endif
           break;
 
         case EVENT_TYPE_BTN_PRESS:
-          app_log_info("app: btn press evt");
+          SL_SID_LOG_APP_INFO("button press event");
           #if defined(SL_SID_APP_MSG_PRESENT)
           // if btn press is received as an RTOS event then it means that it's emulation
           // real btn press triggers btn press callback and not an RTOS event
@@ -421,7 +439,7 @@ void main_thread(void *context)
           break;
 
         case EVENT_TYPE_BTN_PRESS_SEND_RESP:
-          app_log_info("app: send btn press resp evt");
+          SL_SID_LOG_APP_INFO("send button press response event");
           #if defined(SL_SID_APP_MSG_PRESENT)
           exec_send_button_press_resp(&g_app_ctx);
           #endif
@@ -429,13 +447,13 @@ void main_thread(void *context)
 
 #if defined(SL_SIDEWALK_DMP_BLE_SUPPORTED)
         case EVENT_TYPE_CONNECTION_REQUEST:
-          app_log_info("app: conn req evt");
+          SL_SID_LOG_APP_INFO("BLE connection request event");
           toggle_connection_request(&g_app_ctx);
           break;
 #endif
 
         default:
-          app_log_error("app: unexpected evt: %d", (int)event);
+          SL_SID_LOG_APP_ERROR("unexpected event: %d", (int)event);
           break;
       }
     }
@@ -448,7 +466,7 @@ void main_thread(void *context)
     sid_deinit(g_app_ctx.sidewalk_handle);
     g_app_ctx.sidewalk_handle = NULL;
   }
-  app_log_error("app: fatal error");
+  SL_SID_LOG_APP_ERROR("unrecoverable error occurred");
 
   sid_platform_deinit();
   vTaskDelete(NULL);
@@ -462,7 +480,7 @@ void app_trigger_connect_and_send(void)
       button_send_update_req = true;
       app_trigger_connection_request();
     } else {
-      app_log_info("app: waiting for conn");
+      SL_SID_LOG_APP_WARNING("connection request already in progress");
     }
   } else {
     sl_sid_app_msg_dmp_soc_light_update_counter_ctx_t ctx = { .hdl.operation = SL_SID_APP_MSG_OP_NTFY };
@@ -473,16 +491,16 @@ void app_trigger_connect_and_send(void)
 static void toggle_connection_request(app_context_t *context)
 {
   if (context->state == STATE_SIDEWALK_READY) {
-    app_log_info("app: sid ready, operation invalid");
+    SL_SID_LOG_APP_WARNING("BLE connection is already established");
   } else {
     context->connection_request = true;
 
-    app_log_info("app: set conn req");
-
     sid_error_t ret = sid_ble_bcn_connection_request(context->sidewalk_handle, context->connection_request);
     if (ret != SID_ERROR_NONE) {
-      app_log_error("app: conn req failed: %d", (int)ret);
+      SL_SID_LOG_APP_ERROR("BLE connection request failed, error: %d", (int)ret);
     }
+
+    SL_SID_LOG_APP_INFO("BLE connection request set");
   }
 }
 
@@ -595,7 +613,7 @@ void app_button_press_cb(uint8_t button, uint8_t duration)
   g_app_ctx.app_msg.button_press_ctx.param_ack.ack_nack = SL_SID_APP_MSG_APP_NACK_VAL;
 
   if (g_app_ctx.app_msg.button_press_ctx.hdl.processing) {
-    app_log_warning("app: request already ongoing - drop");
+    SL_SID_LOG_APP_WARNING("button request already ongoing, dropped");
     goto send_response;
   }
 
@@ -605,13 +623,27 @@ void app_button_press_cb(uint8_t button, uint8_t duration)
 
   if (button == 0) { // PB0
     if ((duration == APP_BUTTON_PRESS_DURATION_SHORT) || (duration == APP_BUTTON_PRESS_DURATION_MEDIUM)) {
+      #if (SL_SIMPLE_BUTTON_COUNT >= 2)
       sl_sid_app_msg_dmp_soc_light_toggle_led_ctx_t ctx = { .hdl.operation = SL_SID_APP_MSG_OP_NTFY };
       app_trigger_toggle_led(&ctx);
+
+      #else
+
+      #if defined(SL_SIDEWALK_DMP_FSK_SUPPORTED)
+      sl_sid_app_msg_dmp_soc_light_update_counter_ctx_t ctx = { .hdl.operation = SL_SID_APP_MSG_OP_NTFY };
+      app_trigger_update_counter(&ctx);
+      #endif
+      #if defined(SL_SIDEWALK_DMP_BLE_SUPPORTED)
+      app_trigger_connect_and_send();
+      #endif
+
+      #endif
     } else { // long press
       // Start/Stop BLE stack
       sl_sid_app_msg_dmp_soc_light_ble_start_stop_ctx_t ctx = { .hdl.operation = SL_SID_APP_MSG_OP_NTFY };
       app_trigger_ble_start_stop(&ctx);
     }
+#if (SL_SIMPLE_BUTTON_COUNT >= 2)
   } else if (button == 1) { // PB1
 #if defined(SL_SIDEWALK_DMP_FSK_SUPPORTED)
     sl_sid_app_msg_dmp_soc_light_update_counter_ctx_t ctx = { .hdl.operation = SL_SID_APP_MSG_OP_NTFY };
@@ -620,14 +652,15 @@ void app_button_press_cb(uint8_t button, uint8_t duration)
 #if defined(SL_SIDEWALK_DMP_BLE_SUPPORTED)
     app_trigger_connect_and_send();
 #endif
+#endif
   } else {
-    app_log_error("app: btn%d does not exist", button);
+    SL_SID_LOG_APP_ERROR("BTN%d not exists", button);
     goto send_response;
   }
 
   g_app_ctx.app_msg.button_press_ctx.param_ack.ack_nack = SL_SID_APP_MSG_APP_ACK_VAL;
 
-  app_log_info("app: btn%d pressed (duration: %d)", button, duration);
+  SL_SID_LOG_APP_INFO("BTN%d pressed, duration: %d", button, duration);
 
   send_response:
 
@@ -649,9 +682,10 @@ static int32_t init_and_start_link(app_context_t *app_ctx, struct sid_config *co
     if (app_ctx->sidewalk_handle != NULL) {
       ret = sid_deinit(app_ctx->sidewalk_handle);
       if (ret != SID_ERROR_NONE) {
-        app_log_error("app: sid deinit failed, link:%x, err:%d", (int)link_mask, (int)ret);
+        SL_SID_LOG_APP_ERROR("sidewalk deinitialization failed, link mask: %x, error: %d", (int)link_mask, (int)ret);
         goto error;
       }
+      SL_SID_LOG_APP_INFO("sidewalk deinitializated, link mask: %x", (int)link_mask);
     }
 
     struct sid_handle *sid_handle = NULL;
@@ -659,18 +693,20 @@ static int32_t init_and_start_link(app_context_t *app_ctx, struct sid_config *co
     // Initialise sidewalk
     ret = sid_init(config, &sid_handle);
     if (ret != SID_ERROR_NONE) {
-      app_log_error("app: sid init failed, link:%x, err:%d", (int)link_mask, (int)ret);
+      SL_SID_LOG_APP_ERROR("sidewalk initialization failed, link mask: %x, error: %d", (int)link_mask, (int)ret);
       goto error;
     }
+    SL_SID_LOG_APP_INFO("sidewalk initializated, link mask: %x", (int)link_mask);
 
     // Register sidewalk handler to the application context
     app_ctx->sidewalk_handle = sid_handle;
     // Start the sidewalk stack
     ret = sid_start(sid_handle, link_mask);
     if (ret != SID_ERROR_NONE) {
-      app_log_error("app: sid start failed, link:%x, err:%d", (int)link_mask, (int)ret);
+      SL_SID_LOG_APP_ERROR("sidewalk start failed, link mask: %x, error: %d", (int)link_mask, (int)ret);
       goto error;
     }
+    SL_SID_LOG_APP_INFO("sidewalk started, link mask: %x", (int)link_mask);
   }
   app_ctx->current_link_type = link_mask;
 
@@ -707,6 +743,10 @@ static uint32_t link_type_to_link_mask(uint8_t link_type)
 static void queue_event(QueueHandle_t queue,
                         enum event_type event)
 {
+  if(queue == NULL)
+  {
+    return;
+  }
   // Check if queue_event was called from ISR
   if ((bool)xPortIsInsideInterrupt()) {
     BaseType_t task_woken = pdFALSE;
@@ -732,16 +772,29 @@ static void on_sidewalk_msg_received(const struct sid_msg_desc *msg_desc,
                                      void *context)
 {
   UNUSED(context);
-  app_log_info("app: rcvd msg (type: %d, id: %u, size: %u)", (int)msg_desc->type, msg_desc->id, rcvd_sid_msg->size);
+  SL_SID_LOG_APP_INFO("downlink message received");
+  SL_SID_LOG_APP_INFO("link type: %x, msg id: %u, msg size: %u, msg type: %d, ack requested: %d, is ack: %d, is duplicate: %d, rssi: %d, snr: %d",
+                      msg_desc->link_type,
+                      msg_desc->id,
+                      rcvd_sid_msg->size,
+                      (int)msg_desc->type,
+                      msg_desc->msg_desc_attr.rx_attr.ack_requested,
+                      msg_desc->msg_desc_attr.rx_attr.is_msg_ack,
+                      msg_desc->msg_desc_attr.rx_attr.is_msg_duplicate,
+                      msg_desc->msg_desc_attr.rx_attr.rssi,
+                      msg_desc->msg_desc_attr.rx_attr.snr);
+  if (rcvd_sid_msg->size != 0) {
+    SL_SID_LOG_APP_INFO("received bytes:");
+    SL_SID_LOG_APP_HEXDUMP_INFO((const void *)rcvd_sid_msg->data, rcvd_sid_msg->size);
+    if (sl_sidewalk_utils_is_data_ascii((const char *)rcvd_sid_msg->data, rcvd_sid_msg->size)) {
+      SL_SID_LOG_APP_INFO("received message: %.*s", rcvd_sid_msg->size, (char *)rcvd_sid_msg->data);
+    }
+  }
 #if defined(SL_SID_APP_MSG_PRESENT)
   sl_sid_app_msg_st_t status = sl_sid_app_msg_handler(rcvd_sid_msg);
   if (status != SL_SID_APP_MSG_ERR_ST_SUCCESS) {
-    app_log_error("app: app msg rcv err (status: %d)", status);
+    SL_SID_LOG_APP_ERROR("message receive error, status: %d", status);
     return;
-  }
-#else
-  if (rcvd_sid_msg->size != 0) {
-    app_log_info("app: %s", (char *) rcvd_sid_msg->data);
   }
 #endif
 }
@@ -750,7 +803,11 @@ static void on_sidewalk_msg_sent(const struct sid_msg_desc *msg_desc,
                                  void *context)
 {
   UNUSED(context);
-  app_log_info("app: msg sent (type: %d, id: %u)", (int)msg_desc->type, msg_desc->id);
+  SL_SID_LOG_APP_INFO("uplink message sent");
+  SL_SID_LOG_APP_INFO("link type: %x, msg id: %u, msg type: %d",
+                      msg_desc->link_type,
+                      msg_desc->id,
+                      (int)msg_desc->type);
 }
 
 static void on_sidewalk_send_error(sid_error_t error,
@@ -758,8 +815,12 @@ static void on_sidewalk_send_error(sid_error_t error,
                                    void *context)
 {
   UNUSED(context);
-  app_log_error("app: send msg failed (type: %d, id: %u, err: %d)",
-                (int)msg_desc->type, msg_desc->id, (int)error);
+  SL_SID_LOG_APP_ERROR("uplink message send failed");
+  SL_SID_LOG_APP_ERROR("link type: %x, msg id: %u, msg type: %d, error: %d",
+                       msg_desc->link_type,
+                       msg_desc->id,
+                       (int)msg_desc->type,
+                       (int)error);
 }
 
 static void on_sidewalk_status_changed(const struct sid_status *status,
@@ -767,23 +828,24 @@ static void on_sidewalk_status_changed(const struct sid_status *status,
 {
   app_context_t *app_ctx = (app_context_t *)context;
 
-  app_log_info("app: sid status changed: %d", (int)status->state);
-
   switch (status->state) {
     case SID_STATE_READY:
       app_ctx->state = STATE_SIDEWALK_READY;
+      SL_SID_LOG_APP_INFO("sidewalk status ready");
       break;
 
     case SID_STATE_NOT_READY:
       app_ctx->state = STATE_SIDEWALK_NOT_READY;
+      SL_SID_LOG_APP_INFO("sidewalk status not ready");
       break;
 
     case SID_STATE_ERROR:
-      app_log_error("app: sid state err: %d", (int)sid_get_error(app_ctx->sidewalk_handle));
+      SL_SID_LOG_APP_ERROR("sidewalk status error, error: %d", (int)sid_get_error(app_ctx->sidewalk_handle));
       break;
 
     case SID_STATE_SECURE_CHANNEL_READY:
       app_ctx->state = STATE_SIDEWALK_SECURE_CONNECTION;
+      SL_SID_LOG_APP_INFO("sidewalk secure channel ready");
       break;
   }
 
@@ -791,10 +853,10 @@ static void on_sidewalk_status_changed(const struct sid_status *status,
     app_trigger_switching_to_default_link();
   }
 
-  app_log_info("app: REG: %u, TIME: %u, LINK: %lu",
-               status->detail.registration_status,
-               status->detail.time_sync_status,
-               status->detail.link_status_mask);
+  SL_SID_LOG_APP_INFO("registration status: %u, time sync: %u, link: %lu",
+                      status->detail.registration_status,
+                      status->detail.time_sync_status,
+                      status->detail.link_status_mask);
 
 #if defined(SL_SIDEWALK_DMP_BLE_SUPPORTED)
   if (button_send_update_req && status->state == SID_STATE_READY) {
@@ -808,7 +870,7 @@ static void on_sidewalk_status_changed(const struct sid_status *status,
 static void on_sidewalk_factory_reset(void *context)
 {
   UNUSED(context);
-  app_log_info("app: factory reset notif rcvd");
+  SL_SID_LOG_APP_INFO("device factory reset");
   // This is the callback function of the factory reset and as the last step a reset is applied.
   NVIC_SystemReset();
 }
@@ -821,15 +883,15 @@ static void dev_reset_timer_cb(TimerHandle_t tmr_hdl)
   if (g_app_ctx.app_msg.rst_dev_ctx.param_send.reset_type == SL_SID_APP_MSG_DEV_MGMT_VAL_RST_HARD) {
     sid_error_t ret = sid_set_factory_reset(g_app_ctx.sidewalk_handle);
     if (ret != SID_ERROR_NONE) {
-      app_log_error("app: factory reset notif failed");
+      SL_SID_LOG_APP_ERROR("factory reset failed, error: %d", (int)ret);
     } else {
-      app_log_info("app: wait to proceed with factory reset");
+      SL_SID_LOG_APP_INFO("factory reset request accepted");
     }
   } else if (g_app_ctx.app_msg.rst_dev_ctx.param_send.reset_type == SL_SID_APP_MSG_DEV_MGMT_VAL_RST_SOFT) {
-    app_log_info("app: resetting device");
+    SL_SID_LOG_APP_INFO("resetting device");
     NVIC_SystemReset();
   } else {
-    app_log_error("app: unexpected reset type: %d", g_app_ctx.app_msg.rst_dev_ctx.param_send.reset_type);
+    SL_SID_LOG_APP_ERROR("unexpected reset type, reset type: %d", g_app_ctx.app_msg.rst_dev_ctx.param_send.reset_type);
   }
 }
 #endif
@@ -842,13 +904,13 @@ static void exec_device_reset(app_context_t *app_ctx)
   app_ctx->app_msg.rst_dev_ctx.param_ack.ack_nack = SL_SID_APP_MSG_APP_NACK_VAL;
 
   if (xTimerIsTimerActive(app_ctx->device_reset_timer)) {
-    app_log_warning("app: reset device already in progress");
+    SL_SID_LOG_APP_WARNING("reset device already in progress");
     goto send_response;
   }
 
-  app_log_info("app: reset device (type: %d) in %lu ms",
-               app_ctx->app_msg.rst_dev_ctx.param_send.reset_type,
-               app_ctx->app_msg.rst_dev_ctx.param_send.in_millisecs);
+  SL_SID_LOG_APP_INFO("reset device, type: %d, ms: %lu",
+                      app_ctx->app_msg.rst_dev_ctx.param_send.reset_type,
+                      app_ctx->app_msg.rst_dev_ctx.param_send.in_millisecs);
 
   uint32_t in_millisecs = app_ctx->app_msg.rst_dev_ctx.param_send.in_millisecs;
   if (in_millisecs == 0) {
@@ -857,12 +919,12 @@ static void exec_device_reset(app_context_t *app_ctx)
   }
 
   if (xTimerChangePeriod(app_ctx->device_reset_timer, pdMS_TO_TICKS(in_millisecs), 0) == pdFALSE) {
-    app_log_error("app: device reset timer period set failed");
+    SL_SID_LOG_APP_ERROR("device reset timer period set failed");
     goto send_response;
   }
 
   if (xTimerStart(app_ctx->device_reset_timer, 0) == pdFALSE) {
-    app_log_error("app: device reset timer start failed");
+    SL_SID_LOG_APP_ERROR("device reset timer start failed");
     goto send_response;
   }
 
@@ -897,7 +959,7 @@ void sl_sidewalk_led_manager_led_state_changed(uint8_t led_id, sl_led_state_t ne
   g_app_ctx.app_msg.toggle_led_ctx.param_send.state = new_led_state;
   g_app_ctx.app_msg.toggle_led_ctx.param_ack.ack_nack = SL_SID_APP_MSG_APP_ACK_VAL;
 
-  app_log_info("app: sending led status: 0x%02x", g_app_ctx.app_msg.toggle_led_ctx.param_send.state);
+  SL_SID_LOG_APP_INFO("sending LED status, status: 0x%02x", g_app_ctx.app_msg.toggle_led_ctx.param_send.state);
 
   // Bluetooth update
   app_bluetooth_update_led_status(g_app_ctx.app_msg.toggle_led_ctx.param_send.state);
@@ -913,40 +975,40 @@ static void exec_ble_start_stop(app_context_t *app_ctx)
   if (app_ctx->is_ble_running) {
 #if defined(SL_SIDEWALK_DMP_FSK_SUPPORTED)
     if (sl_bt_system_stop_bluetooth() != SL_STATUS_OK) {
-      app_log_error("app: BLE stop failed");
+      SL_SID_LOG_APP_ERROR("BLE stop failed");
       goto send_response;
     } else {
-      #if defined(SL_CATALOG_SIMPLE_LED_PRESENT)
+      #if defined(SL_CATALOG_SIMPLE_LED_PRESENT) && (SL_SIMPLE_LED_COUNT >= 2)
       sl_led_turn_off(SL_SIMPLE_LED_INSTANCE(1));
       #endif
       app_ctx->is_ble_running = false;
       if ((sl_sidewalk_nvm3_write(DMP_NVM3_KEY_BLE_STATE, (const uint8_t *)&app_ctx->is_ble_running, sizeof(app_ctx->is_ble_running)) != 0)) {
-        app_log_error("app: NVM data write failed");
+        SL_SID_LOG_APP_ERROR("NVM3 write failed");
       }
     }
 #endif
 #if defined(SL_SIDEWALK_DMP_BLE_SUPPORTED)
     app_bluetooth_stop_advertisement();
-    #if defined(SL_CATALOG_SIMPLE_LED_PRESENT)
+    #if defined(SL_CATALOG_SIMPLE_LED_PRESENT) && (SL_SIMPLE_LED_COUNT >= 2)
     sl_led_turn_off(SL_SIMPLE_LED_INSTANCE(1));
     #endif
     app_ctx->is_ble_running = false;
     if ((sl_sidewalk_nvm3_write(DMP_NVM3_KEY_BLE_STATE, (const uint8_t *)&app_ctx->is_ble_running, sizeof(app_ctx->is_ble_running)) != 0)) {
-      app_log_error("app: NVM data write failed");
+      SL_SID_LOG_APP_ERROR("NVM3 write failed");
     }
 #endif
   } else {
 #if defined(SL_SIDEWALK_DMP_FSK_SUPPORTED)
     if (sl_bt_system_start_bluetooth() != SL_STATUS_OK) {
-      app_log_error("app: BLE start failed");
+      SL_SID_LOG_APP_ERROR("BLE start failed");
       goto send_response;
     } else {
-      #if defined(SL_CATALOG_SIMPLE_LED_PRESENT)
+      #if defined(SL_CATALOG_SIMPLE_LED_PRESENT) && (SL_SIMPLE_LED_COUNT >= 2)
       sl_led_turn_on(SL_SIMPLE_LED_INSTANCE(1));
       #endif
       app_ctx->is_ble_running = true;
       if (sl_sidewalk_nvm3_write(DMP_NVM3_KEY_BLE_STATE, (const uint8_t *)&app_ctx->is_ble_running, sizeof(app_ctx->is_ble_running)) != 0) {
-        app_log_error("app: NVM data write failed");
+        SL_SID_LOG_APP_ERROR("NVM3 write failed");
       }
     }
 #endif
@@ -956,12 +1018,12 @@ static void exec_ble_start_stop(app_context_t *app_ctx)
     } else {
       app_bluetooth_start_advertisement();
     }
-    #if defined(SL_CATALOG_SIMPLE_LED_PRESENT)
+    #if defined(SL_CATALOG_SIMPLE_LED_PRESENT) && (SL_SIMPLE_LED_COUNT >= 2)
     sl_led_turn_on(SL_SIMPLE_LED_INSTANCE(1));
     #endif
     app_ctx->is_ble_running = true;
     if (sl_sidewalk_nvm3_write(DMP_NVM3_KEY_BLE_STATE, (const uint8_t *)&app_ctx->is_ble_running, sizeof(app_ctx->is_ble_running)) != 0) {
-      app_log_error("app: NVM data write failed");
+      SL_SID_LOG_APP_ERROR("NVM3 write failed");
     }
 #endif
   }
@@ -974,7 +1036,7 @@ static void exec_ble_start_stop(app_context_t *app_ctx)
 #endif
 
   app_ctx->app_msg.ble_start_stop_ctx.param_send.state = (uint8_t)app_ctx->is_ble_running;
-  app_log_info("app: sending ble status: 0x%02x", app_ctx->app_msg.ble_start_stop_ctx.param_send.state);
+  SL_SID_LOG_APP_INFO("sending BLE status, status: 0x%02x", app_ctx->app_msg.ble_start_stop_ctx.param_send.state);
 
   sl_sid_app_msg_t app_msg;
 
@@ -986,7 +1048,7 @@ static void exec_counter_update(app_context_t *app_ctx)
 {
   sl_sid_app_msg_t app_msg;
 
-  app_log_info("app: sending ctr update: %d", app_ctx->counter);
+  SL_SID_LOG_APP_INFO("sending counter update, counter: %d", app_ctx->counter);
   app_ctx->app_msg.update_counter_ctx.param_ack.ack_nack = SL_SID_APP_MSG_APP_ACK_VAL;
   app_ctx->app_msg.update_counter_ctx.param_ack.optional = (uint16_t)app_ctx->counter;
   app_ctx->app_msg.update_counter_ctx.param_send.counter = app_ctx->counter;
@@ -1005,11 +1067,11 @@ static void exec_time(app_context_t *app_ctx)
 
   sid_error_t ret = sid_get_time(app_ctx->sidewalk_handle, SID_GET_GPS_TIME, &curr_time);
   if (ret != SID_ERROR_NONE) {
-    app_log_error("app: get time failed: %d", ret);
+    SL_SID_LOG_APP_ERROR("get time failed, error: %d", (int)ret);
     goto send_response;
   }
 
-  app_log_info("app: curr time: %lu.%lu", curr_time.tv_sec, curr_time.tv_nsec);
+  SL_SID_LOG_APP_INFO("current time: %.02d.%.02d", (int)curr_time.tv_sec, (int)curr_time.tv_nsec);
   app_ctx->app_msg.time_ctx.param_ack.ack_nack = SL_SID_APP_MSG_APP_ACK_VAL;
   app_ctx->app_msg.time_ctx.param_send.sec = curr_time.tv_sec;
   app_ctx->app_msg.time_ctx.param_send.nsec = curr_time.tv_nsec;
@@ -1029,11 +1091,11 @@ static void exec_mtu(app_context_t *app_ctx)
 
   sid_error_t ret = sid_get_mtu(app_ctx->sidewalk_handle, app_ctx->app_msg.mtu_ctx.param_rcv.link_type, (size_t *)&mtu);
   if (ret != SID_ERROR_NONE) {
-    app_log_error("app: get MTU failed: %d (link: %d)", ret, app_ctx->app_msg.mtu_ctx.param_rcv.link_type);
+    SL_SID_LOG_APP_ERROR("get MTU failed, error: %d", (int)ret);
     goto send_response;
   }
 
-  app_log_info("app: curr MTU: %lu", mtu);
+  SL_SID_LOG_APP_INFO("current MTU: %d", mtu);
   app_ctx->app_msg.mtu_ctx.param_ack.ack_nack = SL_SID_APP_MSG_APP_ACK_VAL;
   app_ctx->app_msg.mtu_ctx.param_send.mtu = (uint16_t)mtu;
 
@@ -1054,22 +1116,22 @@ static int32_t init_and_start_regular_ble(app_context_t *app_ctx)
     if (sl_bt_system_start_bluetooth() != SL_STATUS_OK) {
       retVal = -1;
     }
-    #if defined(SL_CATALOG_SIMPLE_LED_PRESENT)
+    #if defined(SL_CATALOG_SIMPLE_LED_PRESENT) && (SL_SIMPLE_LED_COUNT >= 2)
     sl_led_turn_on(SL_SIMPLE_LED_INSTANCE(1));
     #endif
     app_ctx->is_ble_running = true;
     if (sl_sidewalk_nvm3_write(DMP_NVM3_KEY_BLE_STATE, (const uint8_t *)&app_ctx->is_ble_running, sizeof(app_ctx->is_ble_running)) != 0) {
-      app_log_warning("app: NVM data write failed");
+      SL_SID_LOG_APP_WARNING("NVM3 write failed");
     }
   } else {  // NVM object is found, read data
     if (sl_sidewalk_nvm3_read(DMP_NVM3_KEY_BLE_STATE, (uint8_t *)&app_ctx->is_ble_running) != 0) {
-      app_log_warning("app: NVM data read failed");
+      SL_SID_LOG_APP_WARNING("NVM3 read failed");
     } else {
       if (app_ctx->is_ble_running) {
         if (sl_bt_system_start_bluetooth() != SL_STATUS_OK) {
           retVal = -1;
         }
-        #if defined(SL_CATALOG_SIMPLE_LED_PRESENT)
+        #if defined(SL_CATALOG_SIMPLE_LED_PRESENT) && (SL_SIMPLE_LED_COUNT >= 2)
         sl_led_turn_on(SL_SIMPLE_LED_INSTANCE(1));
         #endif
       }
@@ -1087,22 +1149,22 @@ static void init_and_start_regular_ble_advertisement(app_context_t *app_ctx)
   if (sl_sidewalk_nvm3_get_valid_object_number() == 0) {
     app_bluetooth_init_and_start_advertisement();
 
-    #if defined(SL_CATALOG_SIMPLE_LED_PRESENT)
+    #if defined(SL_CATALOG_SIMPLE_LED_PRESENT) && (SL_SIMPLE_LED_COUNT >= 2)
     sl_led_turn_on(SL_SIMPLE_LED_INSTANCE(1));
     #endif
 
     app_ctx->is_ble_running = true;
     if (sl_sidewalk_nvm3_write(DMP_NVM3_KEY_BLE_STATE, (const uint8_t *)&app_ctx->is_ble_running, sizeof(app_ctx->is_ble_running)) != 0) {
-      app_log_warning("app: NVM data write failed");
+      SL_SID_LOG_APP_WARNING("NVM3 write failed");
     }
   } else {  // NVM object is found, read data
     if (sl_sidewalk_nvm3_read(DMP_NVM3_KEY_BLE_STATE, (uint8_t *)&app_ctx->is_ble_running) != 0) {
-      app_log_warning("app: NVM data read failed");
+      SL_SID_LOG_APP_WARNING("NVM3 read failed");
     } else {
       if (app_ctx->is_ble_running) {
         app_bluetooth_init_and_start_advertisement();
 
-        #if defined(SL_CATALOG_SIMPLE_LED_PRESENT)
+        #if defined(SL_CATALOG_SIMPLE_LED_PRESENT) && (SL_SIMPLE_LED_COUNT >= 2)
         sl_led_turn_on(SL_SIMPLE_LED_INSTANCE(1));
         #endif
       }
@@ -1115,7 +1177,7 @@ static void init_and_start_regular_ble_advertisement(app_context_t *app_ctx)
 static void send_message(app_context_t *app_ctx, sl_sid_app_msg_t *app_msg)
 {
   if (app_ctx->state != STATE_SIDEWALK_READY && app_ctx->state != STATE_SIDEWALK_SECURE_CONNECTION) {
-    app_log_warning("app: msg cant be sent as sid is not ready yet");
+    SL_SID_LOG_APP_WARNING("sidewalk not ready yet");
     return;
   }
 
@@ -1123,7 +1185,7 @@ static void send_message(app_context_t *app_ctx, sl_sid_app_msg_t *app_msg)
   struct sid_msg send_sid_msg;
   sl_sid_app_msg_st_t status = sl_sid_app_msg_prepare_sid_msg(app_msg, &send_sid_msg);
   if (status != SL_SID_APP_MSG_ERR_ST_SUCCESS) {
-    app_log_error("app: app msg send error (status: %d)", status);
+    SL_SID_LOG_APP_ERROR("message send error, status: %d", status);
     return;
   }
 
@@ -1134,12 +1196,21 @@ static void send_message(app_context_t *app_ctx, sl_sid_app_msg_t *app_msg)
   };
   sid_error_t ret = sid_put_msg(app_ctx->sidewalk_handle, &send_sid_msg, &desc);
   if (ret != SID_ERROR_NONE) {
-    app_log_error("app: queueing data failed: %d", (int)ret);
+    SL_SID_LOG_APP_ERROR("send message failed, error: %d", (int)ret);
     return;
   }
 
-  app_log_info("app: queued data msg id: %u", desc.id);
-  app_log_hexdump_info(send_sid_msg.data, send_sid_msg.size);
+  SL_SID_LOG_APP_INFO("message queued");
+  SL_SID_LOG_APP_INFO("link type: %x, msg id: %u, msg size: %u, msg type: %d, ack requested: %d, ttl: %d, max retry: %d, additional attr: %d",
+                      desc.link_type,
+                      desc.id,
+                      send_sid_msg.size,
+                      (int)desc.type,
+                      desc.msg_desc_attr.tx_attr.request_ack,
+                      desc.msg_desc_attr.tx_attr.ttl_in_seconds,
+                      desc.msg_desc_attr.tx_attr.num_retries,
+                      desc.msg_desc_attr.tx_attr.additional_attr);
+  SL_SID_LOG_APP_HEXDUMP_INFO((const void *)send_sid_msg.data, send_sid_msg.size);
 
   return;
 }

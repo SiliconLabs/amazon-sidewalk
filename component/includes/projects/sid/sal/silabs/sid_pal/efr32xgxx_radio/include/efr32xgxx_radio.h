@@ -64,6 +64,9 @@ typedef struct {
   uint8_t                                      radio_state;
   sid_pal_radio_cad_param_exit_mode_t          cad_exit_mode;
   uint32_t                                     radio_freq_hz;
+  struct {
+    sid_pal_radio_fsk_cad_params_t             fsk_cad_params;
+  }                                            settings_cache;
   radio_efr32xgxx_regional_param_t             regional_radio_param;
 } halo_drv_silabs_ctx_t;
 

@@ -1,5 +1,31 @@
 Silicon Labs Amazon Sidewalk Release Note
 =========================================
+# Release 2.2.0
+(release date 2024-08-09)
+
+*SiSDK 2024.6.1 - Amazon Sidewalk SDK 1.17.0*
+
+## New Features/Improvements
+### Silicon Labs Extension
+- Support for Simplicity SDK 2024.6.1
+- Sidewalk 1.17 stack support
+- Updated logging functionality to provide the option to choose between RTT and UART logging methods.
+- Bugfixes
+  - [1328333] Sometimes ACK missed during SX1262 FSK transmission: Workaround applied in the SWI implementation. The MCU clock frequency is restored to HFXO before processing the SWI ISR. This is achieved by adding an EM1 requirement before processing the SWI ISR and removing the EM1 requirement after processing the SWI ISR.
+  - [1322806] Sidewalk compomnent does not pull the necessary dependencies
+  - [1334064] Sidewalk app uplink thought Button Press (BP1) do not work
+
+### Supported Toolchain
+- GCC version 12.2.1
+
+## Known issues
+- [1309603] Slow FSK uplink on xg28 if autoconnect mode is enabled.
+- [47374] - Message duplicate error during FFN: `<error> msg dup: xxxxxxxxx (xxx)`. Device recovers in next FFN session.
+
+
+## Sidewalk Assistant Known issues
+
+- The manufacturing page is never detected on the device regardless of one was flashed or not. A temporary fix was found on this issue. If you have more than one "Sidewalk Assistant" adapter pack installed, remove the duplicate to only keep one.
 
 # Release 2.1.0
 (release date 2024-06-19)
@@ -27,7 +53,6 @@ Silicon Labs Amazon Sidewalk Release Note
 (release date 2024-02-14)
 
 *GSDK 4.4.1 - Amazon Sidewalk SDK 1.16.2*
-
 
 ## New Features/Improvements
 ### Silicon Labs Extension

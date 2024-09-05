@@ -11,6 +11,11 @@ root_path: "component/sidewalk_sender"
 
 provides:
   - name: "sidewalk_sender"
+requires:
+  - name: "freertos"
+  - name: "sidewalk_utils"
+  - name: "sidewalk_log_app_rtt"
+  - name: "sidewalk_ble_subghz"
 source:
   - path: "sl_sidewalk_sender.c"
 include:

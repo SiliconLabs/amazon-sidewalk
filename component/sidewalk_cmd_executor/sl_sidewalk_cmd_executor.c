@@ -39,11 +39,9 @@
 //                                   Includes
 // -----------------------------------------------------------------------------
 
-#include <printf.h>
 #include <stdlib.h>
 #include <string.h>
 
-#include "app_log.h"
 #include "FreeRTOS.h"
 #include "queue.h"
 #include "sl_common.h"

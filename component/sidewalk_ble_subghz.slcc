@@ -11,6 +11,65 @@ root_path: "component"
 
 provides:
   - name: "sidewalk_ble_subghz"
+  - name: "sidewalk_base_component"
+requires:
+  - name: "sidewalk_log_pal_rtt"
+  - name: "sidewalk_log_app_rtt"
+  - name: "sidewalk_log_stack_rtt"
+  - name: "memory_manager"
+  - name: "spidrv_core"
+    condition:
+      - spidrv
+      - sl_sidewalk_radio_external
+  - name: "emlib_usart"
+    condition:
+      - spidrv
+      - sl_sidewalk_radio_external
+  - name: "emlib_usart"
+    condition:
+      - spidrv
+      - device_generic_family_efr32xg28
+  - name: "gpiointerrupt"
+  - name: "app_assert"
+  - name: "cmsis_core"
+  - name: "clock_manager_runtime"
+  - name: "emlib_core"
+  - name: "freertos"
+  - name: "emlib_system"
+  - name: "psa_crypto"
+  - name: "sidewalk_ed25519"
+    condition:
+      - device_generic_family_efr32xg27
+  - name: "sleeptimer"
+  - name: "sidewalk_common"
+  - name: "bluetooth_stack"
+    condition:
+      - sl_sidewalk_radio_ble
+  - name: "rail_lib_multiprotocol"
+    condition:
+    - device_generic_family_efr32xg28
+    unless:
+    - device_family_efr32sg28
+  - name: "rail_lib_multiprotocol"
+    condition:
+    - device_generic_family_efr32xg23
+  - name: "rail_lib_multiprotocol"
+    condition:
+    - device_generic_family_efr32xg25
+  - name: "rail_lib_multiprotocol"
+    condition:
+    - sl_sidewalk_radio_native
+  - name: "rail_util_pa"
+    condition:
+    - sl_sidewalk_radio_native
+  - name: "component_catalog"
+  - name: "nvm3_lib"
+  - name: "nvm3_default"
+  - name: "emlib_emu"
+    condition:
+    - sl_sidewalk_radio_native
+conflicts:
+  - name: sidewalk_pdp
 source:
   - path: "sources/platform/sid_mcu/semtech/hal/sx126x/sx126x_hal.c"
     condition:
@@ -48,7 +107,6 @@ source:
   - path: "sources/projects/sid/sal/silabs/sid_pal/common.c"
   - path: "sources/projects/sid/sal/silabs/sid_pal/critical_region.c"
   - path: "sources/projects/sid/sal/silabs/sid_pal/delay.c"
-  - path: "sources/projects/sid/sal/silabs/sid_pal/log.c"
   - path: "sources/projects/sid/sal/silabs/sid_pal/mfg_store.c"
   - path: "sources/projects/sid/sal/silabs/sid_pal/nvm3_manager.c"
   - path: "sources/projects/sid/sal/silabs/sid_pal/sid_pal_crypto_ifc.c"
@@ -223,6 +281,9 @@ include:
   - path: "includes/projects/sid/sal/common/public/sid_ifc/sid_bulk_data_transfer_api"
     file_list:
     - path: "sid_bulk_data_transfer_api.h"
+  - path: "includes/projects/sid/sal/common/public/sid_ifc/sid_sdk_version"
+    file_list:
+    - path: "sid_sdk_version.h"
   - path: "includes/projects/sid/apps/sdk/silabs/efr32xg21/common/mfg_store_app_values/include/export"
     file_list:
     - path: "mfg_store_app_values.h"

@@ -34,7 +34,6 @@
 #include <stdint.h>
 #include "em_common.h"
 #include "app_assert.h"
-#include "app_log.h"
 #include "sl_bluetooth.h"
 #include "gatt_db.h"
 #include "app_bluetooth.h"
@@ -44,6 +43,7 @@
 #include "app_button_press.h"
 #include "sl_sidewalk_led_manager.h"
 #include "app_process.h"
+#include "sl_sidewalk_log_app.h"
 // -----------------------------------------------------------------------------
 //                              Macros and Typedefs
 // -----------------------------------------------------------------------------
@@ -126,14 +126,14 @@ void app_bluetooth_init_and_start_advertisement(void)
   sc = sl_bt_system_get_identity_address(&address, &address_type);
   app_assert_status(sc);
 
-  app_log_info("app: BLE %s addr: %02X:%02X:%02X:%02X:%02X:%02X\n",
-               address_type ? "static random" : "public device",
-               address.addr[5],
-               address.addr[4],
-               address.addr[3],
-               address.addr[2],
-               address.addr[1],
-               address.addr[0]);
+  SL_SID_LOG_APP_INFO("BLE %s address: %02X:%02X:%02X:%02X:%02X:%02X",
+                      address_type ? "static random" : "public device",
+                      address.addr[5],
+                      address.addr[4],
+                      address.addr[3],
+                      address.addr[2],
+                      address.addr[1],
+                      address.addr[0]);
 
   // Create an advertising set.
   sc = sl_bt_advertiser_create_set(&advertising_set_handle);
@@ -160,10 +160,12 @@ void app_bluetooth_init_and_start_advertisement(void)
 #if defined(SL_SIDEWALK_DMP_BLE_SUPPORTED)
   regular_ble_inited = true;
 
+  #if (SL_SIMPLE_LED_COUNT >= 2)
   sl_led_turn_on(SL_SIMPLE_LED_INSTANCE(1));
+  #endif
 #endif
 
-  app_log_info("app: started adv");
+  SL_SID_LOG_APP_INFO("BLE advertising started");
 }
 
 /**************************************************************************//**
@@ -184,7 +186,9 @@ void app_bluetooth_start_advertisement(void)
   app_assert_status(sc);
 
 #if defined(SL_SIDEWALK_DMP_BLE_SUPPORTED)
+  #if (SL_SIMPLE_LED_COUNT >= 2)
   sl_led_turn_on(SL_SIMPLE_LED_INSTANCE(1));
+  #endif
 #endif
 }
 
@@ -198,7 +202,9 @@ void app_bluetooth_stop_advertisement(void)
   sl_status_t sc = sl_bt_advertiser_stop(advertising_set_handle);
   app_assert_status(sc);
 
+  #if (SL_SIMPLE_LED_COUNT >= 2)
   sl_led_turn_off(SL_SIMPLE_LED_INSTANCE(1));
+  #endif
 }
 #endif
 
@@ -219,11 +225,11 @@ void sl_bt_on_event(sl_bt_msg_t *evt)
     // Do not call any stack command before receiving this boot event!
     case sl_bt_evt_system_boot_id:
       // Print boot message.
-      app_log_info("app: BLE booted: v%d.%d.%d-b%d\n",
-                   evt->data.evt_system_boot.major,
-                   evt->data.evt_system_boot.minor,
-                   evt->data.evt_system_boot.patch,
-                   evt->data.evt_system_boot.build);
+      SL_SID_LOG_APP_INFO("BLE boot: v%d.%d.%d-b%d",
+                          evt->data.evt_system_boot.major,
+                          evt->data.evt_system_boot.minor,
+                          evt->data.evt_system_boot.patch,
+                          evt->data.evt_system_boot.build);
 
       app_bluetooth_init_and_start_advertisement();
       break;
@@ -232,7 +238,7 @@ void sl_bt_on_event(sl_bt_msg_t *evt)
 
     // This event indicates that a new connection was opened.
     case sl_bt_evt_connection_opened_id:
-      app_log_info("app: conn opened");
+      SL_SID_LOG_APP_INFO("BLE connection opened");
 #if defined(SL_SIDEWALK_DMP_FSK_SUPPORTED)
       sc = sl_bt_connection_set_parameters(evt->data.evt_connection_opened.connection,
                                            80,      // min. con. interval (milliseconds * 1.25)
@@ -255,11 +261,11 @@ void sl_bt_on_event(sl_bt_msg_t *evt)
     // -------------------------------
     // This event indicates that a connection was closed.
     case sl_bt_evt_connection_closed_id:
-      app_log_info("app: conn closed");
+      SL_SID_LOG_APP_INFO("BLE connection closed");
       if (advertising_set_handle != APP_BLUETOOTH_INVALID_ADV_SET_HANDLE) {
         app_bluetooth_start_advertisement();
       }
-      app_log_info("app: started adv");
+      SL_SID_LOG_APP_INFO("BLE advertising started");
 
       break;
 
@@ -307,12 +313,12 @@ void sl_bt_on_event(sl_bt_msg_t *evt)
         if (evt->data.evt_gatt_server_characteristic_status.client_config_flags & sl_bt_gatt_notification) {
           // The client just enabled the notification. Send notification of the
           // current button state stored in the local GATT table.
-          app_log_info("app: notif enabled");
+          SL_SID_LOG_APP_INFO("BLE gatt notifications enabled");
 
           sc = send_report_notification(gattdb_report_button);
           app_log_status_error(sc);
         } else {
-          app_log_info("app: notif disabled");
+          SL_SID_LOG_APP_INFO("BLE gatt notifications disabled");
         }
       }
       break;
@@ -349,7 +355,7 @@ static sl_status_t update_report_characteristic(uint16_t attribute, uint8_t data
                                                sizeof(data_send),
                                                &data_send);
   if (sc == SL_STATUS_OK) {
-    app_log_info("app: update btn characteristic (%d) : attr written: 0x%02x", attribute, (int)data_send);
+    SL_SID_LOG_APP_INFO("BLE button characteristic updated, attribute: %d, data: 0x%02x", attribute, (int)data_send);
   }
 
   return sc;
@@ -382,7 +388,7 @@ static sl_status_t send_report_notification(uint16_t attribute)
                                     sizeof(data_send),
                                     &data_send);
   if (sc == SL_STATUS_OK) {
-    app_log_info("app: send report notif (%d) : notif sent: 0x%02x", attribute, (int)data_send);
+    SL_SID_LOG_APP_INFO("BLE report notification sent, attribute: %d, data: 0x%02x", attribute, (int)data_send);
   }
   return sc;
 }

@@ -10,7 +10,20 @@ metadata:
 root_path: "component"
 
 config_file:
-  - path: sidewalk_common/config/sl_sidewalk_common_config.h
+  - path: sidewalk_common/config/ble_subghz/sl_sidewalk_common_config.h
+    condition:
+      - sl_sidewalk_radio_ble
+      - sl_sidewalk_radio_subghz
+  - path: sidewalk_common/config/ble/sl_sidewalk_common_config.h
+    condition:
+      - sl_sidewalk_radio_ble
+    unless:
+      - sl_sidewalk_radio_subghz
+  - path: sidewalk_common/config/subghz/sl_sidewalk_common_config.h
+    condition:
+      - sl_sidewalk_radio_subghz
+    unless:
+      - sl_sidewalk_radio_ble
   - path: sidewalk_common/config/sl_sidewalk_properties.h
 
 provides:
@@ -21,6 +34,7 @@ provides:
   - name: sl_sidewalk_radio_external
     condition:
       - device_generic_family_efr32xg21
+      - spidrv
   - name: sl_sidewalk_radio_external
     condition:
       - device_generic_family_efr32xg24
@@ -28,6 +42,7 @@ provides:
   - name: sl_sidewalk_radio_external
     condition:
       - device_generic_family_efr32xg26
+      - spidrv
 #######################################
 # FAMILIES WITH NATIVE SUBGHZ RADIO
 #######################################
@@ -42,6 +57,15 @@ provides:
     condition:
       - device_generic_family_efr32xg28
       - device_has_radio_subghz
+#######################################
+# COMMON FEATURE FOR SUBGHZ RADIO
+#######################################
+  - name: sl_sidewalk_radio_subghz
+    condition:
+      - sl_sidewalk_radio_native
+  - name: sl_sidewalk_radio_subghz
+    condition:
+      - sl_sidewalk_radio_external
 #######################################
 # FAMILIES WITH BLE
 #######################################
@@ -68,6 +92,7 @@ provides:
 
 requires:
   - name: "sidewalk_pal_swi"
+  - name: "sl_common"
 
 define:
   - name: DUAL_LINK_SUPPORT
@@ -119,7 +144,7 @@ define:
     condition:
       - si70xx_driver
   - name: BUFFER_SIZE_UP
-    value: 8192
+    value: 4096
     condition:
       - iostream_rtt
   - name: SEGGER_RTT_PRINTF_BUFFER_SIZE
@@ -129,6 +154,12 @@ define:
   - name: SL_SIDEWALK_RTT_PRESENT
     condition:
       - iostream_rtt
+  - name: SL_SIDEWALK_CLI_DEFAULT_TERMINAL_ID
+    value: 0
+    condition:
+      - cli
+  - name: SL_SIDEWALK_EXTENSION_VERSION
+    value: "2.1.0"
 
 library:
   - path: "ble_subghz/lib/sl_lib_ble_subghz.a"

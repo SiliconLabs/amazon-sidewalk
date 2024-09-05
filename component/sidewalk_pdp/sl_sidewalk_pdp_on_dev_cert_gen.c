@@ -69,7 +69,7 @@ sl_sid_pdp_status_t sl_sid_pdp_on_dev_cert_gen_init(const uint8_t * const in, ui
     goto cleanup;
   }
 
-  sid_pal_mfg_store_region_t mfg_store_region = {0};
+  sid_pal_mfg_store_region_t mfg_store_region = { 0 };
   sid_pal_mfg_store_init(mfg_store_region);
 
   sid_ret = sid_on_dev_cert_init();

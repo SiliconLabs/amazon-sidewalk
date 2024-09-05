@@ -432,22 +432,6 @@ void sl_app_trigger_ota_dfu_min_scratch_buf_size_request(void);
 #endif
 
 /*******************************************************************************
- * Application function to update counter and send
- *
- * @param[in] void
- * @returns None
- ******************************************************************************/
-void sl_app_trigger_send_counter_update(void);
-
-/*******************************************************************************
- * Application function to trigger Factory reset
- *
- * @param[in] void
- * @returns None
- ******************************************************************************/
-void sl_app_trigger_factory_reset(void);
-
-/*******************************************************************************
  * Application function to trigger get time
  *
  * @param[in] void

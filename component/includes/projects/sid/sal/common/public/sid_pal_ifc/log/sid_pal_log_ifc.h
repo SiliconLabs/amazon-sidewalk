@@ -25,6 +25,16 @@
 
 #include <stdint.h>
 #include <stdbool.h>
+#include "sl_component_catalog.h"
+#if defined(SL_CATALOG_SIDEWALK_LOG_STACK_RTT_PRESENT)
+#include "sl_sidewalk_log_stack_rtt_config.h"
+#elif defined(SL_CATALOG_SIDEWALK_LOG_STACK_VCOM_PRESENT)
+#include "sl_sidewalk_log_stack_vcom_config.h"
+#else
+#if !defined(SL_SIDEWALK_UNIT_TEST)
+#error "No logging interface defined for stack layer"
+#endif
+#endif
 
 #ifdef __cplusplus
 extern "C" {
@@ -32,19 +42,11 @@ extern "C" {
 
 typedef enum
 {
-    SID_PAL_LOG_SEVERITY_ERROR =    0,
-    SID_PAL_LOG_SEVERITY_WARNING =  1,
-    SID_PAL_LOG_SEVERITY_INFO =     2,
-    SID_PAL_LOG_SEVERITY_DEBUG =    3
+  SID_PAL_LOG_SEVERITY_ERROR = 0,
+  SID_PAL_LOG_SEVERITY_WARNING = 1,
+  SID_PAL_LOG_SEVERITY_INFO = 2,
+  SID_PAL_LOG_SEVERITY_DEBUG = 3
 } sid_pal_log_severity_t;
-
-#ifndef SID_PAL_LOG_LEVEL
-#define SID_PAL_LOG_LEVEL  SID_PAL_LOG_SEVERITY_INFO
-#endif
-
-#ifndef SID_PAL_LOG_ENABLED
-#define SID_PAL_LOG_ENABLED 1
-#endif
 
 /**
  * Printf style logging function
@@ -160,7 +162,7 @@ void sid_pal_hexdump(sid_pal_log_severity_t severity, const void *address, int l
 
 #define SID_PAL_LOG(level, fmt_, ...)                                                           \
     do {                                                                                        \
-        if (level <= sid_log_control_get_current_log_level())  {  \
+        if (level <= SID_PAL_LOG_LEVEL)  {  \
             sid_pal_log(level, SID_PAL_VA_NARG(__VA_ARGS__), fmt_, ##__VA_ARGS__);              \
         }                                                                                       \
     } while(0)

@@ -713,7 +713,7 @@ int32_t sid_pal_radio_set_tx_power(int8_t power)
     return err;
 }
 
-int32_t sid_pal_radio_sleep(uint32_t sleep_ms)
+int32_t sid_pal_radio_sleep(uint32_t sleep_us)
 {
     int32_t err;
 
@@ -908,7 +908,24 @@ int32_t sid_pal_radio_start_rx(uint32_t timeout)
     return err;
 }
 
-int32_t sid_pal_radio_start_carrier_sense(uint32_t timeout, sid_pal_radio_cad_param_exit_mode_t exit_mode)
+int32_t sid_pal_radio_is_cad_exit_mode(sid_pal_radio_cad_param_exit_mode_t exit_mode)
+{
+    int32_t err = RADIO_ERROR_NONE;
+
+    if (!((exit_mode == SID_PAL_RADIO_CAD_EXIT_MODE_CS_ONLY) ||
+        (exit_mode == SID_PAL_RADIO_CAD_EXIT_MODE_CS_RX) ||
+        (exit_mode == SID_PAL_RADIO_CAD_EXIT_MODE_CS_LBT) ||
+        (exit_mode == SID_PAL_RADIO_CAD_EXIT_MODE_ED_ONLY) ||
+        (exit_mode == SID_PAL_RADIO_CAD_EXIT_MODE_ED_RX) ||
+        (exit_mode == SID_PAL_RADIO_CAD_EXIT_MODE_ED_LBT))) {
+        err = RADIO_ERROR_INVALID_PARAMS;
+    }
+
+    return err;
+}
+
+int32_t sid_pal_radio_start_carrier_sense(const sid_pal_radio_fsk_cad_params_t *cad_params,
+                                          sid_pal_radio_cad_param_exit_mode_t exit_mode)
 {
     int32_t err;
 
@@ -916,6 +933,10 @@ int32_t sid_pal_radio_start_carrier_sense(uint32_t timeout, sid_pal_radio_cad_pa
 
         if (drv_ctx.modem != SID_PAL_RADIO_MODEM_MODE_FSK) {
             err = RADIO_ERROR_INVALID_PARAMS;
+            break;
+        }
+
+        if ((err = sid_pal_radio_is_cad_exit_mode(exit_mode)) != RADIO_ERROR_NONE) {
             break;
         }
 
@@ -943,10 +964,11 @@ int32_t sid_pal_radio_start_carrier_sense(uint32_t timeout, sid_pal_radio_cad_pa
             break;
         }
 
-        if (sx126x_set_rx(&drv_ctx, US_TO_SEMTEC_TICKS(timeout)) != SX126X_STATUS_OK) {
+        if (sx126x_set_rx(&drv_ctx, US_TO_SEMTEC_TICKS(cad_params->fsk_cs_duration_us)) != SX126X_STATUS_OK) {
             err = RADIO_ERROR_HARDWARE_ERROR;
             break;
         }
+        drv_ctx.settings_cache.fsk_cad_params = *cad_params;
         drv_ctx.radio_state = SID_PAL_RADIO_RX;
         drv_ctx.cad_exit_mode = exit_mode;
      } while(0);

@@ -60,6 +60,9 @@
 
 #define RF_NOISE_FLOOR                           (-90)
 
+#define EFR32XGXX_FSK_TX_PROCESS_DELAY_US 1000
+#define EFR32XGXX_FSK_RX_PROCESS_DELAY_US 1000
+
 // -----------------------------------------------------------------------------
 //                          Static Function Declarations
 // -----------------------------------------------------------------------------
@@ -396,4 +399,14 @@ static void radio_pp_to_efr32xgxx_pp(efr32xgxx_pkt_params_gfsk_t *fsk_pp,
   fsk_pp->pld_len_in_bytes      = packet_params->payload_length;
   fsk_pp->crc_type              = (efr32xgxx_gfsk_crc_types_t)packet_params->crc_type;
   fsk_pp->dc_free               = (efr32xgxx_gfsk_dc_free_t)packet_params->radio_whitening_mode;
+}
+
+uint32_t sid_pal_radio_get_fsk_tx_process_delay(void)
+{
+  return EFR32XGXX_FSK_TX_PROCESS_DELAY_US;
+}
+
+uint32_t sid_pal_radio_get_fsk_rx_process_delay(void)
+{
+    return EFR32XGXX_FSK_RX_PROCESS_DELAY_US;
 }

@@ -69,9 +69,17 @@ enum SL_PINout {
   SL_PIN_MAX
 };
 
+struct GPIO_PinConfig{
+  sid_pal_gpio_direction_t dir;
+  sid_pal_gpio_input_t input_mode;
+  sid_pal_gpio_output_t output_mode;
+  sid_pal_gpio_pull_t pull_mode;
+};
+
 struct GPIO_LookupItem{
   uint32_t GPIO_Port;
   uint8_t Pin;
+  struct GPIO_PinConfig PinConfig;
   GPIO_Mode_TypeDef mode;
   sid_pal_gpio_irq_handler_t callback;
   struct {

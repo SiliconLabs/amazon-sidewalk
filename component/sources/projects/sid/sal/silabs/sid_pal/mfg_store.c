@@ -40,7 +40,13 @@
 // -----------------------------------------------------------------------------
 
 #include <sid_pal_mfg_store_ifc.h>
-#include <sid_pal_log_ifc.h>
+#if defined(SL_SIDEWALK_UNIT_TEST)
+#include "sl_sidewalk_log_pal_mock.h"
+#include "sl_sidewalk_log_app_mock.h"
+#else
+#include "sl_sidewalk_log_pal.h"
+#include "sl_sidewalk_log_app.h"
+#endif
 #include <stdalign.h>
 #include <stdint.h>
 #include <string.h>
@@ -52,7 +58,7 @@
  * is currently required for internal diagnostic apps and for SWAT
  */
 #if (defined (HALO_ENABLE_DIAGNOSTICS) && HALO_ENABLE_DIAGNOSTICS) || defined(SWAT_DEVICE_TYPE) \
-  || (defined(SL_SID_PDP_FEATURE_ON) && SL_SID_PDP_FEATURE_ON) \
+  || (defined(SL_SID_PDP_FEATURE_ON) && SL_SID_PDP_FEATURE_ON)                                  \
   || (defined(SL_CATALOG_SIDEWALK_DEVICE_BACKUP_PRESENT))
 #define ENABLE_MFG_STORE_WRITE
 #endif
@@ -111,14 +117,18 @@ void sid_pal_mfg_store_init(sid_pal_mfg_store_region_t mfg_store_region)
   if (!nvm3_defaultHandle->hasBeenOpened) {
     Ecode_t status = nvm3_initDefault();
     if (ECODE_NVM3_OK != status) {
-      SID_PAL_LOG_ERROR("pal: mfg store init err: %d", status);
+      SL_SID_LOG_PAL_ERROR("pal mfg: mfg store init err: %d", status);
       return;
     }
   }
 
   uint16_t obj_cnt = (uint16_t)nvm3_enumObjects(nvm3_defaultHandle, NULL, 0, SLI_SID_NVM3_KEY_MIN_MFG, SLI_SID_NVM3_KEY_MAX_MFG);
-  (void)obj_cnt;
-  SID_PAL_LOG_INFO("pal: mfg store opened with %d object(s)", obj_cnt);
+  if (obj_cnt) {
+    SL_SID_LOG_PAL_INFO("pal mfg: mfg store opened with %d object(s)", obj_cnt);
+    SL_SID_LOG_APP_INFO("mfg page valid");
+  } else {
+    SL_SID_LOG_PAL_WARNING("pal mfg: no objects found in mfg store");
+  }
 }
 
 void sid_pal_mfg_store_deinit(void)
@@ -130,25 +140,25 @@ int32_t sid_pal_mfg_store_write(uint16_t value, const uint8_t *buffer, uint16_t 
 {
 #ifdef ENABLE_MFG_STORE_WRITE
   if (!SLI_SID_NVM3_VALIDATE_KEY(MFG, value)) {
-    SID_PAL_LOG_ERROR("pal: mfg write, key 0x%.5x not in range (0x%.5x - 0x%.5x)", value, SLI_SID_NVM3_KEY_MIN_MFG_REL, SLI_SID_NVM3_KEY_MAX_MFG_REL);
+    SL_SID_LOG_PAL_ERROR("pal mfg: mfg write, key 0x%.5x not in range (0x%.5x - 0x%.5x)", value, SLI_SID_NVM3_KEY_MIN_MFG_REL, SLI_SID_NVM3_KEY_MAX_MFG_REL);
     return MFG_STORE_ERROR_ST_WRONG_KEY;
   }
 
   if (!buffer || length == 0) {
-    SID_PAL_LOG_ERROR("pal: mfg write, wrong input args");
+    SL_SID_LOG_PAL_ERROR("pal mfg: mfg write, wrong input args");
     return MFG_STORE_ERROR_ST_WRONG_INPUT_ARGS;
   }
 
   Ecode_t status = nvm3_writeData(nvm3_defaultHandle, SLI_SID_NVM3_MAP_KEY(MFG, value), buffer, (size_t)length);
   if (status != ECODE_NVM3_OK) {
-    SID_PAL_LOG_ERROR("pal: mfg write, write err: %d", status);
+    SL_SID_LOG_PAL_ERROR("pal mfg: mfg write, write err: %d", status);
     return MFG_STORE_ERROR_ST_WRITE_ERROR;
   }
 
   if (nvm3_repackNeeded(nvm3_defaultHandle)) {
     status = nvm3_repack(nvm3_defaultHandle);
     if (status != ECODE_NVM3_OK) {
-      SID_PAL_LOG_ERROR("pal: mfg write, repack err: %d", status);
+      SL_SID_LOG_PAL_ERROR("pal mfg: mfg write, repack err: %d", status);
       return MFG_STORE_ERROR_ST_REPACK_ERROR;
     }
   }
@@ -159,7 +169,7 @@ int32_t sid_pal_mfg_store_write(uint16_t value, const uint8_t *buffer, uint16_t 
   (void)buffer;
   (void)length;
 
-  SID_PAL_LOG_WARNING("pal: mfg write, write not activated");
+  SL_SID_LOG_PAL_WARNING("pal mfg: mfg write, write not activated");
 
   return MFG_STORE_ERROR_ST_WRITE_NOT_ACTIVATED;
 #endif
@@ -172,12 +182,12 @@ void sid_pal_mfg_store_read(uint16_t value, uint8_t *buffer, uint16_t length)
   uint32_t mapped_key = SLI_SID_NVM3_MAP_KEY(MFG, value);
 
   if (!SLI_SID_NVM3_VALIDATE_KEY(MFG, value)) {
-    SID_PAL_LOG_ERROR("pal: mfg read, key 0x%.5x not in range (0x%.5x - 0x%.5x)", value, SLI_SID_NVM3_KEY_MIN_MFG_REL, SLI_SID_NVM3_KEY_MAX_MFG_REL);
+    SL_SID_LOG_PAL_ERROR("pal mfg: mfg read, key 0x%.5x not in range (0x%.5x - 0x%.5x)", value, SLI_SID_NVM3_KEY_MIN_MFG_REL, SLI_SID_NVM3_KEY_MAX_MFG_REL);
     return;
   }
 
   if (!buffer || length == 0) {
-    SID_PAL_LOG_ERROR("pal: mfg read, wrong input args");
+    SL_SID_LOG_PAL_ERROR("pal mfg: mfg read, wrong input args");
     return;
   }
 
@@ -194,7 +204,7 @@ uint16_t sid_pal_mfg_store_get_length_for_value(uint16_t value)
   size_t object_length = 0;
 
   if (!SLI_SID_NVM3_VALIDATE_KEY(MFG, value)) {
-    SID_PAL_LOG_ERROR("pal: mfg get len for value, key 0x%.5x not in range (0x%.5x - 0x%.5x)", value, SLI_SID_NVM3_KEY_MIN_MFG_REL, SLI_SID_NVM3_KEY_MAX_MFG_REL);
+    SL_SID_LOG_PAL_ERROR("pal mfg: mfg get len for value, key 0x%.5x not in range (0x%.5x - 0x%.5x)", value, SLI_SID_NVM3_KEY_MIN_MFG_REL, SLI_SID_NVM3_KEY_MAX_MFG_REL);
     return object_length;
   }
 
@@ -212,13 +222,13 @@ int32_t sid_pal_mfg_store_erase(void)
 
   obj_cnt = nvm3_enumObjects(nvm3_defaultHandle, NULL, 0, SLI_SID_NVM3_KEY_MIN_MFG, SLI_SID_NVM3_KEY_MAX_MFG);
   if (obj_cnt == 0) {
-    SID_PAL_LOG_INFO("pal: mfg erase, nothing to erase");
+    SL_SID_LOG_PAL_INFO("pal mfg: mfg erase, nothing to erase");
     return MFG_STORE_ERROR_ST_SUCCESS;
   }
 
   key_list = (nvm3_ObjectKey_t *)sl_calloc(obj_cnt, sizeof(nvm3_ObjectKey_t));
   if (!key_list) {
-    SID_PAL_LOG_ERROR("pal: mfg erase, out of memory");
+    SL_SID_LOG_PAL_ERROR("pal mfg: mfg erase, out of memory");
     return MFG_STORE_ERROR_ST_OUT_OF_MEMORY;
   }
 
@@ -226,7 +236,7 @@ int32_t sid_pal_mfg_store_erase(void)
   for (uint32_t i = 0; i < obj_cnt; i++) {
     status = nvm3_deleteObject(nvm3_defaultHandle, key_list[i]);
     if (ECODE_NVM3_OK != status) {
-      SID_PAL_LOG_ERROR("pal: mfg erase, erase err: %d", status);
+      SL_SID_LOG_PAL_ERROR("pal mfg: mfg erase, erase err: %d", status);
       sl_free(key_list);
       return MFG_STORE_ERROR_ST_DELETE_ERROR;
     }
@@ -237,7 +247,7 @@ int32_t sid_pal_mfg_store_erase(void)
 
   return MFG_STORE_ERROR_ST_SUCCESS;
 #else
-  SID_PAL_LOG_WARNING("pal: mfg erase, erase not activated");
+  SL_SID_LOG_PAL_WARNING("pal mfg: mfg erase, erase not activated");
 
   return MFG_STORE_ERROR_ST_ERASE_NOT_ACTIVATED;
 #endif

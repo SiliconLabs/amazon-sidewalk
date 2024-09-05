@@ -50,4 +50,5 @@ class PrivKeyProv(PDPModeBase):
   def _provision_dd(self, **kwargs):
     for mfg_obj_id, mfg_obj_data in kwargs['dynamic_data'].items():
       tx_pkt = PrivKeyProv._mfg_obj_dispatch[mfg_obj_id](self, mfg_obj_id, mfg_obj_data)
-      self._pdp.comm_send_receive(tx_pkt)
+      if self._pdp.comm_send_receive(tx_pkt) == None:
+        raise Exception("Provisioning failed")

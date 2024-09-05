@@ -41,6 +41,7 @@ extern "C" {
 #include "app_init.h"
 #include "sl_sidewalk_led_manager.h"
 #include "app_bluetooth.h"
+#include "sl_sidewalk_log_app.h"
 
 // -----------------------------------------------------------------------------
 //                              Macros and Typedefs
@@ -48,7 +49,7 @@ extern "C" {
 #if defined(SL_SID_APP_MSG_PRESENT)
 #define APP_DROP_REQUEST_IF_ONGOING_OTHERWISE_ACCEPT(app_action_ctx, temp_action_ctx) \
   if (app_action_ctx.hdl.processing) {                                                \
-    app_log_warning("app: request already ongoing - drop");                           \
+    SL_SID_LOG_APP_WARNING("request already ongoing, dropped");                       \
     return;                                                                           \
   } else {                                                                            \
     app_action_ctx.hdl.processing = true;                                             \

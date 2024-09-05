@@ -29,6 +29,7 @@ requires:
   - name: "psa_crypto"
   - name: "psa_driver"
   - name: "psa_crypto_sha512"
+  - name: "memory_manager"
 #-------------- Template Contribution ----------------
 template_contribution:
 #---------------- Component Catalog ------------------

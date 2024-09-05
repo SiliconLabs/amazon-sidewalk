@@ -58,6 +58,10 @@ typedef struct {
     uint16_t                                     irq_mask;
     uint16_t                                     trim;
     uint32_t                                     radio_freq_hz;
+
+    struct {
+        sid_pal_radio_fsk_cad_params_t           fsk_cad_params;
+    }                                            settings_cache;
     radio_sx126x_regional_param_t                regional_radio_param;
 } halo_drv_semtech_ctx_t;
 

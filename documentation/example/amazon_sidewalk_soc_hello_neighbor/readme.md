@@ -61,7 +61,7 @@ The J-Link RTT interface provides access to the CLI commands. The following tabl
 
 ## Interacting with the Cloud
 
-Gain additional insight on the network activity from the cloud perspective by using the techniques described in [Getting Started: Interacting with the Cloud](https://docs.silabs.com/amazon-sidewalk/latest/interacting-with-the-cloud).
+Gain additional insight on the network activity from the cloud perspective by using the techniques described in [Getting Started: Interacting with the Cloud](https://docs.silabs.com/amazon-sidewalk/latest/sidewalk-getting-started/interacting-with-the-cloud).
 
 ## Report Bugs & Get Support
 

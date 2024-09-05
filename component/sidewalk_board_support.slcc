@@ -28,6 +28,14 @@ requires:
   - name: "tempdrv"
     condition:
       - device_has_emu_temp_sensor
+  - name: "emlib_gpio"
+  - name: "freertos"
+    condition:
+      - hardware_board_has_si70xx
+  - name: "freertos"
+    condition:
+      - device_has_emu_temp_sensor
+  - name: "app_assert"
 
 define:
   - name: SL_BOARD_SUPPORT

@@ -46,7 +46,7 @@
 #include <sid_900_cfg.h>
 #include <sx126x.h>
 #include <sx126x_radio.h>
-#include <sid_pal_log_ifc.h>
+#include "sl_sidewalk_log_pal.h"
 
 #include <sl_spidrv_exp_config.h>
 #define SL_SPI_PERIPHERAL_ID         SL_SPIDRV_EXP_PERIPHERAL
@@ -267,6 +267,8 @@ const struct sid_sub_ghz_links_config sub_ghz_link_config = {
     .enable = true,
     .periodicity_s = UINT32_MAX,
   },
+  .link2_max_tx_power_in_dbm = RADIO_MAX_TX_POWER_NA,
+  .link3_max_tx_power_in_dbm = RADIO_MAX_TX_POWER_NA,
 };
 
 const struct sid_sub_ghz_links_config *app_get_sub_ghz_config(void)
@@ -295,7 +297,7 @@ static int32_t sx126x_dio3_output_voltage(uint8_t voltage)
   int32_t err = SID_ERROR_GENERIC;
   uint8_t reg_val = 0;
   do {
-    SID_PAL_LOG_INFO("sx126x_dio3_output_voltage %d", voltage);
+    SL_SID_LOG_PAL_INFO("pal sx126x: sx126x_dio3_output_voltage %d", voltage);
 
     reg_val = 0x1 << 3;
     // set bit 3 of 0x0580
@@ -337,7 +339,7 @@ static int32_t radio_dio3_ctrl_voltage(void)
 {
   int32_t err = SID_ERROR_NONE;
   if ((err = sx126x_dio3_output_voltage(RADIO_SX126X_TCXO_CTRL_3_3V)) != SID_ERROR_NONE) {
-    SID_PAL_LOG_ERROR("sx126x_dio3_output_voltage error");
+    SL_SID_LOG_PAL_ERROR("pal sx126x: sx126x_dio3_output_voltage error");
   }
   return err;
 }

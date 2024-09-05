@@ -39,7 +39,11 @@
 //                                   Includes
 // -----------------------------------------------------------------------------
 #include <sid_pal_assert_ifc.h>
-#include <sid_pal_log_ifc.h>
+#if defined(SL_SIDEWALK_UNIT_TEST)
+#include "sl_sidewalk_log_pal_mock.h"
+#else
+#include "sl_sidewalk_log_pal.h"
+#endif
 #if defined(SID_PAL_ASSERT_DISABLED)
 #pragma message "Asserts are disabled."
 #else
@@ -103,7 +107,7 @@ __WEAK void sl_assert_app_callback(uint16_t line_num,
   (void)line_num;
   (void)file_name;
 #else
-  SID_PAL_LOG_ERROR("pal: received a fault! %s @ %d", file_name, line_num);
+  SL_SID_LOG_PAL_ERROR("received a fault! %s @ %d", file_name, line_num);
 #endif
 }
 

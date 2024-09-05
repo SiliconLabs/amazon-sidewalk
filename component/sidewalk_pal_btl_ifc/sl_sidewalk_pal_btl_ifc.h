@@ -57,7 +57,7 @@ uint32_t sid_pal_btl_ifc_get_free_space(void);
  * @param[in] offset Offset from the start addres of bootloader slot 0
  * @param[in] data Pointer to the data to be written
  * @param[in] data_len Data length
- * 
+ *
  * @return true for success and false for failure
  ******************************************************************************/
 bool sid_pal_btl_ifc_write(uint32_t offset, void *data, uint32_t data_len);
@@ -68,7 +68,7 @@ bool sid_pal_btl_ifc_write(uint32_t offset, void *data, uint32_t data_len);
  *
  * @param[in] data_len Data length over which the CRC will be computed
  * @param[in] expected_crc Expected CRC
- * 
+ *
  * @return true for success and false for failure
  ******************************************************************************/
 bool sid_pal_btl_ifc_finalize(uint32_t data_len, uint32_t expected_crc);
@@ -86,7 +86,7 @@ void sid_pal_btl_ifc_reboot(void);
  * @param[in] p_data Data
  * @param[in] size Data length
  * @param[in] p_crc Previous CRC
- * 
+ *
  * @return true for success and false for failure
  ******************************************************************************/
 uint32_t sid_pal_btl_ifc_crc32_compute(uint8_t const *p_data, uint32_t size, uint32_t const *p_crc);

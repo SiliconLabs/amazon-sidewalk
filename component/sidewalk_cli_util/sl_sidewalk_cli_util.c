@@ -87,11 +87,11 @@ static uint32_t sl_app_util_printable_hex_line(char *line_buffer,
  * @brief App util get string
  *****************************************************************************/
 sl_status_t sl_sidewalk_cli_util_get_string(char *const value_str,
-                                   uint32_t value,
-                                   const sl_sidewalk_cli_util_enum_t *const value_enum_list,
-                                   uint8_t is_value_signed,
-                                   uint8_t is_value_hex,
-                                   uint8_t value_length)
+                                            uint32_t value,
+                                            const sl_sidewalk_cli_util_enum_t *const value_enum_list,
+                                            uint8_t is_value_signed,
+                                            uint8_t is_value_hex,
+                                            uint8_t value_length)
 {
   const sl_sidewalk_cli_util_enum_t *value_enum;
   char value_format_str[10];
@@ -153,9 +153,9 @@ sl_status_t sl_sidewalk_cli_util_get_string(char *const value_str,
  * @brief App util get integer
  *****************************************************************************/
 sl_status_t sl_sidewalk_cli_util_get_integer(uint32_t *const value,
-                                    const char *value_str,
-                                    const sl_sidewalk_cli_util_enum_t *const value_enum_list,
-                                    uint8_t is_value_signed)
+                                             const char *value_str,
+                                             const sl_sidewalk_cli_util_enum_t *const value_enum_list,
+                                             uint8_t is_value_signed)
 {
   const sl_sidewalk_cli_util_enum_t *value_enum;
   uint32_t value_base = 10;
@@ -197,7 +197,7 @@ sl_status_t sl_sidewalk_cli_util_get_integer(uint32_t *const value,
  * @brief App util get enum by string
  *****************************************************************************/
 const sl_sidewalk_cli_util_enum_t *sl_sidewalk_cli_util_get_enum_by_string(const sl_sidewalk_cli_util_enum_t *value_enum_list,
-                                                    const char *const value)
+                                                                           const char *const value)
 {
   while (value_enum_list && value_enum_list->value_str) {
     if (!strcmp(value_enum_list->value_str, value)) {
@@ -214,7 +214,7 @@ const sl_sidewalk_cli_util_enum_t *sl_sidewalk_cli_util_get_enum_by_string(const
  * @brief App util get enum by integerApp util get enum by integer
  *****************************************************************************/
 const sl_sidewalk_cli_util_enum_t *sl_sidewalk_cli_util_get_enum_by_integer(const sl_sidewalk_cli_util_enum_t *value_enum_list,
-                                                     uint32_t value)
+                                                                            uint32_t value)
 {
   while (value_enum_list && value_enum_list->value_str) {
     if (value_enum_list->value == value) {
@@ -231,10 +231,10 @@ const sl_sidewalk_cli_util_enum_t *sl_sidewalk_cli_util_get_enum_by_integer(cons
  * @brief App util printable data init
  *****************************************************************************/
 char *sl_sidewalk_cli_util_printable_data_init(sl_sidewalk_cli_util_printable_data_ctx_t *const ctx,
-                                      const uint8_t *const data,
-                                      const uint16_t data_length,
-                                      uint8_t is_hex,
-                                      uint8_t line_length)
+                                               const uint8_t *const data,
+                                               const uint16_t data_length,
+                                               uint8_t is_hex,
+                                               uint8_t line_length)
 {
   if (!line_length) {
     return NULL;

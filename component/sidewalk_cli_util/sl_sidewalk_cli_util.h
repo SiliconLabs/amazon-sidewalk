@@ -92,11 +92,11 @@ typedef struct {
  * @return sl_status_t SL_STATUS_OK on success, SL_STATUS_FAIL on error
  *****************************************************************************/
 sl_status_t sl_sidewalk_cli_util_get_string(char *const value_str,
-                                   uint32_t value,
-                                   const sl_sidewalk_cli_util_enum_t *const value_enum_list,
-                                   uint8_t is_value_signed,
-                                   uint8_t is_value_hex,
-                                   uint8_t value_length);
+                                            uint32_t value,
+                                            const sl_sidewalk_cli_util_enum_t *const value_enum_list,
+                                            uint8_t is_value_signed,
+                                            uint8_t is_value_hex,
+                                            uint8_t value_length);
 
 /**************************************************************************//**
  * @brief Get an integer from app util.
@@ -108,9 +108,9 @@ sl_status_t sl_sidewalk_cli_util_get_string(char *const value_str,
  * @return sl_status_t SL_STATUS_OK on success, SL_STATUS_FAIL on error
  *****************************************************************************/
 sl_status_t sl_sidewalk_cli_util_get_integer(uint32_t *const value,
-                                    const char *value_str,
-                                    const sl_sidewalk_cli_util_enum_t *const value_enum_list,
-                                    uint8_t is_value_signed);
+                                             const char *value_str,
+                                             const sl_sidewalk_cli_util_enum_t *const value_enum_list,
+                                             uint8_t is_value_signed);
 
 /**************************************************************************//**
  * @brief Get a string enum from app util.
@@ -120,7 +120,7 @@ sl_status_t sl_sidewalk_cli_util_get_integer(uint32_t *const value,
  * @return const sl_sidewalk_cli_util_enum_t* result ptr or NULL on error
  *****************************************************************************/
 const sl_sidewalk_cli_util_enum_t* sl_sidewalk_cli_util_get_enum_by_string(const sl_sidewalk_cli_util_enum_t *value_enum_list,
-                                                    const char *const value);
+                                                                           const char *const value);
 
 /**************************************************************************//**
  * @brief App util get enum by integer.
@@ -130,7 +130,7 @@ const sl_sidewalk_cli_util_enum_t* sl_sidewalk_cli_util_get_enum_by_string(const
  * @return const sl_sidewalk_cli_util_enum_t* result ptr or NULL on error
  *****************************************************************************/
 const sl_sidewalk_cli_util_enum_t* sl_sidewalk_cli_util_get_enum_by_integer(const sl_sidewalk_cli_util_enum_t *value_enum_list,
-                                                     uint32_t value);
+                                                                            uint32_t value);
 
 /**************************************************************************//**
  * @brief App util printable data init.
@@ -143,10 +143,10 @@ const sl_sidewalk_cli_util_enum_t* sl_sidewalk_cli_util_get_enum_by_integer(cons
  * @return char* Printable data ptr
  *****************************************************************************/
 char *sl_sidewalk_cli_util_printable_data_init(sl_sidewalk_cli_util_printable_data_ctx_t *const ctx,
-                                      const uint8_t *const data,
-                                      const uint16_t data_length,
-                                      uint8_t is_hex,
-                                      uint8_t line_length);
+                                               const uint8_t *const data,
+                                               const uint16_t data_length,
+                                               uint8_t is_hex,
+                                               uint8_t line_length);
 
 /**************************************************************************//**
  * @brief App util get next printable data.

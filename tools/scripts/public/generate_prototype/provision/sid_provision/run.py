@@ -42,6 +42,9 @@ SIG_SIZE: int = 64
 
 MFG_NVM3_KEY_BASE = 0xA9000 # see component/includes/projects/sid/sal/silabs/sid_pal/include/nvm3_manager.h
 
+# Currently used NVM3 version (1.0.0.0)
+SL_NVM3_VERSION_VAL = b'\x01\x00\x00\x00'
+
 # pylint: disable=C0114,C0115,C0116
 
 
@@ -133,6 +136,11 @@ class SidMfgValueId(Enum):
     SID_PAL_MFG_STORE_AMZN_PUB_P256R1 = (MFG_NVM3_KEY_BASE + 0x25, 64)
     SID_PAL_MFG_STORE_APID = (MFG_NVM3_KEY_BASE + 0x26, 4)
     SID_PAL_MFG_STORE_CORE_VALUE_MAX = (MFG_NVM3_KEY_BASE + 0xFA0, None)
+
+    """
+    Silicon Labs application specific identifiers
+    """
+    SID_PAL_MFG_STORE_SL_NVM3_VERSION = (MFG_NVM3_KEY_BASE + 0xFA1, 4)
 
     def __init__(self, value: int, size: int) -> None:
         # Overload the value so that the enum value corresponds to the
@@ -576,6 +584,8 @@ class SidMfgBBJson(SidMfg):
                     SidMfgValueId.SID_PAL_MFG_STORE_PRODUCT_P256R1_SERIAL,
                     unhex(_cert.p256r1_serial),
                 )
+        self.append(SidMfgValueId.SID_PAL_MFG_STORE_SL_NVM3_VERSION, SL_NVM3_VERSION_VAL)
+
 
     @classmethod
     def from_args(cls, args, pa) -> SidMfgBBJson:
@@ -685,6 +695,7 @@ class SidMfgAcsJson(SidMfg):
 
         self.append(SidMfgValueId.SID_PAL_MFG_STORE_AMZN_PUB_ED25519, self._ed25519.root_pub)
         self.append(SidMfgValueId.SID_PAL_MFG_STORE_AMZN_PUB_P256R1, self._p256r1.root_pub)
+        self.append(SidMfgValueId.SID_PAL_MFG_STORE_SL_NVM3_VERSION, SL_NVM3_VERSION_VAL)
 
     @classmethod
     def from_args(cls, args, pa) -> SidMfgAcsJson:
@@ -860,6 +871,7 @@ class SidMfgAwsJson(SidMfg):
 
         self.append(SidMfgValueId.SID_PAL_MFG_STORE_AMZN_PUB_ED25519, self._ed25519.root_pub)
         self.append(SidMfgValueId.SID_PAL_MFG_STORE_AMZN_PUB_P256R1, self._p256r1.root_pub)
+        self.append(SidMfgValueId.SID_PAL_MFG_STORE_SL_NVM3_VERSION, SL_NVM3_VERSION_VAL)
 
     def _get_apid_from_aws_device_profile_json(self, _aws_device_profile_json):
         def _get_device_type_id_from_dak(_aws_device_profile_json):
@@ -1286,7 +1298,7 @@ PLATFORM_CHIP_ARG = SidArgument(
 PLATFORM_ADDRESS_ARG = SidArgument(
     name="--addr",
     intype=auto_int,
-    help="""Address offset at which mfg page will be stored, this value does not need to be given since 
+    help="""Address offset at which mfg page will be stored, this value does not need to be given since
             it is taken from chip argument \n is useful if the default value needs to be overridden""",
     additional_help=get_additional_addr_help,
 )
@@ -1424,9 +1436,11 @@ ARG_GROUPS = [
         chips=[
             SidChipAddr(name="xg21", full_name="EFR32MG21B020F1024IM32", offset_addr=0x000F8000),
             SidChipAddr(name="xg24", full_name="EFR32MG24BA020F1536GM48", offset_addr=0x08178000, default=True),
+            SidChipAddr(name="xg26", full_name="EFR32MG26B420F3200IM48", offset_addr=0x08318000),
             SidChipAddr(name="xg28", full_name="EFR32ZG28B322F1024IM68", offset_addr=0x080F8000),
             SidChipAddr(name="xg23", full_name="EFR32ZG23B020F512IM48", offset_addr=0x8078000),
             SidChipAddr(name="xg25", full_name="EFR32FG25B222F1920IM56", offset_addr=0x081D8000),
+            SidChipAddr(name="xg27", full_name="EFR32MG27C140F768IM40", offset_addr=0x080B8000),
         ],
     ),
     SidPlatformArgs(

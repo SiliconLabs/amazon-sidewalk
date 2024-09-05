@@ -5,3 +5,4 @@ yubihsm
 packaging
 requests
 pyyaml
+pyserial

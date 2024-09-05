@@ -43,6 +43,20 @@
 #include "gpiointerrupt.h"
 #include <gpio.h>
 
+#ifdef SL_SIDEWALK_UNIT_TEST
+#include "em_gpio_test.h"
+#endif
+
+// -----------------------------------------------------------------------------
+//                            Defines for Unittesting
+// -----------------------------------------------------------------------------
+#ifdef SL_SIDEWALK_UNIT_TEST
+#define GPIO_PinInGet GPIO_PinInGet_stub
+#define GPIO_PinOutSet GPIO_PinOutSet_stub
+#define GPIO_PinOutClear GPIO_PinOutClear_stub
+#define GPIO_PinOutToggle GPIO_PinOutToggle_stub
+#endif
+
 // -----------------------------------------------------------------------------
 //                                Global Variables
 // -----------------------------------------------------------------------------
@@ -63,6 +77,65 @@ static void gpio_irq_handler(uint8_t pin)
   }
 }
 
+static void sid_pal_pin_mode_input(struct GPIO_LookupItem *lookupptr,
+                                   enum GPIO_Mode_TypeDef_enum *mode,
+                                   bool *out)
+{
+  if (lookupptr->PinConfig.input_mode == SID_PAL_GPIO_INPUT_DISCONNECT) {
+    if (lookupptr->PinConfig.pull_mode == SID_PAL_GPIO_PULL_UP) {
+      *mode = gpioModeDisabled;
+      *out = 1;
+    } else {
+      *mode = gpioModeDisabled;
+      *out = 0;
+    }
+  } else if (lookupptr->PinConfig.input_mode == SID_PAL_GPIO_INPUT_CONNECT) {
+    if (lookupptr->PinConfig.pull_mode == SID_PAL_GPIO_PULL_UP) {
+      *mode = gpioModeInputPull;
+      *out = 1;
+    } else if (lookupptr->PinConfig.pull_mode == SID_PAL_GPIO_PULL_DOWN) {
+      *mode = gpioModeInputPull;
+      *out = 0;
+    } else if (lookupptr->PinConfig.pull_mode == SID_PAL_GPIO_PULL_NONE) {
+      *mode = gpioModeInput;
+      *out = 0;
+    }
+  }
+}
+
+static void sid_pal_pin_mode_output(struct GPIO_LookupItem *lookupptr,
+                                    enum GPIO_Mode_TypeDef_enum *mode,
+                                    bool *out)
+{
+  if (lookupptr->PinConfig.output_mode == SID_PAL_GPIO_OUTPUT_PUSH_PULL) {
+    *mode = gpioModePushPull;
+    *out = 0;
+  } else if (lookupptr->PinConfig.output_mode == SID_PAL_GPIO_OUTPUT_OPEN_DRAIN) {
+    if (lookupptr->PinConfig.pull_mode == SID_PAL_GPIO_PULL_UP) {
+      *mode = gpioModeWiredAndPullUp;
+      *out = 0;
+    } else {
+      *mode = gpioModeWiredAnd;
+      *out = 0;
+    }
+  }
+}
+
+static void sid_pal_pin_mode_set(struct GPIO_LookupItem *lookupptr)
+{
+  enum GPIO_Mode_TypeDef_enum mode = gpioModeDisabled;
+  bool out = 0;
+
+  if (lookupptr->PinConfig.dir == SID_PAL_GPIO_DIRECTION_INPUT) {
+    sid_pal_pin_mode_input(lookupptr, &mode, &out);
+  } else if (lookupptr->PinConfig.dir == SID_PAL_GPIO_DIRECTION_OUTPUT) {
+    sid_pal_pin_mode_output(lookupptr, &mode, &out);
+  }
+
+  GPIO_PinModeSet(lookupptr->GPIO_Port, lookupptr->Pin, mode, out);
+  lookupptr->mode = mode;
+}
+
 // -----------------------------------------------------------------------------
 //                          Public Function Definitions
 // -----------------------------------------------------------------------------
@@ -79,17 +152,12 @@ sid_error_t sid_pal_gpio_set_direction(uint32_t gpio_number,
   if (gpio_number < SL_PIN_MAX) {
     lookupptr = &gpio_lookup_table[gpio_number];
 
-    if (direction == SID_PAL_GPIO_DIRECTION_INPUT) {
-      GPIO_PinModeSet(lookupptr->GPIO_Port, lookupptr->Pin, gpioModeInput, 0);
-      gpio_lookup_table[gpio_number].mode = gpioModeInput;
-      retval = SID_ERROR_NONE;
-    } else if (direction == SID_PAL_GPIO_DIRECTION_OUTPUT) {
-      GPIO_PinModeSet(lookupptr->GPIO_Port, lookupptr->Pin, gpioModePushPull, 0);
-      gpio_lookup_table[gpio_number].mode = gpioModePushPull;
-      retval = SID_ERROR_NONE;
-    }
+    lookupptr->PinConfig.dir = direction;
+
+    sid_pal_pin_mode_set(lookupptr);
+    retval = SID_ERROR_NONE;
   } else {
-    retval = SID_ERROR_PARAM_OUT_OF_RANGE;
+    retval = SID_ERROR_INVALID_ARGS;
   }
   return retval;
 }
@@ -107,15 +175,12 @@ sid_error_t sid_pal_gpio_input_mode(uint32_t gpio_number,
   if (gpio_number < SL_PIN_MAX) {
     lookupptr = &gpio_lookup_table[gpio_number];
 
-    if (mode == SID_PAL_GPIO_INPUT_CONNECT) {
-      GPIO_PinModeSet(lookupptr->GPIO_Port, lookupptr->Pin, gpioModeInput, 0);
-      retval = SID_ERROR_NONE;
-    } else if (mode == SID_PAL_GPIO_INPUT_DISCONNECT) {
-      GPIO_PinModeSet(lookupptr->GPIO_Port, lookupptr->Pin, gpioModeDisabled, 0);
-      retval = SID_ERROR_NONE;
-    }
+    lookupptr->PinConfig.input_mode = mode;
+
+    sid_pal_pin_mode_set(lookupptr);
+    retval = SID_ERROR_NONE;
   } else {
-    retval = SID_ERROR_PARAM_OUT_OF_RANGE;
+    retval = SID_ERROR_INVALID_ARGS;
   }
   return retval;
 }
@@ -133,17 +198,13 @@ sid_error_t sid_pal_gpio_output_mode(uint32_t gpio_number,
   if (gpio_number < SL_PIN_MAX) {
     lookupptr = &gpio_lookup_table[gpio_number];
 
-    if (mode == SID_PAL_GPIO_OUTPUT_PUSH_PULL) {
-      GPIO_PinModeSet(lookupptr->GPIO_Port, lookupptr->Pin, gpioModePushPull, 0);
-      lookupptr->mode = gpioModePushPull;
-      retval = SID_ERROR_NONE;
-    } else if (mode == SID_PAL_GPIO_OUTPUT_OPEN_DRAIN) {
-      GPIO_PinModeSet(lookupptr->GPIO_Port, lookupptr->Pin, gpioModeWiredAnd, 0);
-      lookupptr->mode = gpioModeWiredAnd;
-      retval = SID_ERROR_NONE;
-    }
+    lookupptr->PinConfig.output_mode = mode;
+
+    sid_pal_pin_mode_set(lookupptr);
+
+    retval = SID_ERROR_NONE;
   } else {
-    retval = SID_ERROR_PARAM_OUT_OF_RANGE;
+    retval = SID_ERROR_INVALID_ARGS;
   }
   return retval;
 }
@@ -161,19 +222,12 @@ sid_error_t sid_pal_gpio_pull_mode(uint32_t gpio_number,
   if (gpio_number < SL_PIN_MAX) {
     lookupptr = &gpio_lookup_table[gpio_number];
 
-    if (pull == SID_PAL_GPIO_PULL_DOWN) {
-      GPIO_PinModeSet(lookupptr->GPIO_Port, lookupptr->Pin, lookupptr->mode, 0);
-      retval = SID_ERROR_NONE;
-    } else if (pull == SID_PAL_GPIO_PULL_UP) {
-      GPIO_PinModeSet(lookupptr->GPIO_Port, lookupptr->Pin, lookupptr->mode, 1);
-      retval = SID_ERROR_NONE;
-    } else if (pull == SID_PAL_GPIO_PULL_NONE) {
-      GPIO_PinModeSet(lookupptr->GPIO_Port, lookupptr->Pin, gpioModeWiredAnd, 0);
-      lookupptr->mode = gpioModeWiredAnd;
-      retval = SID_ERROR_NONE;
-    }
+    lookupptr->PinConfig.pull_mode = pull;
+
+    sid_pal_pin_mode_set(lookupptr);
+    retval = SID_ERROR_NONE;
   } else {
-    retval = SID_ERROR_NOSUPPORT;
+    retval = SID_ERROR_INVALID_ARGS;
   }
   return retval;
 }
@@ -260,8 +314,7 @@ sid_error_t sid_pal_gpio_set_irq(uint32_t gpio_number,
       break;
 
     default:
-      retval = SID_ERROR_NOSUPPORT;
-      break;
+      return SID_ERROR_NOSUPPORT;
   }
 
   if (gpio_number < SL_PIN_MAX) {

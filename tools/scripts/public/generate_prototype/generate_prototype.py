@@ -57,7 +57,7 @@ try:
 
     BASE_ADDRESS = {
         0x00000000: ['xg21'],
-        0x08000000: ['xg24', 'xg28', 'xg23']
+        0x08000000: ['xg23', 'xg24', 'xg25', 'xg26', 'xg27', 'xg28']
     }
 
     class ResultLog:
@@ -92,12 +92,19 @@ try:
             self.dir       = ''
             self.devices   = []
 
+    class ResultNvm3Info:
+        def __init__(self) -> None:
+            self.nvm3Version  = '1.0.0.0'
+            self.mfgKeyOffset = '0xa9000'
+            self.smsnKey      = '0xa9004'
+
     class Result:
         def __init__(self) -> None:
             self.sessionID = ''
             self.generatorResult = 0
             self.generatorResultMessage = ''
             self.logs = []
+            self.nvm3Info = ResultNvm3Info()
             self.generatedProfiles = []
 
         def toJSON(self):

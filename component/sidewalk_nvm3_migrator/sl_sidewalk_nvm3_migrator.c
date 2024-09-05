@@ -39,7 +39,6 @@
 //                                   Includes
 // -----------------------------------------------------------------------------
 #include "app_assert.h"
-#include "app_log.h"
 #include "nvm3.h"
 #include "nvm3_hal_flash.h"
 #include "nvm3_manager.h"
@@ -47,6 +46,7 @@
 #include "sl_memory_manager.h"
 #include "sl_sidewalk_nvm3_migrator.h"
 #include "sl_sidewalk_nvm3_migrator_config.h"
+#include "sl_sidewalk_log_pal.h"
 
 // -----------------------------------------------------------------------------
 //                              External Variables
@@ -196,7 +196,7 @@ static void set_version(uint8_t v0, uint8_t v1, uint8_t v2, uint8_t v3)
                                     SLI_SID_NVM3_MAP_KEY(MFG, SID_PAL_MFG_STORE_SL_NVM3_VERSION),
                                     version,
                                     SID_PAL_MFG_STORE_SL_NVM3_VERSION_SIZE);
-  app_assert(nvm3_res == ECODE_NVM3_OK, "nvm3_migrator: writing version failed");
+  app_assert(nvm3_res == ECODE_NVM3_OK, "pal nvm3_migrator: writing version failed");
 }
 
 /**************************************************************************//**
@@ -211,7 +211,7 @@ static void ensure_copy_buffer_size(uint32_t obj_len)
   if (obj_len > copy_buffer_size) {
     sl_free(copy_buffer);
     copy_buffer = (uint8_t *) sl_calloc(obj_len, sizeof(uint8_t));
-    app_assert(copy_buffer != NULL, "nvm3_migrator: extending copy buffer failed");
+    app_assert(copy_buffer != NULL, "pal nvm3_migrator: extending copy buffer failed");
     copy_buffer_size = obj_len;
   }
 }
@@ -232,14 +232,14 @@ static uint32_t prepare_nvm3_instances(void)
 
   // Close DI
   nvm3_res = nvm3_deinitDefault();
-  app_assert(nvm3_res == ECODE_NVM3_OK, "nvm3_migrator: the default instance cannot be closed");
+  app_assert(nvm3_res == ECODE_NVM3_OK, "pal nvm3_migrator: the default instance cannot be closed");
 
   // Open temporary NVM3 instances
-  app_log_info("nvm3_migrator: opening instance A (orignal KV)");
+  SL_SID_LOG_PAL_INFO("pal nvm3_migrator: opening instance A (orignal KV)");
   total_obj_count += open_temp_instance(&instance_a, &instance_a_initdata);
-  app_log_info("nvm3_migrator: opening instance B (orignal MFG)");
+  SL_SID_LOG_PAL_INFO("pal nvm3_migrator: opening instance B (orignal MFG)");
   total_obj_count += open_temp_instance(&instance_b, &instance_b_initdata);
-  app_log_info("nvm3_migrator: opening instance C (orignal DI)");
+  SL_SID_LOG_PAL_INFO("pal nvm3_migrator: opening instance C (orignal DI)");
   total_obj_count += open_temp_instance(&instance_c, &instance_c_initdata);
 
   return total_obj_count;
@@ -258,21 +258,21 @@ static uint32_t open_temp_instance(nvm3_Handle_t ** instance, nvm3_Init_t * init
 {
   // Allocate space for the temporary instance
   *instance = (nvm3_Handle_t *) sl_calloc(1, sizeof(nvm3_Handle_t));
-  app_assert(*instance != NULL, "nvm3_migrator: temp instance allocation failed");
+  app_assert(*instance != NULL, "pal nvm3_migrator: temp instance allocation failed");
 
   // Allocate space for the temporary instance cache
   initdata->cachePtr = (nvm3_CacheEntry_t *) sl_calloc(TEMP_INSTANCE_CACHE_SIZE, sizeof(nvm3_CacheEntry_t));
-  app_assert(initdata->cachePtr != NULL, "nvm3_migrator: temp instance cache allocation failed");
+  app_assert(initdata->cachePtr != NULL, "pal nvm3_migrator: temp instance cache allocation failed");
 
   // Open temporary instances
   Ecode_t nvm3_res = nvm3_open(*instance, initdata);
-  app_assert(nvm3_res == ECODE_NVM3_OK, "nvm3_migrator: opening temp instance failed");
+  app_assert(nvm3_res == ECODE_NVM3_OK, "pal nvm3_migrator: opening temp instance failed");
 
   uint32_t obj_cnt = (uint32_t)nvm3_enumObjects(*instance, NULL, 0, NVM3_KEY_MIN, NVM3_KEY_MAX);
-  app_log_info("nvm3_migrator:     start addr: %x, size: %d, object num: %d",
-               (int) initdata->nvmAdr,
-               (int) initdata->nvmSize,
-               (int) obj_cnt);
+  SL_SID_LOG_PAL_INFO("pal nvm3_migrator:     start addr: %x, size: %d, object num: %d",
+                      (int) initdata->nvmAdr,
+                      (int) initdata->nvmSize,
+                      (int) obj_cnt);
 
   return obj_cnt;
 }
@@ -285,29 +285,29 @@ static void migrate_nvm3_data(void)
 {
   // Allocate copy buffer with default size
   copy_buffer = (uint8_t *) sl_calloc(copy_buffer_size, sizeof(uint8_t));
-  app_assert(copy_buffer != NULL, "nvm3_migrator: copy buffer allocation failed");
+  app_assert(copy_buffer != NULL, "pal nvm3_migrator: copy buffer allocation failed");
 
   // Do the migration for each default instance
   // Do not change order of instances as an underlying function relies on it.
   if (check_version(0, 0, 0, 1)) {
-    app_log_info("nvm3_migrator: migrating KV ...");
+    SL_SID_LOG_PAL_INFO("pal nvm3_migrator: migrating KV ...");
     migrate_objects_per_instance(instance_a);
     set_version(0, 0, 0, 2);
-    app_log_info("nvm3_migrator: ... DONE, version set to 0.0.0.2");
+    SL_SID_LOG_PAL_INFO("pal nvm3_migrator: ... DONE, version set to 0.0.0.2");
   }
 
   if (check_version(0, 0, 0, 2)) {
-    app_log_info("nvm3_migrator: migrating MFG ...");
+    SL_SID_LOG_PAL_INFO("pal nvm3_migrator: migrating MFG ...");
     migrate_objects_per_instance(instance_b);
     set_version(0, 0, 0, 3);
-    app_log_info("nvm3_migrator: ... DONE, version set to 0.0.0.3");
+    SL_SID_LOG_PAL_INFO("pal nvm3_migrator: ... DONE, version set to 0.0.0.3");
   }
 
   if (check_version(0, 0, 0, 3)) {
-    app_log_info("nvm3_migrator: migrating DI ...");
+    SL_SID_LOG_PAL_INFO("pal nvm3_migrator: migrating DI ...");
     migrate_objects_per_instance(instance_c);
     set_version(1, 0, 0, 0);
-    app_log_info("nvm3_migrator: ... DONE, version set to 1.0.0.0");
+    SL_SID_LOG_PAL_INFO("pal nvm3_migrator: ... DONE, version set to 1.0.0.0");
   }
 
   // Free the copy buffer
@@ -350,14 +350,14 @@ static void migrate_objects_per_instance(nvm3_Handle_t * src_instance)
 
     // Get object size
     nvm3_res = nvm3_getObjectInfo(src_instance, orig_key, &obj_type, (size_t*) &obj_len);
-    app_assert(nvm3_res == ECODE_NVM3_OK, "nvm3_migrator: getting object info failed");
+    app_assert(nvm3_res == ECODE_NVM3_OK, "pal nvm3_migrator: getting object info failed");
 
     // Check if copy buffer is sufficient, extend if needed
     ensure_copy_buffer_size(obj_len);
 
     // Read object
     nvm3_res = nvm3_readData(src_instance, orig_key, copy_buffer, obj_len);
-    app_assert(nvm3_res == ECODE_NVM3_OK, "nvm3_migrator: reading original object failed");
+    app_assert(nvm3_res == ECODE_NVM3_OK, "pal nvm3_migrator: reading original object failed");
 
     if (src_instance == instance_a) {
       new_key = SLI_SID_NVM3_MAP_KEY(KV, orig_key);
@@ -369,11 +369,11 @@ static void migrate_objects_per_instance(nvm3_Handle_t * src_instance)
 
     // Write the object to instance A with its new key
     nvm3_res = nvm3_writeData(instance_a, new_key, copy_buffer, obj_len);
-    app_assert(nvm3_res == ECODE_NVM3_OK, "nvm3_migrator: writing new object failed");
+    app_assert(nvm3_res == ECODE_NVM3_OK, "pal nvm3_migrator: writing new object failed");
 
     // Delete the original object
     nvm3_res = nvm3_deleteObject(src_instance, orig_key);
-    app_assert(nvm3_res == ECODE_NVM3_OK, "nvm3_migrator: deleting original object failed");
+    app_assert(nvm3_res == ECODE_NVM3_OK, "pal nvm3_migrator: deleting original object failed");
   }
 
   sl_free(key_list);
@@ -417,7 +417,7 @@ static void get_key_list_from_instance(nvm3_Handle_t * instance, uint32_t * obj_
   }
 
   *key_list = (nvm3_ObjectKey_t *) sl_calloc(*obj_cnt, sizeof(nvm3_ObjectKey_t));
-  app_assert(*key_list != NULL, "nvm3_migrator: key list allocation failed");
+  app_assert(*key_list != NULL, "pal nvm3_migrator: key list allocation failed");
 
   nvm3_enumObjects(instance, *key_list, *obj_cnt, NVM3_KEY_MIN, NVM3_KEY_MAX);
 }
@@ -430,10 +430,10 @@ static void cleanup_nvm3_instances(void)
   close_temp_instance(&instance_a, &(instance_a_initdata.cachePtr));
   close_temp_instance(&instance_b, &(instance_b_initdata.cachePtr));
   close_temp_instance(&instance_c, &(instance_c_initdata.cachePtr));
-  app_log_info("nvm3_migrator: temp instances closed");
+  SL_SID_LOG_PAL_INFO("pal nvm3_migrator: temp instances closed");
 
   Ecode_t nvm3_res = nvm3_initDefault();
-  app_assert(nvm3_res == ECODE_NVM3_OK, "nvm3_migrator: the default instance cannot be reopened");
+  app_assert(nvm3_res == ECODE_NVM3_OK, "pal nvm3_migrator: the default instance cannot be reopened");
 }
 
 /**************************************************************************//**
@@ -445,7 +445,7 @@ static void cleanup_nvm3_instances(void)
 static void close_temp_instance(nvm3_Handle_t ** instance, nvm3_CacheEntry_t ** cache)
 {
   Ecode_t nvm3_res = nvm3_close(*instance);
-  app_assert(nvm3_res == ECODE_NVM3_OK, "nvm3_migrator: closing temp instance failed");
+  app_assert(nvm3_res == ECODE_NVM3_OK, "pal nvm3_migrator: closing temp instance failed");
 
   sl_free(*cache);
   *cache = NULL;
@@ -462,7 +462,7 @@ void sl_sidewalk_nvm3_migrator_run(void)
   // Ensure Default Instance is opened before checking if migration is needed
   if (nvm3_defaultHandle->hasBeenOpened == false) {
     Ecode_t nvm3_res = nvm3_initDefault();
-    app_assert(nvm3_res == ECODE_NVM3_OK, "nvm3_migrator: the default instance cannot be opened");
+    app_assert(nvm3_res == ECODE_NVM3_OK, "pal nvm3_migrator: the default instance cannot be opened");
   }
 
   // Check NVM3 structure version
@@ -470,16 +470,16 @@ void sl_sidewalk_nvm3_migrator_run(void)
                                            SLI_SID_NVM3_MAP_KEY(MFG, SID_PAL_MFG_STORE_SL_NVM3_VERSION),
                                            version,
                                            SID_PAL_MFG_STORE_SL_NVM3_VERSION_SIZE);
-  app_log_info("nvm3_migrator: initial version read (err code: %x, version: %d.%d.%d.%d)",
-               (int) nvm3_res_version,
-               (int) version[0],
-               (int) version[1],
-               (int) version[2],
-               (int) version[3]);
+  SL_SID_LOG_PAL_INFO("pal nvm3_migrator: initial version read (err code: %x, version: %d.%d.%d.%d)",
+                      (int) nvm3_res_version,
+                      (int) version[0],
+                      (int) version[1],
+                      (int) version[2],
+                      (int) version[3]);
 
   // Return as early as possible if the new NVM3 structure version is already in use
   if ((nvm3_res_version == ECODE_NVM3_OK) && (check_version(1, 0, 0, 0))) {
-    app_log_info("nvm3_migrator: NVM3 structure is up to date, no migration is needed");
+    SL_SID_LOG_PAL_INFO("pal nvm3_migrator: NVM3 structure is up to date, no migration is needed");
     // Note: NVM3 DI can be left open at this point
     return;
   }
@@ -494,18 +494,18 @@ void sl_sidewalk_nvm3_migrator_run(void)
       set_version(0, 0, 0, 1);
       migrate_nvm3_data();
     } else {
-      app_assert(false, "nvm3_migrator: reading the version failed");
+      app_assert(false, "pal nvm3_migrator: reading the version failed");
     }
   } else {
 #if defined(SL_CATALOG_SIDEWALK_DEVICE_BACKUP_PRESENT)
     cleanup_nvm3_instances();
-    app_log_info("nvm3_migrator: no NVM3 object found at all, return and rely on device backup");
+    SL_SID_LOG_PAL_INFO("pal nvm3_migrator: no NVM3 object found at all, return and rely on device backup");
     return;
 #else
-    app_assert(false, "nvm3_migrator: no NVM3 object found at all");
+    app_assert(false, "pal nvm3_migrator: no NVM3 object found at all");
 #endif // defined(SL_CATALOG_SIDEWALK_DEVICE_BACKUP_PRESENT)
   }
 
   cleanup_nvm3_instances();
-  app_log_info("nvm3_migrator: migration DONE");
+  SL_SID_LOG_PAL_INFO("pal nvm3_migrator: migration DONE");
 }

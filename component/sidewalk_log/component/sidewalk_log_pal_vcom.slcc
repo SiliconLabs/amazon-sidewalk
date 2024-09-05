@@ -1,0 +1,27 @@
+id: "sidewalk_log_pal_vcom"
+label: "Sidewalk Log: PAL VCOM"
+package: "Flex"
+description: "Sidewalk VCOM log functionality to be used by PAL layer"
+category: Example|AWS IoT
+quality: production
+metadata:
+  sbom:
+    license: Zlib
+root_path: "component/sidewalk_log/src/pal"
+
+requires:
+  - name: sidewalk_log_core
+provides:
+  - name: sidewalk_log_pal_vcom
+source:
+  - path: sl_sidewalk_log_pal.c
+include:
+  - path: .
+    file_list:
+    - path: sl_sidewalk_log_pal.h
+config_file:
+  - path: config/sl_sidewalk_log_pal_vcom_config.h
+
+template_contribution:
+  - name: component_catalog
+    value: sidewalk_log_pal_vcom

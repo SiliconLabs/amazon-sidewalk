@@ -11,6 +11,26 @@ root_path: "component/sidewalk_device_backup"
 
 provides:
   - name: "sidewalk_device_backup"
+requires:
+  - name: "sidewalk_nvm3_handler"
+  - name: "nvm3_lib"
+  - name: "sidewalk_log_pal_rtt"
+  - name: "app_assert"
+  - name: "memory_manager"
+  - name: "emlib_msc"
+    condition:
+      - device_generic_family_efr32xg24
+  - name: "emlib_msc"
+    condition:
+      - device_generic_family_efr32xg28
+  - name: "clock_manager_runtime"
+    condition:
+      - device_generic_family_efr32xg24
+  - name: "clock_manager_runtime"
+    condition:
+      - device_generic_family_efr32xg28
+  - name: "se_manager"
+  - name: "sidewalk_ble_subghz"
 source:
   - path: "sl_sidewalk_device_backup.c"
 include:

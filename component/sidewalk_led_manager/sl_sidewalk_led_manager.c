@@ -33,8 +33,8 @@
 // -----------------------------------------------------------------------------
 #include "sl_sidewalk_led_manager.h"
 #include "sl_common.h"
-#include "app_log.h"
 #include "sl_simple_led_instances.h"
+#include "sl_sidewalk_log_pal.h"
 
 // -----------------------------------------------------------------------------
 //                              Macros and Typedefs
@@ -59,7 +59,7 @@
 void sl_sidewalk_led_manager_toggle_led(uint8_t led_id)
 {
   if (led_id > SL_SIMPLE_LED_COUNT - 1) {
-    app_log_error("app: led %d does not exist", led_id);
+    SL_SID_LOG_PAL_ERROR("pal led: LED %d does not exist", led_id);
     return;
   }
 
@@ -71,13 +71,13 @@ void sl_sidewalk_led_manager_toggle_led(uint8_t led_id)
 
   switch (new_led_state) {
     case SL_LED_CURRENT_STATE_OFF:
-      app_log_info("app: LED off");
+      SL_SID_LOG_PAL_INFO("pal led: LED off");
       break;
     case SL_LED_CURRENT_STATE_ON:
-      app_log_info("app: LED on");
+      SL_SID_LOG_PAL_INFO("pal led: LED on");
       break;
     default:
-      app_log_error("app: led manager toggle led error: %d", new_led_state);
+      SL_SID_LOG_PAL_ERROR("pal led: toggle LED error: %d", new_led_state);
       return;
   }
 

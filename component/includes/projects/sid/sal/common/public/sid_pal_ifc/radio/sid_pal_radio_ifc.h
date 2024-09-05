@@ -112,6 +112,7 @@ typedef enum {
     SID_PAL_RADIO_CAD_EXIT_MODE_CS_ONLY    = 0x00, // Carrier sense only
     SID_PAL_RADIO_CAD_EXIT_MODE_CS_RX      = 0x01, // Carrier sense followed by Rx
     SID_PAL_RADIO_CAD_EXIT_MODE_CS_LBT     = 0x10, // Carrier sense followed by Tx
+    SID_PAL_RADIO_CAD_EXIT_MODE_CS_LBT_RX  = 0x11, // Carrier sense followed by Tx then RX
     SID_PAL_RADIO_CAD_EXIT_MODE_ED_ONLY    = 0x100,// Energy detect only
     SID_PAL_RADIO_CAD_EXIT_MODE_ED_RX      = 0x101,// Energy detect followed by Rx
     SID_PAL_RADIO_CAD_EXIT_MODE_ED_LBT     = 0x110,// Energy detect followed by Tx
@@ -283,7 +284,7 @@ int32_t sid_pal_radio_set_region(sid_pal_radio_region_code_t region);
  *
  *  @retval  On success RADIO_ERROR_NONE, on error a negative number is returned
  */
-int32_t sid_pal_radio_sleep(uint32_t sleep_ms);
+int32_t sid_pal_radio_sleep(uint32_t sleep_us);
 
 /** @brief Set the radio to standby.
  *
@@ -313,7 +314,8 @@ int32_t sid_pal_set_radio_busy(void);
  *
  *  @retval  On success RADIO_ERROR_NONE, on error a negative number is returned
  */
-int32_t sid_pal_radio_start_carrier_sense(uint32_t timeout, sid_pal_radio_cad_param_exit_mode_t exit_mode);
+int32_t sid_pal_radio_start_carrier_sense(const sid_pal_radio_fsk_cad_params_t *cad_params,
+                                          sid_pal_radio_cad_param_exit_mode_t exit_mode);
 
 /** @brief Set the radio in receive mode
  *
@@ -478,6 +480,15 @@ int32_t sid_pal_radio_get_cca_level_adjust(sid_pal_radio_data_rate_t data_rate, 
  *  @retval  On success RADIO_ERROR_NONE, on error a negative number is returned
  */
 int32_t sid_pal_radio_get_radio_state_transition_delays(sid_pal_radio_state_transition_timings_t *state_delay);
+
+/** @brief Check the CAD exit mode.
+ *
+ *  Check with supported CAD exit modes
+ *  @param[in]    mode CAD exit mode.
+ *
+ *  @retval  On success RADIO_ERROR_NONE, on error a negative number is returned
+ */
+int32_t sid_pal_radio_is_cad_exit_mode(sid_pal_radio_cad_param_exit_mode_t mode);
 
 /** Radio LoRa Modulation specific APIs*/
 
@@ -698,6 +709,20 @@ uint32_t sid_pal_radio_fsk_time_on_air(const sid_pal_radio_fsk_modulation_params
  */
 uint32_t sid_pal_radio_fsk_get_fsk_number_of_symbols(const sid_pal_radio_fsk_modulation_params_t *mod_params,
                                              uint32_t delay_micro_secs);
+
+/**
+ * @brief Get the time between Tx schedule and the first bit of Tx
+ *
+ * @retval Delay in microsecond
+ */
+uint32_t sid_pal_radio_get_fsk_tx_process_delay(void);
+
+/**
+ * @brief Get the time of FSK Rx processing delay
+ *
+ * @retval Delay in microsecond
+ */
+uint32_t sid_pal_radio_get_fsk_rx_process_delay(void);
 
 /** @brief Setup transmit in fsk mode.
  *

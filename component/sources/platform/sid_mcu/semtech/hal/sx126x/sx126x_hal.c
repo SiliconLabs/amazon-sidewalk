@@ -220,7 +220,7 @@ sx126x_hal_status_t sx126x_hal_read(const void* context, const uint8_t* command,
         status = SX126X_STATUS_OK;
     } while(0);
 
-    return status;
+    return status == SX126X_STATUS_OK ? SX126X_HAL_STATUS_OK : SX126X_HAL_STATUS_ERROR;
 }
 
 sx126x_hal_status_t sx126x_hal_write(const void* context, const uint8_t* command, const uint16_t command_length,
@@ -246,5 +246,5 @@ sx126x_hal_status_t sx126x_hal_write(const void* context, const uint8_t* command
         status = SX126X_STATUS_OK;
     } while(0);
 
-    return status;
+    return status == SX126X_STATUS_OK ? SX126X_HAL_STATUS_OK : SX126X_HAL_STATUS_ERROR;
 }

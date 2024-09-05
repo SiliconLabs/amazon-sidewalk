@@ -128,6 +128,8 @@ struct sid_sub_ghz_links_config sub_ghz_link_config = {
     .enable = true,
     .periodicity_s = UINT32_MAX,
   },
+  .link2_max_tx_power_in_dbm = RADIO_MAX_TX_POWER_NA,
+  .link3_max_tx_power_in_dbm = RADIO_MAX_TX_POWER_NA,
 };
 
 struct sid_sub_ghz_links_config* app_get_sub_ghz_config(void)

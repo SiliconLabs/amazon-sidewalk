@@ -40,7 +40,11 @@
 // -----------------------------------------------------------------------------
 #include <sid_pal_timer_ifc.h>
 #include <sid_pal_uptime_ifc.h>
-#include <sid_pal_log_ifc.h>
+#if defined(SL_SIDEWALK_UNIT_TEST)
+#include "sl_sidewalk_log_pal_mock.h"
+#else
+#include "sl_sidewalk_log_pal.h"
+#endif
 #include <sid_pal_assert_ifc.h>
 #include <sid_time_ops.h>
 #include <string.h>
@@ -201,7 +205,7 @@ sid_error_t sid_pal_timer_arm(sid_pal_timer_t * timer,
   }
   int status = sl_sleeptimer_start_timer(&(timer->sleeptimer_handle), timeout_tick, sleeptimer_callback, timer, priority, 0);
   if (status != SID_ERROR_NONE) {
-    SID_PAL_LOG_ERROR("pal: arm timer failed");
+    SL_SID_LOG_PAL_ERROR("pal timer: timer arm failed");
   }
   return SID_ERROR_NONE;
 }

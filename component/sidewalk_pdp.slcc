@@ -11,6 +11,7 @@ root_path: "component"
 
 provides:
   - name: "sidewalk_pdp"
+  - name: "sidewalk_base_component"
 include:
   - path: "sidewalk_pdp"
     file_list:
@@ -68,7 +69,6 @@ source:
   - path: "sidewalk_pdp/sl_sidewalk_pdp_on_dev_cert_gen.c"
   - path: "sources/projects/sid/sal/silabs/sid_pal/mfg_store.c"
   - path: "sources/projects/sid/sal/silabs/sid_pal/sid_pal_crypto_ifc.c"
-  - path: "sources/projects/sid/sal/silabs/sid_pal/log.c"
   - path: "sources/projects/sid/sal/silabs/sid_pal/nvm3_manager.c"
   - path: "sources/projects/sid/sal/silabs/sid_pal/assert.c"
   - path: "sources/projects/sid/sal/silabs/sid_pal/critical_region.c"
@@ -85,8 +85,27 @@ requires:
   - name: "psa_driver"
   - name: "psa_its"
   - name: "psa_crypto_eddsa"
+    condition: [device_has_semailbox]
   - name: "psa_crypto_ecdsa"
   - name: "psa_crypto_sha256"
+  - name: "sl_common"
+  - name: "component_catalog"
+  - name: "sidewalk_log_stack_rtt"
+  - name: "sidewalk_log_pal_rtt"
+  - name: "sidewalk_log_app_rtt"
+  - name: "iostream"
+  - name: "sl_string"
+  - name: "emlib_system"
+  - name: "memory_manager"
+  - name: "sidewalk_ed25519"
+    condition:
+      - device_generic_family_efr32xg27
+  - name: "cmsis_core"
+  - name: "app_assert"
+  - name: "emlib_core"
+  - name: "sleeptimer"
+conflicts:
+  - name: sidewalk_ble_subghz
 define:
   - name: "NVM3_DEFAULT_NVM_SIZE"
     value: "24576"

@@ -1,0 +1,27 @@
+id: "sidewalk_log_stack_rtt"
+label: "Sidewalk Log: stack RTT"
+package: "Flex"
+description: "Sidewalk RTT log functionality to be used by stack layer"
+category: Example|AWS IoT
+quality: production
+metadata:
+  sbom:
+    license: Zlib
+root_path: "component/sidewalk_log/src/stack"
+
+requires:
+  - name: segger_rtt
+  - name: iostream_rtt
+  - name: sidewalk_log_core
+provides:
+  - name: sidewalk_log_stack_rtt
+source:
+  - path: sl_sidewalk_log_stack.c
+config_file:
+  - path: config/sl_sidewalk_log_stack_rtt_config.h
+define:
+  - name: SID_PAL_LOG_RTT_ENABLED
+
+template_contribution:
+  - name: component_catalog
+    value: sidewalk_log_stack_rtt

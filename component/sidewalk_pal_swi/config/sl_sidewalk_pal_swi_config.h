@@ -46,6 +46,18 @@
 #endif
 // </h>
 
+// <h> Sidewalk PAL SWI configuration
+// <o SWI_TASK_STACK_SIZE> SWI task size if implementation method is RTOS thread
+// <i> Default: 1024
+#define SWI_TASK_STACK_SIZE    1024
+// </h>
+
+// <h> Sidewalk PAL SWI configuration
+// <o SWI3_PRIORITY> SWI3 interrupt priority if implementation method is SWI interrupt
+// <i> Default: 5
+#define SWI3_PRIORITY    5
+// </h>
+
 // <<< end of configuration section >>>
 
 #endif // SL_SIDEWALK_PAL_SWI_CONFIG_H

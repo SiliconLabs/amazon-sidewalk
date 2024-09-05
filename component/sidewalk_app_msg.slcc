@@ -11,6 +11,9 @@ root_path: "component/sidewalk_app_msg"
 
 provides:
   - name: "sidewalk_app_msg"
+requires:
+  - name: "sl_common"
+  - name: "sidewalk_ble_subghz"
 source:
   - path: "sl_sidewalk_app_msg_core.c"
   - path: "cmd_classes/sl_sidewalk_app_msg_dev_mgmt.c"

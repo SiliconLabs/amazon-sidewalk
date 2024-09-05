@@ -32,10 +32,9 @@ argparser.add_argument("--sid-usr-app-img", help="Sidewalk user application imag
 argparser.add_argument("--pdp-mode", help="PDP mode", type=str, choices=[PDPMode.PRIV_KEY_PROV, PDPMode.ON_DEV_CERT_GEN], required=True)
 args = argparser.parse_args()
 
-def generate_init_img(part, static_data, sid_usr_app_img):
-  commander = Commander()
+def generate_init_img(part, commander, static_data, sid_usr_app_img):
   logger.info("Creating NVM3 init file")
-  commander.create_nvm3_initfile(part.get_mfg_page_start_addr(), part.get_mfg_page_size(), part.get_jlink_device(), INITFILE_NAME)
+  commander.create_nvm3_initfile(part.get_mfg_page_start_addr(), part.get_mfg_page_size(), INITFILE_NAME)
   logger.info("Generating NVM3 content")
   nvm3_content = commander.generate_nvm3_content(static_data)
   logger.info("Saving NVM3 content file")
@@ -65,6 +64,7 @@ if __name__ == "__main__":
   logger.info("Starting sidewalk initialization image generation")
   create_working_folders()
   part = Part(args.part)
+  commander = Commander(part.get_jlink_device())
   sid_usr_app_img = args.sid_usr_app_img
   if args.pdp_mode == PDPMode.PRIV_KEY_PROV:
     sid_cert = None
@@ -74,7 +74,7 @@ if __name__ == "__main__":
       sid_cert = SidCertProto(args.sid_cert, sid_dev_prof.get_apid(), sid_dev_prof.get_app_srv_pub_key())
     elif args.sid_cert_type == SidCertType.PRODUCTION:
       sid_cert = SidCertProdOpenSSL(args.sid_cert)
-    generate_init_img(part, sid_cert.get_static_data(), sid_usr_app_img)
+    generate_init_img(part, commander, sid_cert.get_static_data(), sid_usr_app_img)
   elif args.pdp_mode == PDPMode.ON_DEV_CERT_GEN:
     if sid_usr_app_img:
       logger.info("Copying sidewalk user application into sidewalk initialization image")

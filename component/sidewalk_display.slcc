@@ -26,6 +26,9 @@ requires:
   - name: "glib"
   - name: "dmd_memlcd"
   - name: "sidewalk_utils"
+  - name: "emlib_gpio"
+  - name: "freertos"
+  - name: "sidewalk_qr_code"
 #-------------- Template Contribution ----------------
 template_contribution:
 #---------------- Component Catalog ------------------

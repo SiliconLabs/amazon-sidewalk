@@ -17,8 +17,10 @@ include:
     - path: app_process.h
 sdk_extension:
   - id: sidewalk
-    version: 2.1.0
+    version: 2.2.0
 component:
+  - id: app_log
+    from: sidewalk
   - id: "device_init"
   - id: "clock_manager"
   - id: "sidewalk_pdp"
@@ -33,17 +35,27 @@ component:
   - id: sleeptimer
   - id: memory_manager
   - id: sl_string
+  - id: sidewalk_log_app_rtt
+    from: sidewalk
+  - id: sidewalk_log_pal_rtt
+    from: sidewalk
+  - id: sidewalk_log_stack_rtt
+    from: sidewalk
 define:
   - name: "SL_SID_PDP_RX_BUF_SIZE"
     value: "896"
   - name: "SL_SID_PDP_TX_BUF_SIZE"
     value: "256"
   - name: "SID_PAL_ASSERT_DISABLED"
-  - name: "SID_PAL_LOG_ENABLED"
-    value: "0"
+configuration:
   - name: "APP_LOG_ENABLE"
     value: "0"
-configuration:
+  - name: "SL_SID_LOG_APP_ENABLED"
+    value: "0"
+  - name: "SL_SID_LOG_PAL_ENABLED"
+    value: "0"
+  - name: "SID_PAL_LOG_ENABLED"
+    value: "0"
   - name: "SL_STACK_SIZE"
     value: "4096"
   - name: "SL_HEAP_SIZE"
@@ -82,3 +94,7 @@ filter:
     value: ["SoC"]
   - name: "Project Difficulty"
     value: ["Advanced"]
+
+template_contribution:
+  - name: component_catalog
+    value: sidewalk_pdp

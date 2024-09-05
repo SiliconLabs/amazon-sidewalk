@@ -12,6 +12,8 @@ root_path: "component/sidewalk_pal_btl_ifc"
 requires:
   - name: "bootloader_interface"
   - name: "bootloader_app_properties"
+  - name: "sidewalk_log_pal_rtt"
+  - name: "sidewalk_ble_subghz"
 provides:
   - name: "sidewalk_pal_btl_ifc"
 source:

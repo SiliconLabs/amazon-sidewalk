@@ -32,8 +32,9 @@
 //                                   Includes
 // -----------------------------------------------------------------------------
 
+#include <string.h>
 #include "sl_system_init.h"
-#include "app_log.h"
+#include "sl_sidewalk_log_app.h"
 #include "app_assert.h"
 #include "app_init.h"
 #include "app_process.h"
@@ -43,6 +44,7 @@
 #include "sid_api.h"
 #include "sl_system_kernel.h"
 #include "sl_sidewalk_common_config.h"
+#include "sl_sidewalk_utils.h"
 
 #if (defined(SL_FSK_SUPPORTED) || defined(SL_CSS_SUPPORTED))
 #include "app_subghz_config.h"
@@ -51,14 +53,7 @@
 // -----------------------------------------------------------------------------
 //                              Macros and Typedefs
 // -----------------------------------------------------------------------------
-// Main task stack size
-#if defined(SL_EFR32XG24_LITE_SUPPORTED)
-#define MAIN_TASK_STACK_SIZE    (2048 / sizeof(configSTACK_DEPTH_TYPE))
-#elif defined(EFR32XG27)
-#define MAIN_TASK_STACK_SIZE    (3000 / sizeof(configSTACK_DEPTH_TYPE))
-#else
-#define MAIN_TASK_STACK_SIZE    (4096 / sizeof(configSTACK_DEPTH_TYPE))
-#endif
+
 // -----------------------------------------------------------------------------
 //                          Public Function Prototypes
 // -----------------------------------------------------------------------------
@@ -91,7 +86,19 @@ void app_init(void)
   // Initialize the Silabs system
   sl_system_init();
 
-  app_log_info("app: cli v%d", SL_SIDEWALK_APP_VERSION);
+  SL_SID_LOG_APP_INFO("CLI application started v%d", SL_SIDEWALK_APP_VERSION);
+  SL_SID_LOG_APP_INFO("sidewalk stack version %s", SID_SDK_VERSION_STRING);
+  SL_SID_LOG_APP_INFO("silabs sidewalk extension version %s", SL_SIDEWALK_EXT_VER_STR);
+
+  char smsn_str[SL_SIDEWALK_UTILS_SMSN_STR_LENGTH];
+  memset(smsn_str, 0, sizeof(smsn_str));
+  sl_sidewalk_utils_get_smsn_as_str(smsn_str, SL_SIDEWALK_UTILS_SMSN_STR_LENGTH);
+  SL_SID_LOG_APP_INFO("sidewalk SMSN: %s", smsn_str);
+
+  char sidewalk_id_str[SL_SIDEWALK_UTILS_SIDEWALK_ID_STR_LENGTH];
+  memset(sidewalk_id_str, 0, sizeof(sidewalk_id_str));
+  sl_sidewalk_utils_get_sidewalk_id_as_str(sidewalk_id_str, SL_SIDEWALK_UTILS_SIDEWALK_ID_STR_LENGTH);
+  SL_SID_LOG_APP_INFO("sidewalk ID: %s", sidewalk_id_str);
 
   platform_parameters_t platform_parameters = {
 #if defined(SL_RADIO_NATIVE)
@@ -103,9 +110,10 @@ void app_init(void)
 
   sid_error_t ret_code = sid_platform_init(&platform_parameters);
   if (ret_code != SID_ERROR_NONE) {
-    app_log_error("app: sid platform init err: %d", ret_code);
+    SL_SID_LOG_APP_ERROR("platform initialization failed, error: %d", ret_code);
+    app_assert(ret_code == SID_ERROR_NONE, "platform initialization failed, error: %d", ret_code);
   }
-  app_assert(ret_code == SID_ERROR_NONE, "app: sid platform init failed");
+  SL_SID_LOG_APP_INFO("platform initialized");
 
   // Application context creation
   static app_context_t app_context =
@@ -122,7 +130,11 @@ void app_init(void)
                                   &app_context,
                                   1,
                                   &app_context.main_task);
-  app_assert(status == pdPASS, "app: main task creation failed");
+  if (status != pdPASS) {
+    SL_SID_LOG_APP_ERROR("main task creation failed, error: %d", (int)status);
+    app_assert(status == pdPASS, "main task creation failed, error: %d", (int)status);
+  }
+  SL_SID_LOG_APP_INFO("main task created");
 
   // Start the kernel. Task(s) created in app_init() will start running.
   sl_system_kernel_start();

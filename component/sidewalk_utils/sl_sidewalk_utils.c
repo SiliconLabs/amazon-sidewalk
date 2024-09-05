@@ -44,8 +44,11 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <ctype.h>
 
 #include "sid_pal_mfg_store_ifc.h"
+#include "sid_pal_storage_kv_ifc.h"
+#include "sid_pal_storage_kv_internal_group_ids.h"
 #include "sl_sidewalk_utils.h"
 #include "sl_component_catalog.h"
 
@@ -58,7 +61,9 @@
 // -----------------------------------------------------------------------------
 
 static void smsn_to_text(uint8_t *smsn, char *text);
+static void sidewalk_id_to_text(uint8_t *sidewalk_id, char *text);
 static bool get_raw_smsn(uint8_t *buffer, uint8_t buffer_len);
+static bool get_raw_sidewalk_id(uint8_t *buffer, uint8_t buffer_len);
 
 // -----------------------------------------------------------------------------
 //                                Global Variables
@@ -79,6 +84,16 @@ void sl_sidewalk_utils_init(void)
   memset(&device_capabilities, 0, sizeof(device_capabilities));
 }
 
+bool sl_sidewalk_utils_is_data_ascii(const char *data, uint16_t data_len)
+{
+  for (uint16_t i = 0; i < data_len; ++i) {
+    if (!(isalnum((unsigned char)data[i]) || isspace((unsigned char)data[i]) || ispunct((unsigned char)data[i]))) {
+      return false; // Found a character that is not alphanumeric or punctuation
+    }
+  }
+  return true; // All characters are alphanumeric or punctuation
+}
+
 void sl_sidewalk_utils_get_smsn_as_str(char *smsn_buffer, uint16_t smsn_buffer_length)
 {
   if (smsn_buffer != NULL && smsn_buffer_length >= SL_SIDEWALK_UTILS_SMSN_STR_LENGTH) {
@@ -88,6 +103,19 @@ void sl_sidewalk_utils_get_smsn_as_str(char *smsn_buffer, uint16_t smsn_buffer_l
 
     if (true == get_raw_smsn(smsn_raw_buffer, sizeof(smsn_raw_buffer))) {
       smsn_to_text(smsn_raw_buffer, smsn_buffer);
+    }
+  }
+}
+
+void sl_sidewalk_utils_get_sidewalk_id_as_str(char *sidewalk_id_buffer, uint16_t sidewalk_id_buffer_length)
+{
+  if (sidewalk_id_buffer != NULL && sidewalk_id_buffer_length >= SL_SIDEWALK_UTILS_SIDEWALK_ID_STR_LENGTH) {
+    uint8_t sidewalk_id_raw_buffer[SID_PAL_MFG_STORE_DEVID_SIZE];
+
+    memset(sidewalk_id_buffer, 0, sidewalk_id_buffer_length);
+
+    if (true == get_raw_sidewalk_id(sidewalk_id_raw_buffer, sizeof(sidewalk_id_raw_buffer))) {
+      sidewalk_id_to_text(sidewalk_id_raw_buffer, sidewalk_id_buffer);
     }
   }
 }
@@ -146,6 +174,15 @@ static void smsn_to_text(uint8_t *smsn, char *text)
   }
 }
 
+static void sidewalk_id_to_text(uint8_t *sidewalk_id, char *text)
+{
+  if (sidewalk_id != NULL && text != NULL) {
+    for (uint8_t i = 0; i < SID_PAL_MFG_STORE_DEVID_SIZE; i++) {
+      sprintf(text + (i << 1), "%02X", sidewalk_id[i]);
+    }
+  }
+}
+
 static bool get_raw_smsn(uint8_t *buffer, uint8_t buffer_len)
 {
   bool retval = false;
@@ -160,6 +197,29 @@ static bool get_raw_smsn(uint8_t *buffer, uint8_t buffer_len)
 
       if (memcmp(buffer, zero_buffer, SID_PAL_MFG_STORE_SMSN_SIZE)) {
         retval = true;
+      }
+    }
+  }
+
+  return retval;
+}
+
+static bool get_raw_sidewalk_id(uint8_t *buffer, uint8_t buffer_len)
+{
+  bool retval = false;
+  uint8_t zero_buffer[SID_PAL_MFG_STORE_DEVID_SIZE];
+  memset(zero_buffer, 0, sizeof(zero_buffer));
+
+  if (buffer != NULL) {
+    if (buffer_len >= SID_PAL_MFG_STORE_DEVID_SIZE) {
+      if (!sid_pal_mfg_store_dev_id_get(buffer)) {
+        sid_error_t ret = sid_pal_storage_kv_record_get(SID_PAL_STORAGE_KV_INTERNAL_PROTOCOL_GROUP_ID,
+                                                        43, // todo: get rid of magic number once the key is publicly defined
+                                                        buffer,
+                                                        SID_PAL_MFG_STORE_DEVID_SIZE);
+        if (ret == SID_ERROR_NONE && memcmp(buffer, zero_buffer, SID_PAL_MFG_STORE_DEVID_SIZE)) {
+          retval = true;
+        }
       }
     }
   }

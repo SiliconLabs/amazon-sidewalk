@@ -36,6 +36,14 @@
  *****************************   TEMPLATED FILE   ******************************
  ******************************************************************************/
 
+typedef bool (*sl_sidewalk_command_callback_t)(void* payload, size_t payload_size);
+
+typedef struct {
+  char * command;
+  sl_sidewalk_command_callback_t callback;
+} sl_sidewalk_command_t;
+
+{%- if sidewalk_command is defined %}
 {# Input validation -#}
 {# Validate that names and handlers are defined -#}
 {%- for command in sidewalk_command -%}
@@ -73,19 +81,18 @@
 bool {{ command.handler }}(void *payload, size_t payload_size);
 {%- endfor %}
 
-typedef bool (*sl_sidewalk_command_callback_t)(void* payload, size_t payload_size);
-
-typedef struct {
-  char * command;
-  sl_sidewalk_command_callback_t callback;
-} sl_sidewalk_command_t;
-
 // Create command enumerator
 typedef enum {{ '{' }}
 {#- List command enum values -#}
 {%- for enum in sidewalk_command %}
   {{ enum.index }} = {{loop.index - 1}},
 {%- endfor %}
+  SIDEWALK_COMMAND_ID_END
+{{ '}' }} sl_sidewalk_command_id_t;
+{% endif %}
+{% else %}
+
+typedef enum {{ '{' }}
   SIDEWALK_COMMAND_ID_END
 {{ '}' }} sl_sidewalk_command_id_t;
 {% endif %}

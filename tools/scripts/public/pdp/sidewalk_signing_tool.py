@@ -1,14 +1,5 @@
-# Copyright 2019-2022 Amazon.com, Inc. or its affiliates. All rights reserved.
-#
-# AMAZON PROPRIETARY/CONFIDENTIAL
-#
-# You may not use this file except in compliance with the terms and
-# conditions set forth in the accompanying LICENSE.TXT file.
-#
-# THESE MATERIALS ARE PROVIDED ON AN "AS IS" BASIS. AMAZON SPECIFICALLY
-# DISCLAIMS, WITH RESPECT TO THESE MATERIALS, ALL WARRANTIES, EXPRESS,
-# IMPLIED, OR STATUTORY, INCLUDING THE IMPLIED WARRANTIES OF MERCHANTABILITY,
-# FITNESS FOR A PARTICULAR PURPOSE, AND NON-INFRINGEMENT.
+# Copyright 2019-2022 Amazon.com, Inc. or its affiliates. All Rights Reserved.
+# SPDX-License-Identifier: MIT-0
 
 import base64
 import argparse
@@ -38,10 +29,9 @@ import ssl
 from urllib3.poolmanager import PoolManager
 from requests.adapters import HTTPAdapter
 
-__version__ = "1.1.5"
+__version__ = "1.1.7"
 
 SMSN_LEN = 32
-SERIAL_LEN = 4
 ED25519_PUBK_LEN = 32
 P256R1_PUBK_LEN = 64
 ED25519_SIG_LEN = 64
@@ -64,8 +54,8 @@ class NAMESPACE(IntEnum):
     CERT_START = 0x10
     AMAZON = 0x10
     SIDEWALK = 0x20
-    MANU = 0x30
-    MANU_LEGACY = 0x20
+    MAN = 0x30
+    MAN_LEGACY = 0x20
     CERT_END = 0xf0
 
 class CURVE(IntEnum):
@@ -86,7 +76,7 @@ class ELEMENT(IntEnum):
 class CA_TYPE(IntEnum):
     AMZN = auto()
     SIDEWALK = auto()
-    MANU = auto()
+    MAN = auto()
     PROD = auto()
     DAK = auto()
     DEVICE = auto()
@@ -101,12 +91,13 @@ class SidewalkCert:
     def __init__(self, type, curve, serial, pubk, signature):
         if curve == CURVE.ED25519:
             if len(pubk) != ED25519_PUBK_LEN or len(signature) != ED25519_SIG_LEN:
-                raise ValueError("Invalid length of public key(%d) or signature(%d) of ed25516" % (len(pubk), len(signature)))
+                raise ValueError("Invalid length of public key(%d) or signature(%d) of ed25519" % (len(pubk), len(signature)))
         if curve == CURVE.P256R1:
             if len(pubk) != P256R1_PUBK_LEN or len(signature) != P256R1_SIG_LEN:
                 raise ValueError("Invalid length of public key(%d) or signature(%d) of p256r1" % (len(pubk), len(signature)))
-        if type != CA_TYPE.DEVICE and len(serial) != SERIAL_LEN:
-            raise ValueError("Invalid lengh of serial: %d" % len(serial))
+        if type != CA_TYPE.DEVICE and SidewalkCert.get_serial_length(serial) != len(serial):
+            parsed_len = SidewalkCert.get_serial_length(serial)
+            raise ValueError("Invalid lengh of serial: %d %d" % (len(serial), parsed_len))
 
         self.type = type
         self.curve = curve
@@ -124,6 +115,14 @@ class SidewalkCert:
         elif self.curve == CURVE.P256R1:
             verify_with_sig_p256r1(self.pubk, cert_to_verify.signature,
                                    cert_to_verify.pubk + cert_to_verify.serial)
+    @staticmethod
+    def get_serial_length(serial):
+        SERIAL_LEN_WITHOUT_EXPANSION = 4
+        sn = int.from_bytes(serial[0:SERIAL_LEN_WITHOUT_EXPANSION], 'little')
+        if sn & 0xf0000000 == 0xb0000000:
+            # Serial expansion is enabled
+            return ((sn >> 16) & 0x7f) + 2
+        return SERIAL_LEN_WITHOUT_EXPANSION
 
 
 class SidewalkCertChain(list):
@@ -153,7 +152,7 @@ class SidewalkCertChain(list):
 
         obj = cls()
         for ca in reversed([ca for ca in CA_TYPE if ca >= CA_TYPE.AMZN and ca <= CA_TYPE.DEVICE]):
-            serial_len = SMSN_LEN if ca == CA_TYPE.DEVICE else SERIAL_LEN
+            serial_len = SMSN_LEN if ca == CA_TYPE.DEVICE else SidewalkCert.get_serial_length(data)
             (serial, data) = split_bytes(data, serial_len)
             pubk_len = ED25519_PUBK_LEN if curve == CURVE.ED25519 else P256R1_PUBK_LEN
             (pubk, data) = split_bytes(data, pubk_len)
@@ -252,7 +251,7 @@ class SidewalkCertsOnHsm:
         if self.legacy_chain:
             self._namespace_def = {
                 CA_TYPE.AMZN  : NAMESPACE.AMAZON,
-                CA_TYPE.MANU  : NAMESPACE.MANU_LEGACY,
+                CA_TYPE.MAN  : NAMESPACE.MAN_LEGACY,
                 CA_TYPE.MODEL : signer.namespace
             }
         else:
@@ -279,7 +278,7 @@ class SidewalkCertsOnHsm:
             self._namespace_def = {
                 CA_TYPE.AMZN     : NAMESPACE.AMAZON,
                 CA_TYPE.SIDEWALK : NAMESPACE.SIDEWALK,
-                CA_TYPE.MANU     : NAMESPACE.MANU,
+                CA_TYPE.MAN      : NAMESPACE.MAN,
                 CA_TYPE.PROD     : prod_pubk.namespace,
                 CA_TYPE.DAK      : signer.namespace
             }
@@ -584,7 +583,7 @@ def decode_csr(csr, smsn_len, curve, verify_sig=True):
         sig_len = 0
 
     if len(csr) != pubk_len + smsn_len + sig_len:
-        raise ValueError("Invalid lenght of CSR for curve=%r, got %d"
+        raise ValueError("Invalid length of CSR for curve=%r, got %d"
                           % (curve, len(csr)))
 
     pubk = csr[0:pubk_len]

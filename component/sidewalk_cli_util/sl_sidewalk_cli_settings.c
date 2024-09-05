@@ -37,6 +37,7 @@
 #include <string.h>
 
 #include "sl_sidewalk_cli_settings.h"
+#include "sl_sidewalk_log_app.h"
 #include "nvm3.h"
 
 // -----------------------------------------------------------------------------
@@ -66,8 +67,8 @@
  * @return sl_status_t SL_STATUS_OK on succes, SL_STATUS_FAIL on error
  *****************************************************************************/
 static sl_status_t settings_nvm_load(uint8_t settings_domain,
-                                            void *const settings,
-                                            size_t settings_size);
+                                     void *const settings,
+                                     size_t settings_size);
 
 /**************************************************************************//**
 * @brief Save settings to NVM
@@ -78,8 +79,8 @@ static sl_status_t settings_nvm_load(uint8_t settings_domain,
 * @return sl_status_t SL_STATUS_OK on succes, SL_STATUS_FAIL on error
 ******************************************************************************/
 static sl_status_t settings_nvm_save(uint8_t settings_domain,
-                                            const void *const settings,
-                                            size_t settings_size);
+                                     const void *const settings,
+                                     size_t settings_size);
 
 /**************************************************************************//**
  * @brief Delete settings from NVM
@@ -135,8 +136,8 @@ void sl_sidewalk_cli_util_settings_init(void)
   // for each element of settings table, load from nvm3
   while (saving_settings[index]) {
     ret = settings_nvm_load(index,
-                                   saving_settings[index]->data,
-                                   saving_settings[index]->data_size);
+                            saving_settings[index]->data,
+                            saving_settings[index]->data_size);
     if (ret != SL_STATUS_OK) {
       // if load did not succeed, set to default value
       if (saving_settings[index]->default_val) {
@@ -158,8 +159,8 @@ sl_status_t sl_sidewalk_cli_util_save(void)
 
   while (saving_settings[index]) {
     ret = settings_nvm_save(index,
-                                   saving_settings[index]->data,
-                                   saving_settings[index]->data_size);
+                            saving_settings[index]->data,
+                            saving_settings[index]->data_size);
     if (ret != SL_STATUS_OK) {
       break;
     }
@@ -210,11 +211,11 @@ sl_status_t sl_sidewalk_cli_util_set(char *const domain_and_key, const char *con
     return SL_STATUS_INVALID_KEY;
   }
 
- while(app_settings_entries[index].key) {
+  while (app_settings_entries[index].key) {
     if (!strcmp(domain, app_settings_domain_str[app_settings_entries[index].domain])) {
       if (!strcmp(app_settings_entries[index].key, key)) {
         if (app_settings_entries[index].set_handler) {
-          printf("%s.%s = %s\r\n", app_settings_domain_str[app_settings_entries[index].domain], app_settings_entries[index].key, value_str);
+          SL_SID_LOG_APP_INFO("%s.%s = %s", app_settings_domain_str[app_settings_entries[index].domain], app_settings_entries[index].key, value_str);
           return app_settings_entries[index].set_handler(value_str, nested_key, &app_settings_entries[index]);
         } else {
           return SL_STATUS_PERMISSION;
@@ -245,13 +246,13 @@ sl_status_t sl_sidewalk_cli_util_get(char *const domain_and_key)
   key = strtok(NULL, ".");
   nested_key = strtok(NULL, ".");
 
-  while (app_settings_entries[index].key){
+  while (app_settings_entries[index].key) {
     if (!domain || !strcmp(domain, app_settings_domain_str[app_settings_entries[index].domain])) {
       if (!key || !strcmp(app_settings_entries[index].key, key)) {
         if (app_settings_entries[index].get_handler) {
           ret = app_settings_entries[index].get_handler(value_str, nested_key, &app_settings_entries[index]);
           if (ret == SL_STATUS_OK) {
-            printf("%s.%s = %s\r\n", app_settings_domain_str[app_settings_entries[index].domain], app_settings_entries[index].key, value_str);
+            SL_SID_LOG_APP_INFO("%s.%s = %s", app_settings_domain_str[app_settings_entries[index].domain], app_settings_entries[index].key, value_str);
           }
         }
       }
@@ -288,17 +289,18 @@ sl_status_t sl_sidewalk_cli_util_help(char *const domain_and_key, bool get)
   key = strtok(NULL, ".");
 
   if (!domain) {
-    printf("Help of get and set methods\r\n\r\nAvailable domains :\r\n");
+    SL_SID_LOG_APP_INFO("Help of get and set methods");
+    SL_SID_LOG_APP_INFO("Available domains:");
     uint8_t domains_nb = 0;
     while (app_settings_domain_str[domains_nb] != NULL) {
-      printf(" %s\r\n", app_settings_domain_str[domains_nb]);
+      SL_SID_LOG_APP_INFO(" %s", app_settings_domain_str[domains_nb]);
       domains_nb++;
     }
-    printf("Type '[get or set] domain help'\r\n");
-    printf("\r\neg. 'get %s help' to get the help of %s\r\n    'get %s' for all 'get' commands\r\n",
-           app_settings_domain_str[0], app_settings_domain_str[0], app_settings_domain_str[0]);
-    printf("\r\nCommands permissions :\r\n %s : Write Only\r\n %s : Read Only\r\n %s : Read and Write\r\n",
-           permission_str[1], permission_str[2], permission_str[3]);
+    SL_SID_LOG_APP_INFO("Type '[get or set] domain help'");
+    SL_SID_LOG_APP_INFO("eg. 'get %s help' to get the help of %s\r\n    'get %s' for all 'get' commands",
+                        app_settings_domain_str[0], app_settings_domain_str[0], app_settings_domain_str[0]);
+    SL_SID_LOG_APP_INFO("Commands permissions :\r\n %s : Write Only\r\n %s : Read Only\r\n %s : Read and Write",
+                        permission_str[1], permission_str[2], permission_str[3]);
   } else if (domain) {
     while (app_settings_entries[index].key) {
       if (!domain || !strcmp(domain, app_settings_domain_str[app_settings_entries[index].domain])) {
@@ -322,8 +324,8 @@ sl_status_t sl_sidewalk_cli_util_help(char *const domain_and_key, bool get)
  * Set a string type setting to given str
  *****************************************************************************/
 sl_status_t sl_sidewalk_cli_util_set_string(const char *value_str,
-                                       const char *key_str,
-                                       const sl_sidewalk_cli_util_entry_t *entry)
+                                            const char *key_str,
+                                            const sl_sidewalk_cli_util_entry_t *entry)
 {
   char * entry_value_str;
   (void)key_str;
@@ -340,8 +342,8 @@ sl_status_t sl_sidewalk_cli_util_set_string(const char *value_str,
  * Get the string value of a given entry string setting
  *****************************************************************************/
 sl_status_t sl_sidewalk_cli_util_settings_get_string(char *value_str,
-                                       const char *key_str,
-                                       const sl_sidewalk_cli_util_entry_t *entry)
+                                                     const char *key_str,
+                                                     const sl_sidewalk_cli_util_entry_t *entry)
 {
   (void)key_str;
 
@@ -355,17 +357,17 @@ sl_status_t sl_sidewalk_cli_util_settings_get_string(char *value_str,
  * Set a integer type setting given a string value
  *****************************************************************************/
 sl_status_t sl_sidewalk_cli_util_set_integer(const char *value_str,
-                                        const char *key_str,
-                                        const sl_sidewalk_cli_util_entry_t *entry)
+                                             const char *key_str,
+                                             const sl_sidewalk_cli_util_entry_t *entry)
 {
   uint32_t value;
   sl_status_t ret;
   (void)key_str;
 
   ret = sl_sidewalk_cli_util_get_integer(&value,
-                                value_str,
-                                entry->input_enum_list,
-                                entry->input & SL_APP_SETTINGS_INPUT_FLAG_SIGNED);
+                                         value_str,
+                                         entry->input_enum_list,
+                                         entry->input & SL_APP_SETTINGS_INPUT_FLAG_SIGNED);
   if (ret != SL_STATUS_OK) {
     return SL_STATUS_INVALID_TYPE;
   }
@@ -396,8 +398,8 @@ sl_status_t sl_sidewalk_cli_util_set_integer(const char *value_str,
  * Get string of integer setting entry
  *****************************************************************************/
 sl_status_t sl_sidewalk_cli_util_settings_get_integer(char *value_str,
-                                        const char *key_str,
-                                        const sl_sidewalk_cli_util_entry_t *entry)
+                                                      const char *key_str,
+                                                      const sl_sidewalk_cli_util_entry_t *entry)
 {
   uint32_t value;
   uint8_t value_length = 0;
@@ -436,11 +438,11 @@ sl_status_t sl_sidewalk_cli_util_settings_get_integer(char *value_str,
   }
 
   return sl_sidewalk_cli_util_get_string(value_str,
-                                value,
-                                entry->output_enum_list,
-                                entry->output & SL_APP_SETTINGS_OUTPUT_FLAG_SIGNED,
-                                entry->output & SL_APP_SETTINGS_OUTPUT_FLAG_HEX,
-                                value_length);
+                                         value,
+                                         entry->output_enum_list,
+                                         entry->output & SL_APP_SETTINGS_OUTPUT_FLAG_SIGNED,
+                                         entry->output & SL_APP_SETTINGS_OUTPUT_FLAG_HEX,
+                                         value_length);
 }
 
 // -----------------------------------------------------------------------------
@@ -452,20 +454,20 @@ sl_status_t sl_sidewalk_cli_util_settings_get_integer(char *value_str,
  *****************************************************************************/
 static void help_print_and_pad(const char *permission, const sl_sidewalk_cli_util_entry_t *entry)
 {
-  printf("%s %s.%s", permission, app_settings_domain_str[entry->domain], entry->key);
+  SL_SID_LOG_APP_INFO("%s %s.%s", permission, app_settings_domain_str[entry->domain], entry->key);
   size_t string_length = strlen(permission) + strlen(app_settings_domain_str[entry->domain]) + strlen(entry->key);
   for (; string_length < 60; string_length++) {
-    printf(" ");
+    SL_SID_LOG_APP_INFO(" ");
   }
-  printf("%s\r\n", entry->description ? entry->description : " ");
+  SL_SID_LOG_APP_INFO("%s", entry->description ? entry->description : " ");
 }
 
 /**************************************************************************//**
  * @brief App settings nvm load
  *****************************************************************************/
 static sl_status_t settings_nvm_load(uint8_t settings_domain,
-                                            void *const settings,
-                                            size_t settings_size)
+                                     void *const settings,
+                                     size_t settings_size)
 {
   nvm3_ObjectKey_t nvm_key;
   uint32_t nvm_type;
@@ -500,8 +502,8 @@ static sl_status_t settings_nvm_load(uint8_t settings_domain,
  * @brief App settings NVM save
  *****************************************************************************/
 static sl_status_t settings_nvm_save(uint8_t settings_domain,
-                                            const void *const settings,
-                                            size_t settings_size)
+                                     const void *const settings,
+                                     size_t settings_size)
 {
   nvm3_ObjectKey_t nvm_key;
   Ecode_t ret;
@@ -528,4 +530,3 @@ static void settings_nvm_delete(uint8_t settings_domain)
   nvm_key = SL_APP_SETTINGS_NVM_KEY_BASE + settings_domain;
   (void)nvm3_deleteObject(nvm3_defaultHandle, nvm_key);
 }
-

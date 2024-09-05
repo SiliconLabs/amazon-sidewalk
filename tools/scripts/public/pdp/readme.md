@@ -56,6 +56,10 @@ Here is an overview of what is happening in this mode:
 
 ## Usage
 
+### IO stream selection
+
+PDP application can be configured to use RTT or VCOM for exchanging provisioning commands. Depending on the configuration, the provisioning script has to be run with the appropriate `--iostream` parameter (`rtt` or `vcom`). If the parameter is omitted, the script will default to RTT.
+
 ### Private key provisioning
 
 #### Prototype certificate type
@@ -93,10 +97,3 @@ python3 provision_silabs.py --pdp-mode on_dev_cert_gen --dsn <device_serial_no_l
 ```
 
 > **WARNING:** tilde character (~) is not recongnized in the config file so it is recommended to provide absolute file paths for `pdp-img` and `sid-init-img` parameters.
-
-## References
-
-* [Dynamic Data Provisioning Architecture](https://confluence.silabs.com/display/CloudServices/Dynamic+Data+Provisioning+Architecture)
-* [Sidewalk Provisioning Architecture](https://confluence.silabs.com/pages/viewpage.action?spaceKey=CloudServices&title=Sidewalk+Provisioning+Architecture)
-* [Dynamic data provisioning PoC - v1](https://confluence.silabs.com/display/FLEX/Dynamic+data+provisioning+PoC+-+v1)
-* [PDP application](https://confluence.silabs.com/display/FLEX/DDP+application)

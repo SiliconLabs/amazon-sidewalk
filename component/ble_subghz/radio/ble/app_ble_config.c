@@ -179,6 +179,9 @@ static const sid_ble_config_t ble_cfg =
   .conn_param        = conn_param,
   .num_profile       = countof(ble_profile),
   .profile           = ble_profile,
+  .max_tx_power_in_dbm = 0,
+  .enable_link_metrics = true,
+  .metrics_msg_retries = 3,
 };
 
 /// BLE link configuration

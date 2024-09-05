@@ -39,16 +39,15 @@
 //                                   Includes
 // -----------------------------------------------------------------------------
 
-#include <printf.h>
 #include <stdint.h>
 #include <string.h>
 
-#include "app_log.h"
 #include "FreeRTOS.h"
 #include "queue.h"
 #include "sl_sidewalk_sender.h"
 #include "sl_sidewalk_utils.h"
 #include "sl_sidewalk_utils_config.h"
+#include "sl_sidewalk_log_app.h"
 
 // -----------------------------------------------------------------------------
 //                              Macros and Typedefs
@@ -101,18 +100,18 @@ void sl_sidewalk_sender_send(struct sid_handle *sidewalk_handle)
       current_time = xTaskGetTickCount();
 
       if (message_to_send.last_try == 0) {
-        app_log_info("###############################");
-        app_log_info("            FIRST TRY          ");
-        app_log_info("            PRIO: %d           ", queue_ix);
-        app_log_info("###############################");
+        SL_SID_LOG_APP_INFO("###############################");
+        SL_SID_LOG_APP_INFO("            FIRST TRY          ");
+        SL_SID_LOG_APP_INFO("            PRIO: %d           ", queue_ix);
+        SL_SID_LOG_APP_INFO("###############################");
         message_to_send.id = put_message(sidewalk_handle, message_to_send.msg, message_to_send.len);
         message_to_send.last_try = xTaskGetTickCount();
       } else {
         if (current_time - message_to_send.last_try >= pdMS_TO_TICKS(SL_SIDEWALK_UTILS_MSG_TIMEOUT_MS)) {
-          app_log_info("###############################");
-          app_log_info("              RETRY            ");
-          app_log_info("            PRIO: %d           ", queue_ix);
-          app_log_info("###############################");
+          SL_SID_LOG_APP_INFO("###############################");
+          SL_SID_LOG_APP_INFO("              RETRY            ");
+          SL_SID_LOG_APP_INFO("            PRIO: %d           ", queue_ix);
+          SL_SID_LOG_APP_INFO("###############################");
           message_to_send.id = put_message(sidewalk_handle, message_to_send.msg, message_to_send.len);
           message_to_send.last_try = xTaskGetTickCount();
         }
@@ -169,13 +168,13 @@ bool sl_sidewalk_sender_queue_message(char *message, size_t message_length, sl_s
 
 static uint16_t put_message(struct sid_handle *sidewalk_handle, char *payload, uint16_t payload_length)
 {
-  app_log_info("###############################");
-  app_log_info("        SENDING MESSAGE        ");
-  app_log_info("###############################");
-  app_log_info("sending %d bytes", payload_length);
-  app_log_info("sending %s", payload);
-  app_log_info("###############################");
-  app_log_info("###############################");
+  SL_SID_LOG_APP_INFO("###############################");
+  SL_SID_LOG_APP_INFO("        SENDING MESSAGE        ");
+  SL_SID_LOG_APP_INFO("###############################");
+  SL_SID_LOG_APP_INFO("sending %d bytes", payload_length);
+  SL_SID_LOG_APP_INFO("sending %s", payload);
+  SL_SID_LOG_APP_INFO("###############################");
+  SL_SID_LOG_APP_INFO("###############################");
 
   struct sid_msg msg = {
     .data = payload,
@@ -192,9 +191,9 @@ static uint16_t put_message(struct sid_handle *sidewalk_handle, char *payload, u
   sid_error_t ret = sid_put_msg(sidewalk_handle, &msg, &desc);
 
   if (ret != SID_ERROR_NONE) {
-    app_log_error("queuing data failed: %d", (int)ret);
+    SL_SID_LOG_APP_ERROR("queuing data failed: %d", (int)ret);
   } else {
-    app_log_info("queued data msg id: %u", desc.id);
+    SL_SID_LOG_APP_INFO("queued data msg id: %u", desc.id);
   }
 
   return desc.id;

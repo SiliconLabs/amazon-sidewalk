@@ -3,11 +3,16 @@
 import argparse
 import logging
 import json
+import sys
 from enum import Enum
 from modules.pdp import PDPMode
 from modules.sid_cert import SidCertProto, SidCertProdOpenSSL, SidCertType
 from modules.commander import Commander
 from modules.part import Part
+from modules.iostream import IOStream
+from modules.iostream_rtt import IOStream_RTT
+from modules.iostream_vcom import IOStream_VCOM
+from modules.util import *
 from priv_key_prov import PrivKeyProv
 from on_dev_cert_gen import OnDevCertGen
 
@@ -35,52 +40,51 @@ argparser.add_argument("--sst-hsm-conn-addr", help="Sidewalk signing tool yubihs
 argparser.add_argument("--sst-hsm-pin", help="Sidewalk signing tool yubihsm pin", type=str, default=None)
 argparser.add_argument("--jlink-ser", help="JLink serial number", type=str)
 argparser.add_argument("--prod-config", help="Configuration file for production", type=str)
+argparser.add_argument("--iostream", help="IOStream that embedded PDP application enables", type=IOStream, choices=[IOStream.IOSTREAM_RTT, IOStream.IOSTREAM_VCOM], default=IOStream.IOSTREAM_RTT)
+if IOStream.IOSTREAM_VCOM in sys.argv:
+  argparser.add_argument("--vcom-port", help="VCOM IOStream port", type=str, required=True)
 args = argparser.parse_args()
 
-def load_pdp_img(pdp_img):
-  pdp_img_bin = None
-  if pdp_img:
-    with open(pdp_img, 'rb') as f:
-      pdp_img_bin = f.read()
-  return pdp_img_bin
-
-def flash_sid_init_img(part, sid_init_img, jlink_ser):
-  commander = Commander(jlink_ser)
+def flash_sid_init_img(part, sid_init_img, commander):
   logger.info("Wiping device flash memory")
-  commander.masserase(part.get_jlink_device())
+  commander.masserase()
+  logger.info("Wiping device user data")
+  commander.userdata_erase()
   logger.info("Resetting device")
-  commander.reset(part.get_jlink_device())
+  commander.reset()
   logger.info("Verifying blank")
-  commander.verify_blank(part.get_jlink_device())
+  commander.verify_blank()
   logger.info("Flashing sidewalk initialization image")
-  commander.flash(sid_init_img, part.get_jlink_device())
+  commander.flash(sid_init_img)
 
-def sanity_check_args():
-    if args.pdp_mode == PDPMode.PRIV_KEY_PROV:
-      if not args.sid_cert_type:
-        raise ValueError("Sidewalk certificate type is not provided")
-      if not args.part or not args.sid_cert or not args.pdp_img or\
-        args.dev_type or args.dsn or args.apid or args.app_srv_pub_key or\
-        args.sst_prod_tag or args.sst_hsm_conn_addr or args.sst_hsm_pin or\
-        args.prod_config:
+def sanity_check():
+  if args.pdp_mode == PDPMode.PRIV_KEY_PROV:
+    if not args.sid_cert_type:
+      raise ValueError("Sidewalk certificate type is not provided")
+    if not args.part or not args.sid_cert or not args.pdp_img or\
+      args.dev_type or args.dsn or args.apid or args.app_srv_pub_key or\
+      args.sst_prod_tag or args.sst_hsm_conn_addr or args.sst_hsm_pin or\
+      args.prod_config:
+      raise ValueError(ERR_MSG_PROVIDED_ARGS_NOT_CONSISTENT)
+  else: # on-device cert gen
+    if not args.dsn:
+      raise ValueError("DSN is not provided")
+    if args.prod_config:
+      if args.sid_cert or args.sid_cert_type or args.part or\
+        args.pdp_img or args.dev_type or\
+        args.apid or args.app_srv_pub_key or args.sst_prod_tag or\
+        args.sst_hsm_conn_addr or args.sst_hsm_pin or\
+        args.pdp_mode == PDPMode.PRIV_KEY_PROV:
         raise ValueError(ERR_MSG_PROVIDED_ARGS_NOT_CONSISTENT)
-    else: # on-device cert gen
-      if not args.dsn:
-        raise ValueError("DSN is not provided")
-      if args.prod_config:
-        if args.sid_cert or args.sid_cert_type or args.part or\
-          args.pdp_img or args.dev_type or\
-          args.apid or args.app_srv_pub_key or args.sst_prod_tag or\
-          args.sst_hsm_conn_addr or args.sst_hsm_pin or\
-          args.pdp_mode == PDPMode.PRIV_KEY_PROV:
-          raise ValueError(ERR_MSG_PROVIDED_ARGS_NOT_CONSISTENT)
-      else:
-        if args.sid_cert or args.sid_cert_type or not args.part or\
-           not args.pdp_img or\
-           not args.dev_type or not args.apid or not args.app_srv_pub_key or\
-           not args.sst_prod_tag or not args.sst_hsm_conn_addr or\
-           not args.sst_hsm_pin:
-          raise ValueError(ERR_MSG_PROVIDED_ARGS_NOT_CONSISTENT)
+    else:
+      if args.sid_cert or args.sid_cert_type or not args.part or\
+          not args.pdp_img or\
+          not args.dev_type or not args.apid or not args.app_srv_pub_key or\
+          not args.sst_prod_tag or not args.sst_hsm_conn_addr or\
+          not args.sst_hsm_pin:
+        raise ValueError(ERR_MSG_PROVIDED_ARGS_NOT_CONSISTENT)
+  sanity_check_file_extension(args.pdp_img, ".s37")
+  sanity_check_file_exists(args.pdp_img)
 
 def parse_prod_config():
   logger.info("Parsing configuration file for production")
@@ -96,13 +100,21 @@ def parse_prod_config():
     args.sst_hsm_conn_addr  = prod_config["sst_hsm_conn_addr"]
     args.sst_hsm_pin        = prod_config["sst_hsm_pin"]
 
+def get_iostream():
+  if args.iostream == IOStream.IOSTREAM_RTT:
+    return IOStream_RTT(part.get_jlink_device(), args.jlink_ser)
+  else:
+    return IOStream_VCOM(part.get_jlink_device(), args.jlink_ser, args.vcom_port)
+
 if __name__ == "__main__":
-  sanity_check_args()
+  sanity_check()
   if args.prod_config:
     parse_prod_config()
   part = Part(args.part)
+  commander = Commander(part.get_jlink_device(), jlink_ser=args.jlink_ser)
   if args.sid_init_img:
-    flash_sid_init_img(part, args.sid_init_img, args.jlink_ser)
+    flash_sid_init_img(part, args.sid_init_img, commander)
+  iostream = get_iostream()
   if args.pdp_mode == PDPMode.PRIV_KEY_PROV:
     sid_cert = None
     logger.info("Parsing sidewalk certificate json file")
@@ -110,9 +122,9 @@ if __name__ == "__main__":
       sid_cert = SidCertProto(args.sid_cert, None, None)
     elif args.sid_cert_type == SidCertType.PRODUCTION:
       sid_cert = SidCertProdOpenSSL(args.sid_cert)
-    priv_key_prov = PrivKeyProv(logger, part, args.jlink_ser, load_pdp_img(args.pdp_img))
+    priv_key_prov = PrivKeyProv(logger, commander, args.pdp_img, iostream)
     priv_key_prov.execute(dynamic_data=sid_cert.get_dynamic_data())
   elif args.pdp_mode == PDPMode.ON_DEV_CERT_GEN:
-    on_dev_cert_gen = OnDevCertGen(logger, part, args.jlink_ser, load_pdp_img(args.pdp_img))
+    on_dev_cert_gen = OnDevCertGen(logger, commander, args.pdp_img, iostream)
     on_dev_cert_gen.execute(dev_type=args.dev_type, dsn=args.dsn, apid=args.apid, app_srv_pub_key=args.app_srv_pub_key, sst_prod_tag=args.sst_prod_tag, sst_hsm_conn_addr=args.sst_hsm_conn_addr, sst_hsm_pin=args.sst_hsm_pin)
   logger.info("Done")

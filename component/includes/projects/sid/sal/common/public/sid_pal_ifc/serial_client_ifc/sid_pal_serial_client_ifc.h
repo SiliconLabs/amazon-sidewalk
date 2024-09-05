@@ -111,6 +111,8 @@ typedef struct {
 
     const sid_pal_serial_callbacks_t * callbacks;  /**< Pointer to constant structure with defined callbacks. Callbacks will
                                                         be used in methods.*/
+
+    const struct sid_event_queue *queue;
 } sid_pal_serial_params_t;
 
 

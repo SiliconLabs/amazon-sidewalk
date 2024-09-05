@@ -30,6 +30,9 @@
 #define MAX_PAYLOAD_LENGTH_WITH_FCS_TYPE_0      251
 #define MAX_PAYLOAD_LENGTH_WITH_FCS_TYPE_1      253
 
+#define SX126X_FSK_TX_PROCESS_DELAY_US 1000
+#define SX126X_FSK_RX_PROCESS_DELAY_US 1000
+
 static void radio_mp_to_sx126x_mp(sx126x_mod_params_gfsk_t *fsk_mp, const sid_pal_radio_fsk_modulation_params_t *mod_params)
 {
     fsk_mp->br_in_bps    = mod_params->bit_rate;
@@ -443,4 +446,14 @@ uint32_t sid_pal_radio_fsk_get_fsk_number_of_symbols(const sid_pal_radio_fsk_mod
 {
     uint32_t num_symb = SX126X_US_TO_SYMBOLS(delay_micro_secs, mod_params->bit_rate);
     return num_symb;
+}
+
+uint32_t sid_pal_radio_get_fsk_tx_process_delay(void)
+{
+    return SX126X_FSK_TX_PROCESS_DELAY_US;
+}
+
+uint32_t sid_pal_radio_get_fsk_rx_process_delay(void)
+{
+    return SX126X_FSK_RX_PROCESS_DELAY_US;
 }

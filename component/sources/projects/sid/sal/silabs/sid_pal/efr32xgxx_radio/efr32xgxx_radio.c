@@ -39,7 +39,11 @@
 //                                   Includes
 // -----------------------------------------------------------------------------
 #include <sid_pal_delay_ifc.h>
-#include <sid_pal_log_ifc.h>
+#if defined(SL_SIDEWALK_UNIT_TEST)
+#include "sl_sidewalk_log_pal_mock.h"
+#else
+#include "sl_sidewalk_log_pal.h"
+#endif
 #include <sid_pal_assert_ifc.h>
 #include <sid_clock_ifc.h>
 #include <sid_time_ops.h>
@@ -176,11 +180,11 @@ int32_t sid_pal_radio_set_tx_power(int8_t power)
     goto ret;
   }
   if (power < min) {
-    SID_PAL_LOG_WARNING("pal: tx pow is below of allowed range [%d, %d] set to %d dBm (capped)", min, max, power);
+    SL_SID_LOG_PAL_WARNING("pal rail: TX pow is below of allowed range [%d, %d] set to %d dBm (capped)", min, max, power);
     power = min;
   }
   if (power > max) {
-    SID_PAL_LOG_WARNING("pal: tx pow is above of allowed range [%d, %d] set to %d dBm (capped)", min, max, power);
+    SL_SID_LOG_PAL_WARNING("pal rail: TX pow is above of allowed range [%d, %d] set to %d dBm (capped)", min, max, power);
     power = max;
   }
   if (power != g_tx_power) {
@@ -198,9 +202,9 @@ int32_t sid_pal_radio_set_tx_power(int8_t power)
 /* TODO: SIDEWALK-889
  * implement sleep_ms period
  */
-int32_t sid_pal_radio_sleep(uint32_t sleep_ms)
+int32_t sid_pal_radio_sleep(uint32_t sleep_us)
 {
-  (void)sleep_ms;
+  (void)sleep_us;
 
   int32_t err = RADIO_ERROR_NONE;
 
@@ -296,15 +300,37 @@ int32_t sid_pal_radio_start_rx(uint32_t timeout)
   return err;
 }
 
-int32_t sid_pal_radio_start_carrier_sense(uint32_t timeout, sid_pal_radio_cad_param_exit_mode_t exit_mode)
+int32_t sid_pal_radio_is_cad_exit_mode(sid_pal_radio_cad_param_exit_mode_t exit_mode)
+{
+    int32_t err = RADIO_ERROR_NONE;
+
+    if (!((exit_mode == SID_PAL_RADIO_CAD_EXIT_MODE_CS_ONLY) ||
+        (exit_mode == SID_PAL_RADIO_CAD_EXIT_MODE_CS_RX) ||
+        (exit_mode == SID_PAL_RADIO_CAD_EXIT_MODE_CS_LBT) ||
+        (exit_mode == SID_PAL_RADIO_CAD_EXIT_MODE_ED_ONLY) ||
+        (exit_mode == SID_PAL_RADIO_CAD_EXIT_MODE_ED_RX) ||
+        (exit_mode == SID_PAL_RADIO_CAD_EXIT_MODE_ED_LBT))) {
+        err = RADIO_ERROR_INVALID_PARAMS;
+    }
+
+    return err;
+}
+
+int32_t sid_pal_radio_start_carrier_sense(const sid_pal_radio_fsk_cad_params_t *cad_params,
+                                          sid_pal_radio_cad_param_exit_mode_t exit_mode)
 {
   int32_t err = RADIO_ERROR_NONE;
 
-  if (efr32xgxx_set_rx(timeout) != RADIO_ERROR_NONE) {
+  if ((err = sid_pal_radio_is_cad_exit_mode(exit_mode)) != RADIO_ERROR_NONE) {
+      goto ret;
+  }
+
+  if (efr32xgxx_set_rx(cad_params->fsk_cs_duration_us) != RADIO_ERROR_NONE) {
     err = RADIO_ERROR_HARDWARE_ERROR;
     goto ret;
   }
 
+  drv_ctx.settings_cache.fsk_cad_params = *cad_params;
   drv_ctx.radio_state = SID_PAL_RADIO_RX;
   drv_ctx.cad_exit_mode = exit_mode;
 
@@ -330,7 +356,7 @@ int16_t sid_pal_radio_rssi(void)
   int16_t rssi;
 
   if (efr32xgxx_get_rssi_inst(&rssi) != RADIO_ERROR_NONE) {
-    SID_PAL_LOG_ERROR("pal: could not get rssi");
+    SL_SID_LOG_PAL_ERROR("pal rail: could not get RSSI");
     rssi = INT16_MAX;
   }
 
@@ -355,7 +381,7 @@ int32_t sid_pal_radio_is_channel_free(uint32_t freq, int16_t threshold, uint32_t
   }
 
   if (delay_us < EFR32XGXX_MIN_CHANNEL_FREE_DELAY_US) {
-    SID_PAL_LOG_WARNING("pal: min ch free delay raised (req: %ld, min: %ld)", delay_us, EFR32XGXX_MIN_CHANNEL_FREE_DELAY_US);
+    SL_SID_LOG_PAL_WARNING("pal rail: min ch free delay raised (req: %ld, min: %ld)", delay_us, EFR32XGXX_MIN_CHANNEL_FREE_DELAY_US);
     delay_us = EFR32XGXX_MIN_CHANNEL_FREE_DELAY_US;
   }
 

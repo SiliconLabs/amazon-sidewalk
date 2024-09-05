@@ -10,7 +10,7 @@ category: Example|AWS IoT
 
 sdk_extension:
   - id: sidewalk
-    version: 2.1.0
+    version: 2.2.0
 
 source:
   - path: ../main.c
@@ -44,18 +44,24 @@ component:
   from: sidewalk
 - id: sidewalk_led_manager
   from: sidewalk
+- id: sidewalk_log_app_rtt
+  from: sidewalk
+- id: sidewalk_log_pal_rtt
+  from: sidewalk
+- id: sidewalk_log_stack_rtt
+  from: sidewalk
+- id: sidewalk_utils
+  from: sidewalk
 #############################################
 # GSDK extension components
 #############################################
 - id: iostream_rtt
 - id: sl_system
-- id: iostream_retarget_stdio
 - id: gpiointerrupt
 - id: simple_button
   instance: [btn0, btn1]
 - id: simple_led
   instance: [led0, led1]
-- id: iostream_recommended_stream
 - id: cli
   instance: [inst]
 - id: device_init
@@ -81,7 +87,6 @@ component:
 - id: app_assert
 - id: freertos
 - id: freertos_heap_4
-- id: printf
 - id: rail_lib_multiprotocol
 - id: rail_util_pa
 - id: memory_manager
@@ -110,24 +115,35 @@ requires:
 
 define:
   - name: SL_SIDEWALK_DMP_FSK_SUPPORTED
+  - name: MAIN_TASK_STACK_SIZE
+    value: '(2048 / sizeof(configSTACK_DEPTH_TYPE))'
 
 configuration:
   - name: SL_SIDEWALK_COMMON_DEFAULT_LINK_TYPE
     value: SL_SIDEWALK_LINK_FSK
+  - name: SL_SID_LOG_APP_ENABLED
+    value: 1
+  - name: SL_SID_LOG_PAL_ENABLED
+    value: 1
+  - name: SID_PAL_LOG_ENABLED
+    value: 1
   - name: SL_BOARD_ENABLE_VCOM
     value: 0
+    condition: [iostream_usart]
   - name: SL_IOSTREAM_USART_VCOM_RESTRICT_ENERGY_MODE_TO_ALLOW_RECEPTION
     value: 0
     condition: [iostream_usart]
-  - name: SL_IOSTREAM_UART_VCOM_RESTRICT_ENERGY_MODE_TO_ALLOW_RECEPTION
-    value: 0
-    condition: [iostream_uart]
+  - name: SL_IOSTREAM_USART_VCOM_FLOW_CONTROL_TYPE
+    value: usartHwFlowControlNone
+    condition: [iostream_usart]
+  - name: SL_CLI_INST_IOSTREAM_HANDLE
+    value: sl_iostream_rtt_handle
   - name: configMINIMAL_STACK_SIZE
     value: 160
   - name: configTOTAL_HEAP_SIZE
     value: 20480
   - name: configTIMER_TASK_STACK_DEPTH
-    value: 512
+    value: 700
   - name: SL_HEAP_SIZE
     value: 2048
   - name: SL_STACK_SIZE
@@ -149,15 +165,15 @@ configuration:
   - name: SL_BT_CONFIG_MAX_TX_POWER
     value: (100)
   - name: APP_LOG_LEVEL_DEBUG_PREFIX
-    value: '"<debug>"'
+    value: '"<D>"'
   - name: APP_LOG_LEVEL_INFO_PREFIX
-    value: '"<info>"'
+    value: '"<I>"'
   - name: APP_LOG_LEVEL_WARNING_PREFIX
-    value: '"<warning>"'
+    value: '"<W>"'
   - name: APP_LOG_LEVEL_ERROR_PREFIX
-    value: '"<error>"'
+    value: '"<E>"'
   - name: APP_LOG_LEVEL_CRITICAL_PREFIX
-    value: '"<critical>"'
+    value: '"<C>"'
 
 readme:
   - path: ../../../../documentation/example/amazon_sidewalk_dmp_soc_light/readme.md

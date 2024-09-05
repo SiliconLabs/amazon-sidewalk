@@ -63,6 +63,7 @@ class MfgObj(Enum):
   AMZN_PUB_ED25519 = MFG_NVM3_KEY_BASE + 0x24
   AMZN_PUB_P256R1 = MFG_NVM3_KEY_BASE + 0x25
   APID = MFG_NVM3_KEY_BASE + 0x26
+  SL_NVM3_VERSION = MFG_NVM3_KEY_BASE + 0xFA1
 
 # __packed__ C stucture of ED25519 certificate after decoded from base64
 class Cert_ED25519(Structure):
@@ -209,6 +210,7 @@ class SidCertBase:
     d[MfgObj.AMZN_PUB_ED25519.value] = bytearray(self.ed25519.AMZN_PUB_ED25519).hex()
     d[MfgObj.AMZN_PUB_P256R1.value] = bytearray(self.p256r1.AMZN_PUB_P256R1).hex()
     d[MfgObj.APID.value] = "".join("{:02x}".format(ord(c)) for c in self._apid)
+    d[MfgObj.SL_NVM3_VERSION.value] = b'\x01\x00\x00\x00'.hex()
     return d
 
 class SidCertProto(SidCertBase):

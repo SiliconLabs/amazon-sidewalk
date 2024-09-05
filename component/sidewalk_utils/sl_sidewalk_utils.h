@@ -58,6 +58,7 @@ extern "C" {
 // The SMSN size as string length: each bytes contains two chars and the end of
 // string character is added also.
 #define SL_SIDEWALK_UTILS_SMSN_STR_LENGTH             ((SID_PAL_MFG_STORE_SMSN_SIZE * 2) + 1)
+#define SL_SIDEWALK_UTILS_SIDEWALK_ID_STR_LENGTH      ((SID_PAL_MFG_STORE_DEVID_SIZE * 2) + 1)
 #define SL_SIDEWALK_UTILS_CAPABILITIES_STR_MAX_LENGTH (255)
 #define SL_SIDEWALK_UTILS_MAX_STORED_COMMANDS_NUM     (5)
 #define SL_SIDEWALK_UTILS_MAX_COMMAND_LENGTH_CHAR     (255)
@@ -79,10 +80,26 @@ void sl_sidewalk_utils_init(void);
 /**************************************************************************//**
  * This function provides the SMSN value as a string.
  *
+ * @param data The buffer to check if it is ASCII
+ * @param data_len Length of the input buffer
+ *****************************************************************************/
+bool sl_sidewalk_utils_is_data_ascii(const char *data, uint16_t data_len);
+
+/**************************************************************************//**
+ * This function provides the SMSN value as a string.
+ *
  * @param smsn_buffer The output buffer for the SMSN as string
  * @param smsn_buffer_length Length of the output buffer
  *****************************************************************************/
 void sl_sidewalk_utils_get_smsn_as_str(char *smsn_buffer, uint16_t smsn_buffer_length);
+
+/**************************************************************************//**
+ * This function provides the sidewalk ID value as a string.
+ *
+ * @param smsn_buffer The output buffer for the sidewalk ID as string
+ * @param smsn_buffer_length Length of the output buffer
+ *****************************************************************************/
+void sl_sidewalk_utils_get_sidewalk_id_as_str(char *sidewalk_id_buffer, uint16_t sidewalk_id_buffer_length);
 
 /**************************************************************************//**
  * This function provides the enabled capabilities as a string.

@@ -29,8 +29,11 @@ requires:
   - name: "power_manager"
   - name: "sleeptimer"
   - name: "simple_button"
+  - name: "cli"
 
 template_contribution:
+  - name: component_catalog
+    value: app_button_press
   - name: cli_command
     value:
       group: button
