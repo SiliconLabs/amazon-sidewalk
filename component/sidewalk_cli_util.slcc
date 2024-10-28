@@ -13,10 +13,12 @@ provides:
   - name: sidewalk_cli_util
 requires:
   - name: cli
-  - name: sidewalk_log_app_rtt
+  - name: sidewalk_log_app
   - name: cmsis_common
   - name: status
   - name: nvm3_lib
+recommends:
+  - name: sidewalk_log_app_rtt
 source:
   - path: "sl_sidewalk_cli_util.c"
   - path: "sl_sidewalk_cli_core.c"

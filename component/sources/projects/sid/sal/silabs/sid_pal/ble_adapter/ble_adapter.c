@@ -394,65 +394,65 @@ static void ble_request_write_cb_fnc(uint16_t conn_id,
 
   if (data != NULL) {
   sid_ble_cfg_service_identifier_t id;
-  for (uint8_t i = 0; i < ctx.cfg->num_profile; i++) {
-    id = ctx.cfg->profile[i].service.type;
-    for (uint8_t j = 0; j < ctx.cfg->profile[i].char_count; j++) {
-      if (attr_handle == ble_profile[i].current_characteristic_handle[j]) {
-        ctx.callback->data_callback(id, data, length);
-      }
-    }
-    for (uint8_t j = 0; j < ctx.cfg->profile[i].desc_count; j++) {
-      if (attr_handle == ble_profile[i].current_descriptor_handle[j]) {
-        if (length == BLE_NOTIFY_LENGTH) {
-          uint16_t notif_data;
-          memcpy(&notif_data, data, sizeof(notif_data));
-          ctx.callback->notify_callback(id, (notif_data == BLE_NOTIFICATION_ENABLED));
-        }
-      }
-    }
+  uint8_t profile_idx = 0;
 
-    if (need_resp && conn_id) {
-      // Send a response to a read/write operation
-      switch (trans_id) {
-        case SL_BT_GATTS_TRAN_TYPE_WRITE:
+  id = ctx.cfg->profile[profile_idx].service.type;
+  for (uint8_t j = 0; j < ctx.cfg->profile[profile_idx].char_count; j++) {
+    if (attr_handle == ble_profile[profile_idx].current_characteristic_handle[j]) {
+      ctx.callback->data_callback(id, data, length);
+    }
+  }
+  for (uint8_t j = 0; j < ctx.cfg->profile[profile_idx].desc_count; j++) {
+    if (attr_handle == ble_profile[profile_idx].current_descriptor_handle[j]) {
+      if (length == BLE_NOTIFY_LENGTH) {
+        uint16_t notif_data;
+        memcpy(&notif_data, data, sizeof(notif_data));
+        ctx.callback->notify_callback(id, (notif_data == BLE_NOTIFICATION_ENABLED));
+      }
+    }
+  }
+
+  if (need_resp && conn_id) {
+    // Send a response to a read/write operation
+    switch (trans_id) {
+      case SL_BT_GATTS_TRAN_TYPE_WRITE:
+      {
+        // Send response to remote
+        (void)sl_bt_gatt_server_send_user_write_response(conn_id, attr_handle, 0);
+        break;
+      }
+
+      case SL_BT_GATTS_TRAN_TYPE_PREP_WRITE:
+      {
+        // Send response to remote
+        sl_bt_gatt_server_send_user_prepare_write_response(conn_id, attr_handle, 0, offset, length, data);
+        break;
+        }
+
+        case SL_BT_GATTS_TRAN_TYPE_READ:
         {
+          uint16_t sent_len;
+
+          // Check MTU size
+          uint16_t rsp_val_len;
+          if (sl_bt_gatt_server_get_mtu(conn_id, &rsp_val_len) != SL_STATUS_OK) {
+            break;
+          }
+          // Compare MTU and the length of the unsent Attribute value
+          if (rsp_val_len > length) {
+            rsp_val_len = length;
+          }
           // Send response to remote
-          (void)sl_bt_gatt_server_send_user_write_response(conn_id, attr_handle, 0);
+          (void)sl_bt_gatt_server_send_user_read_response(conn_id, attr_handle, 0, rsp_val_len, data, &sent_len);
           break;
         }
 
-        case SL_BT_GATTS_TRAN_TYPE_PREP_WRITE:
-        {
-          // Send response to remote
-          sl_bt_gatt_server_send_user_prepare_write_response(conn_id, attr_handle, 0, offset, length, data);
+        default:
+          // Nothing to do
           break;
-          }
-
-          case SL_BT_GATTS_TRAN_TYPE_READ:
-          {
-            uint16_t sent_len;
-
-            // Check MTU size
-            uint16_t rsp_val_len;
-            if (sl_bt_gatt_server_get_mtu(conn_id, &rsp_val_len) != SL_STATUS_OK) {
-              break;
-            }
-            // Compare MTU and the length of the unsent Attribute value
-            if (rsp_val_len > length) {
-              rsp_val_len = length;
-            }
-            // Send response to remote
-            (void)sl_bt_gatt_server_send_user_read_response(conn_id, attr_handle, 0, rsp_val_len, data, &sent_len);
-            break;
-          }
-
-          default:
-            // Nothing to do
-            break;
-        }
       }
-      return;
     }
+    return;
   }
 }
 
@@ -690,7 +690,6 @@ static sid_error_t ble_adapter_start_service(void)
           sl_ble_free_resources();
           sl_ble_abort_session("pal ble: invalid service uuid type", gattdb_session_id);
           return SID_ERROR_GENERIC;
-          break;
         }
       }
     } else {
@@ -1015,7 +1014,6 @@ static sid_error_t ble_adapter_set_adv_data(uint8_t *data, uint8_t length)
     default:
       SL_SID_LOG_PAL_ERROR("pal ble: invalid address type");
       return SID_ERROR_GENERIC;
-      break;
   }
 
   // Return status value

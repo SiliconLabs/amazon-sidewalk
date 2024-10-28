@@ -279,20 +279,24 @@ static int32_t init_and_start_link(app_context_t *context, struct sid_config *co
 
 static uint32_t link_type_to_link_mask(uint8_t link_type)
 {
+  uint32_t ret;
+
   switch (link_type) {
     case SL_SIDEWALK_LINK_BLE:
-      return SID_LINK_TYPE_1;
+      ret = SID_LINK_TYPE_1;
       break;
     case SL_SIDEWALK_LINK_FSK:
-      return SID_LINK_TYPE_2;
+      ret = SID_LINK_TYPE_2;
       break;
     case SL_SIDEWALK_LINK_CSS:
-      return SID_LINK_TYPE_3;
+      ret = SID_LINK_TYPE_3;
       break;
     default:
-      return SID_LINK_TYPE_ANY;
+      ret = SID_LINK_TYPE_ANY;
       break;
   }
+
+  return ret;
 }
 
 void main_thread(void *context)
@@ -356,6 +360,12 @@ void main_thread(void *context)
 
 #if defined(SL_CSS_SUPPORTED)
   SL_SID_LOG_APP_INFO("CSS link supported");
+#endif
+
+#if defined (SV_ENABLED)
+  SL_SID_LOG_APP_INFO("Secure Vault is enabled");
+#else
+  SL_SID_LOG_APP_INFO("Secure Vault is disabled");
 #endif
 
 #if (defined(SL_FSK_SUPPORTED) || defined(SL_CSS_SUPPORTED))
@@ -723,8 +733,9 @@ static enum sid_link_type get_next_link(enum sid_link_type current_link)
 #elif defined(SL_CSS_SUPPORTED)
     SL_SID_LOG_APP_INFO("switching to CSS link");
     return SID_LINK_TYPE_3;
-#endif
+#else
     return SID_LINK_TYPE_1;
+#endif
   } else if (current_link == SID_LINK_TYPE_2) {
 #if defined(SL_CSS_SUPPORTED)
     SL_SID_LOG_APP_INFO("switching to CSS link");
@@ -732,8 +743,9 @@ static enum sid_link_type get_next_link(enum sid_link_type current_link)
 #elif defined(SL_BLE_SUPPORTED)
     SL_SID_LOG_APP_INFO("switching to BLE link");
     return SID_LINK_TYPE_1;
-#endif
+#else
     return SID_LINK_TYPE_2;
+#endif
   } else { // (current_link == SID_LINK_TYPE_3)
 #if defined(SL_BLE_SUPPORTED)
     SL_SID_LOG_APP_INFO("switching to BLE link");
@@ -741,8 +753,9 @@ static enum sid_link_type get_next_link(enum sid_link_type current_link)
 #elif defined(SL_FSK_SUPPORTED)
     SL_SID_LOG_APP_INFO("switching to FSK link");
     return SID_LINK_TYPE_2;
-#endif
+#else
     return SID_LINK_TYPE_3;
+#endif
   }
 }
 

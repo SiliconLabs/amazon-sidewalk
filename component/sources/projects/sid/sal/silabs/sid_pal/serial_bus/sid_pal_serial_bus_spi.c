@@ -77,7 +77,7 @@ static sid_error_t bus_serial_spi_xfer(const struct sid_pal_serial_bus_iface *if
                                        uint8_t *rx,
                                        size_t xfer_size)
 {
-  if (!iface || !client || (!tx && !rx) || !(xfer_size)) {
+  if (!iface || !client || !tx || !rx || !xfer_size) {
     return SID_ERROR_INVALID_ARGS;
   }
 

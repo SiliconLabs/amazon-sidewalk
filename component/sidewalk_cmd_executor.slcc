@@ -17,8 +17,10 @@ requires:
   - name: "sl_common"
   - name: "sidewalk_utils"
   - name: "simple_led"
-  - name: "sidewalk_log_app_rtt"
+  - name: "sidewalk_log_app"
   - name: "sidewalk_ble_subghz"
+recommends:
+  - name: "sidewalk_log_app_rtt"
 source:
   - path: "sl_sidewalk_cmd_executor.c"
 include:

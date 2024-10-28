@@ -18,3 +18,11 @@ branch can be merged into master.
 If there are any needs regarding to AWS stack, and the template file has changed in order to introduce the changes, the CI 
 will create/modify/remove anything that is needed, because it has full access to the cloud. So, with other words, the changes 
 can be placed without asking help from devops team.
+
+## Useful tool  
+cfn_flip is used for converting CF template yaml to json vica-versa.  
+Install process:  
+* python3 -m pip install cfn_flip  
+
+Usage:  
+* cfn-flip -j cloudformation.yaml | jg . > cloudformation.json (jq is optional for formatting)

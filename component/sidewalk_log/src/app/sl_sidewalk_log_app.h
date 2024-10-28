@@ -62,7 +62,7 @@ void sl_sid_log_app_hexdump(sl_sid_log_core_log_severity_t severity, const void 
 // -----------------------------------------------------------------------------
 
 #if SL_SID_LOG_APP_ENABLED
-#define SL_SID_LOG_APP_HIGHEST_SEVERITY(level, fmt_, ...) sl_sid_log_app(level, fmt_, ##__VA_ARGS__);
+#define SL_SID_LOG_APP_HIGHEST_SEVERITY(level, fmt_, ...) sl_sid_log_app(level, fmt_, ##__VA_ARGS__)
 #define SL_SID_LOG_APP(level, fmt_, ...)          \
   do {                                            \
     if (level <= SL_SID_LOG_APP_SEVERITY) {       \

@@ -260,7 +260,7 @@ bool sid_pal_mfg_store_is_tlv_support(void)
 
 uint32_t sid_pal_mfg_store_get_version(void)
 {
-  uint32_t version;
+  uint32_t version = 0;
 
   sid_pal_mfg_store_read(SID_PAL_MFG_STORE_VERSION, (uint8_t *)&version, SID_PAL_MFG_STORE_VERSION_SIZE);
   // Assuming that we keep this behavior for both 1P & 3P
@@ -317,6 +317,8 @@ bool sid_pal_mfg_store_dev_id_get(uint8_t dev_id[SID_PAL_MFG_STORE_DEVID_SIZE])
 bool sid_pal_mfg_store_serial_num_get(uint8_t serial_num[SID_PAL_MFG_STORE_SERIAL_NUM_SIZE])
 {
   uint32_t buffer[(SID_PAL_MFG_STORE_SERIAL_NUM_SIZE + (MFG_WORD_SIZE - 1)) / MFG_WORD_SIZE];
+
+  memset(buffer, 0, sizeof(buffer));
 
   sid_pal_mfg_store_read(SID_PAL_MFG_STORE_SERIAL_NUM, (uint8_t *)buffer, SID_PAL_MFG_STORE_SERIAL_NUM_SIZE);
 

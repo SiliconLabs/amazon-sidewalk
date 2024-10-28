@@ -90,9 +90,9 @@ requires:
   - name: "psa_crypto_sha256"
   - name: "sl_common"
   - name: "component_catalog"
-  - name: "sidewalk_log_stack_rtt"
-  - name: "sidewalk_log_pal_rtt"
-  - name: "sidewalk_log_app_rtt"
+  - name: "sidewalk_log_stack"
+  - name: "sidewalk_log_pal"
+  - name: "sidewalk_log_app"
   - name: "iostream"
   - name: "sl_string"
   - name: "emlib_system"
@@ -106,6 +106,10 @@ requires:
   - name: "sleeptimer"
 conflicts:
   - name: sidewalk_ble_subghz
+recommends:
+  - name: "sidewalk_log_stack_rtt"
+  - name: "sidewalk_log_pal_rtt"
+  - name: "sidewalk_log_app_rtt"
 define:
   - name: "NVM3_DEFAULT_NVM_SIZE"
     value: "24576"

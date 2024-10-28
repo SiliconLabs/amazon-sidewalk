@@ -17,7 +17,7 @@ include:
     - path: app_process.h
 sdk_extension:
   - id: sidewalk
-    version: 2.2.0
+    version: 2.2.1
 component:
   - id: app_log
     from: sidewalk

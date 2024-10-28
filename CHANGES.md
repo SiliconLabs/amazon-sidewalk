@@ -1,5 +1,31 @@
 Silicon Labs Amazon Sidewalk Release Note
 =========================================
+# Release 2.2.1
+(release date 2024-10-24)
+
+*SiSDK 2024.6.2 - Amazon Sidewalk SDK 1.17.0*
+
+## New Features/Improvements
+### Silicon Labs Extension
+- New Sidewalk Empty sample application
+- New Sidewalk Qualification sample application
+- Sidewalk component dependencies are cleared.
+- PDP project for xg26 platform is available in Simplicity Studio
+- Adding Sx1262 board support for xg26 boards
+
+
+### Supported Toolchain
+- GCC version 12.2.1
+
+## Known issues
+- [47374] - Message duplicate error during FFN: `<error> msg dup: xxxxxxxxx (xxx)`. Device recovers in next FFN session.
+
+
+
+## Sidewalk Assistant Known issues
+
+- The manufacturing page is never detected on the device regardless of one was flashed or not. A temporary fix was found on this issue. If you have more than one "Sidewalk Assistant" adapter pack installed, remove the duplicate to only keep one.
+
 # Release 2.2.0
 (release date 2024-08-09)
 

@@ -15,6 +15,7 @@ requires:
   - name: sidewalk_log_core
 provides:
   - name: sidewalk_log_app_rtt
+  - name: sidewalk_log_app
 source:
   - path: sl_sidewalk_log_app.c
 include:

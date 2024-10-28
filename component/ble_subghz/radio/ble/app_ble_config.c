@@ -145,7 +145,7 @@ static const sid_ble_cfg_adv_param_t adv_param =
 /// BLE connection parameters
 static const sid_ble_cfg_conn_param_t conn_param =
 {
-  .min_conn_interval = 16,
+  .min_conn_interval = 30,
   .max_conn_interval = 60,
   .slave_latency     = 0,
   .conn_sup_timeout  = 400,

@@ -16,6 +16,7 @@ recommends:
   - id: sidewalk_ble_subghz
 provides:
   - name: sidewalk_log_stack_vcom
+  - name: sidewalk_log_stack
 source:
   - path: sl_sidewalk_log_stack.c
 config_file:

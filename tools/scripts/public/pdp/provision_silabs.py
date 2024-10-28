@@ -17,6 +17,7 @@ from priv_key_prov import PrivKeyProv
 from on_dev_cert_gen import OnDevCertGen
 
 ERR_MSG_PROVIDED_ARGS_NOT_CONSISTENT = "Provided args are not consistent"
+PDP_WORKAROUND_FOR_XG26 = 1 # Jlink does not support xg26 currently. xg24 must be used instead of xg26.
 
 logger = logging.getLogger('provision')
 logger.setLevel(logging.DEBUG)
@@ -101,10 +102,14 @@ def parse_prod_config():
     args.sst_hsm_pin        = prod_config["sst_hsm_pin"]
 
 def get_iostream():
+  jlink_device = part.get_jlink_device()
+  if PDP_WORKAROUND_FOR_XG26:
+    if part._family == "mg26":
+      jlink_device = "EFR32MG24BxxxF1536"
   if args.iostream == IOStream.IOSTREAM_RTT:
-    return IOStream_RTT(part.get_jlink_device(), args.jlink_ser)
+    return IOStream_RTT(jlink_device, args.jlink_ser)
   else:
-    return IOStream_VCOM(part.get_jlink_device(), args.jlink_ser, args.vcom_port)
+    return IOStream_VCOM(jlink_device, args.jlink_ser, args.vcom_port)
 
 if __name__ == "__main__":
   sanity_check()

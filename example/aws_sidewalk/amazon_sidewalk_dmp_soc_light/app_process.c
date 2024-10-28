@@ -331,6 +331,12 @@ void main_thread(void *context)
   SL_SID_LOG_APP_INFO("CSS link supported");
 #endif
 
+#if defined (SV_ENABLED)
+  SL_SID_LOG_APP_INFO("Secure Vault is enabled");
+#else
+  SL_SID_LOG_APP_INFO("Secure Vault is disabled");
+#endif
+
 #if defined(SL_SIDEWALK_DMP_FSK_SUPPORTED)
   config.sub_ghz_link_config = app_get_sub_ghz_config();
 #endif
@@ -724,20 +730,24 @@ static int32_t init_and_start_link(app_context_t *app_ctx, struct sid_config *co
 
 static uint32_t link_type_to_link_mask(uint8_t link_type)
 {
+  uint32_t ret;
+
   switch (link_type) {
     case SL_SIDEWALK_LINK_BLE:
-      return SID_LINK_TYPE_1;
+      ret = SID_LINK_TYPE_1;
       break;
     case SL_SIDEWALK_LINK_FSK:
-      return SID_LINK_TYPE_2;
+      ret = SID_LINK_TYPE_2;
       break;
     case SL_SIDEWALK_LINK_CSS:
-      return SID_LINK_TYPE_3;
+      ret = SID_LINK_TYPE_3;
       break;
     default:
-      return SID_LINK_TYPE_ANY;
+      ret = SID_LINK_TYPE_ANY;
       break;
   }
+
+  return ret;
 }
 
 static void queue_event(QueueHandle_t queue,

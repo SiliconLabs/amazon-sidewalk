@@ -10,7 +10,7 @@ category: Example|AWS IoT
 
 sdk_extension:
   - id: sidewalk
-    version: 2.2.0
+    version: 2.2.1
 
 source:
   - path: ../main.c
@@ -262,3 +262,8 @@ template_contribution:
     name: ble_start_stop
     handler: cli_ble_start_stop
     help: "Enable/Disable BLE stack"
+- name: cli_command
+  value:
+    name: bleconnect
+    handler: cli_ble_connect
+    help: "Before sending uplink with BLE link to sidewalk network, you first need to connect to the network. Connection will timeout after 30sec of inactivity."

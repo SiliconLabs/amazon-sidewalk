@@ -29,8 +29,10 @@ requires:
   - name: app_log
   - name: app_assert
   - name: memory_manager
-  - name: sidewalk_log_pal_rtt
+  - name: sidewalk_log_pal
   - name: "sidewalk_ble_subghz"
+recommends:
+  - name: "sidewalk_log_pal_rtt"
 
 #-------------- Template Contribution ----------------
 template_contribution:

@@ -59,9 +59,9 @@ typedef struct {
 //place holder for platform specific init parameters
 #if (defined(SL_FSK_SUPPORTED) || defined(SL_CSS_SUPPORTED))
 #if defined(SL_RADIO_EXTERNAL)
-  radio_sx126x_device_config_t *radio_cfg;
+  const radio_sx126x_device_config_t *radio_cfg;
 #elif defined(SL_RADIO_NATIVE)
-  radio_efr32xgxx_device_config_t *radio_cfg;
+  const radio_efr32xgxx_device_config_t *radio_cfg;
 #endif
 #endif
 } platform_specific_init_parameters_t;

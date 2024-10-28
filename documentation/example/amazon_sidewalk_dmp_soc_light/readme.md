@@ -47,10 +47,11 @@ When LED1 is available on the hardware, it is used to represent BLE state, the L
 | ble_start_stop | Switch BLE advertising on and off | > ble_start_stop | PB0/BTN0 long press |
 | send | Sends an updated counter value to the cloud | > send | PB1/BTN1<sup>1</sup><br>PB0/BTN0 short press<sup>2</sup> |
 | reset | Performs software reset (1) or unregisters the Sidewalk Endpoint (2) | > reset 2 | N/A |
+| bleconnect<sup>3</sup> | Initiate BLE connection request | > bleconnect | N/A |
 
 > **⚠ WARNING ⚠**: The `reset 2` command is used to unregister your device with the cloud. It can only be called on a registered AND time synced device.
 
-> (1) Not available on xg27 and kg100s<br>(2) Only on xg27 and kg100s
+> <sup>1</sup> Not available on xg27 and kg100s<br><sup>2</sup> Only on xg27 and kg100s<br><sup>3</sup> Only in BLE-BLE DMP example application
 
 ### BLE interaction
 

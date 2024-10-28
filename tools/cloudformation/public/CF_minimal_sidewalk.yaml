@@ -21,7 +21,7 @@ Resources:
         Id: CFSReceiveQueuePolicy
         Version: '2012-10-17'
         Statement:
-          - Sid: Send_Permission
+          - Sid: SendPermission
             Effect: Allow
             Action:
               - sqs:*
@@ -30,7 +30,7 @@ Resources:
         - !Ref CFSReceiveQueue
 ####################################################################
 # Type: AWS::S3::Bucket
-# Our S3 bucket.
+# Our S3 Bucket.
 ####################################################################
   S3Bucket: 
     Type: AWS::S3::Bucket
@@ -50,10 +50,19 @@ Resources:
       VersioningConfiguration:
         Status: Suspended
       PublicAccessBlockConfiguration:
-        BlockPublicAcls: true
-        BlockPublicPolicy: true
-        IgnorePublicAcls: true
-        RestrictPublicBuckets: true
+        BlockPublicAcls: Yes
+        BlockPublicPolicy: Yes
+        IgnorePublicAcls: Yes
+        RestrictPublicBuckets: Yes
+      Tags:
+        - Key: Terraform
+          Value: !Sub 'false'
+        - Key: CreatedBy
+          Value: !Sub 'CloudFormation'
+        - Key: Team
+          Value: !Sub 'Sidewalk'
+        - Key: Project
+          Value: !Sub 'Sidewalk'
 ####################################################################
 # Type: AWS::IAM::Role
 # This role is for the fuota.
@@ -68,8 +77,10 @@ Resources:
         - 
           PolicyName: CFSFuotaTaskPolicy
           PolicyDocument:
+            Version: '2012-10-17'
             Statement:
             - Effect: Allow
+              Sid: PerformFuotaTasks
               Action:
               - iotwireless:CreateFuotaTask
               - iotwireless:DisassociateMulticastGroupFromFuotaTask
@@ -83,25 +94,28 @@ Resources:
               - iotwireless:UpdateFuotaTask
               - iotwireless:AssociateMulticastGroupWithFuotaTask
               Resource:
-              - "*"
+              - '*'
         - 
           PolicyName: CFSBucketAllowPolicy
           PolicyDocument:
+            Version: '2012-10-17'
             Statement:
             - Effect: Allow
-              Sid: Statement1
+              Sid: ViewS3
               Action:
-              - s3:*
+              - s3:ListBucketVersions
+              - s3:ListBucket
+              - s3:GetObject
               Resource: !GetAtt S3Bucket.Arn
       AssumeRolePolicyDocument:
         Version: '2012-10-17'
         Statement:
-          - Effect: "Allow"
+          - Effect: Allow
             Principal: 
               Service: 
-                - "iotwireless.amazonaws.com"
+                - iotwireless.amazonaws.com
             Action:
-              - "sts:AssumeRole"
+              - sts:AssumeRole
 ####################################################################
 # Type: AWS::IAM::Role
 # This role is for the destination.
@@ -116,6 +130,7 @@ Resources:
         - 
           PolicyName: CFSDestinationPolicy
           PolicyDocument:
+            Version: '2012-10-17'
             Statement:
             - Effect: Allow
               Action:
@@ -123,16 +138,16 @@ Resources:
               - iot:DescribeEndpoint
               - iot:Publish
               Resource:
-              - "*"
+              - '*'
       AssumeRolePolicyDocument:
         Version: '2012-10-17'
         Statement:
-          - Effect: "Allow"
+          - Effect: Allow
             Principal: 
               Service: 
-                - "iotwireless.amazonaws.com"
+                - iotwireless.amazonaws.com
             Action:
-              - "sts:AssumeRole"
+              - sts:AssumeRole
 ####################################################################
 # Type: AWS::IAM::Role
 # This role is for generic republishing.
@@ -147,6 +162,7 @@ Resources:
         - 
           PolicyName: CFSRepublishPolicy
           PolicyDocument:
+            Version: '2012-10-17'
             Statement:
             - Effect: Allow
               Action:
@@ -159,13 +175,13 @@ Resources:
       AssumeRolePolicyDocument:
         Version: '2012-10-17'
         Statement:
-          - Effect: "Allow"
-            Sid: ""
+          - Effect: Allow
+            Sid: CFSRepublishPolicy
             Principal: 
               Service: 
-                - "iot.amazonaws.com"
+                - iot.amazonaws.com
             Action:
-              - "sts:AssumeRole"
+              - sts:AssumeRole
 ####################################################################
 # Type: AWS::IAM::Role
 # This role is for our republish lambda function.
@@ -180,6 +196,7 @@ Resources:
         - 
           PolicyName: CFSRepublishPolicy
           PolicyDocument:
+            Version: '2012-10-17'
             Statement:
             - Effect: Allow
               Action:
@@ -192,13 +209,13 @@ Resources:
       AssumeRolePolicyDocument:
         Version: '2012-10-17'
         Statement:
-          - Effect: "Allow"
-            Sid: ""
+          - Effect: Allow
+            Sid: LambdaAccessibleServices
             Principal: 
               Service: 
-                - "lambda.amazonaws.com"
+                - lambda.amazonaws.com
             Action:
-              - "sts:AssumeRole"
+              - sts:AssumeRole
 ####################################################################
 # Type: AWS::IoT::TopicRule
 # Destination rule which republishes the incoming messages to SQS,
@@ -210,18 +227,18 @@ Resources:
     Properties:
       RuleName: CFSDestinationRule
       TopicRulePayload:
-        RuleDisabled: 'false'
+        RuleDisabled: false
         Sql: SELECT *
         Actions:
         - Lambda:
-            FunctionArn: !GetAtt 'CFSRepublishLambda.Arn'
+            FunctionArn: !GetAtt CFSRepublishLambda.Arn
         - Republish:
             Qos: 0
             Topic: sidewalk/received
-            RoleArn: !GetAtt 'CFSRepublishRole.Arn'
+            RoleArn: !GetAtt CFSRepublishRole.Arn
         - Sqs:
-            QueueUrl: !GetAtt 'CFSReceiveQueue.QueueName'
-            RoleArn: !GetAtt 'CFSRepublishRole.Arn'
+            QueueUrl: !GetAtt CFSReceiveQueue.QueueName
+            RoleArn: !GetAtt CFSRepublishRole.Arn
 ####################################################################
 # Type: AWS::Lambda::Permission
 # This permission allows the lambda function to get triggered by
@@ -233,7 +250,7 @@ Resources:
       FunctionName: !GetAtt CFSRepublishLambda.Arn
       Action: lambda:InvokeFunction
       Principal: iot.amazonaws.com
-      SourceAccount: !Ref 'AWS::AccountId'
+      SourceAccount: !Ref AWS::AccountId
       SourceArn: !GetAtt CFSDestinationRule.Arn
 ####################################################################
 # Type: AWS::Lambda::Function
@@ -245,7 +262,7 @@ Resources:
     Properties:
       Handler: index.lambda_handler
       Runtime: python3.8
-      Role: !GetAtt 'CFSRepublishLambdaRole.Arn'
+      Role: !GetAtt CFSRepublishLambdaRole.Arn
       Code:
         ZipFile: | 
           import json
@@ -316,4 +333,4 @@ Resources:
       Expression: CFSDestinationRule
       ExpressionType: RuleName
       Name: CFSDestination
-      RoleArn: !GetAtt 'CFSDestinationRole.Arn'
+      RoleArn: !GetAtt CFSDestinationRole.Arn

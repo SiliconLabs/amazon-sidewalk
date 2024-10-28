@@ -27,8 +27,10 @@ requires:
   - name: "nvm3_lib"
   - name: "nvm3_default"
   - name: "nvm3_default_config"
-  - name: "sidewalk_log_pal_rtt"
+  - name: "sidewalk_log_pal"
   - name: "sidewalk_ble_subghz"
+recommends:
+  - name: "sidewalk_log_pal_rtt"
 
 #-------------- Template Contribution ----------------
 template_contribution:

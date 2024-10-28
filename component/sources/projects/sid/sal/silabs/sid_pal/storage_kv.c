@@ -395,9 +395,7 @@ sid_error_t sid_pal_storage_kv_record_delete(uint16_t group, uint16_t key)
                                 raw_file_buffer,
                                 data_len - record_header.data_size - STORAGE_KV_REC_HDR_SIZE);
 
-        if (status != ECODE_NVM3_OK) {
-          break;
-        }
+        /* status check is not neccessary, break command is issued anyway */
         break;
       }
 

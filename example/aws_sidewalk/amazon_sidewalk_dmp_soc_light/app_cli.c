@@ -125,3 +125,11 @@ void cli_ble_start_stop(sl_cli_command_arg_t *arguments)
   app_trigger_ble_start_stop(&ctx);
 #endif
 }
+
+#if defined(SL_SIDEWALK_DMP_BLE_SUPPORTED)
+void cli_ble_connect(sl_cli_command_arg_t *arguments)
+{
+  (void)arguments;
+  app_trigger_connection_request();
+}
+#endif

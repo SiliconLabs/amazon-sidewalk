@@ -764,6 +764,12 @@ static sl_status_t init_sidewalk(app_context_t *app_context, char *link_str)
   SL_SID_LOG_APP_INFO("CSS link supported");
 #endif
 
+#if defined (SV_ENABLED)
+  SL_SID_LOG_APP_INFO("Secure Vault is enabled");
+#else
+  SL_SID_LOG_APP_INFO("Secure Vault is disabled");
+#endif
+
 #if (defined(SL_FSK_SUPPORTED) || defined(SL_CSS_SUPPORTED))
   app_context->sid_cfg.sub_ghz_link_config = app_get_sub_ghz_config();
 #endif

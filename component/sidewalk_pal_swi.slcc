@@ -13,9 +13,11 @@ provides:
   - name: "sidewalk_pal_swi"
 requires:
   - name: "emlib_core"
-  - name: "sidewalk_log_pal_rtt"
+  - name: "sidewalk_log_pal"
   - name: "freertos"
   - name: "sidewalk_ble_subghz"
+recommends:
+  - name: "sidewalk_log_pal_rtt"
 source:
   - path: "sl_sidewalk_pal_swi.c"
 config_file:

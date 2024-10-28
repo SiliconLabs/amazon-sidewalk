@@ -13,9 +13,9 @@ provides:
   - name: "sidewalk_ble_subghz"
   - name: "sidewalk_base_component"
 requires:
-  - name: "sidewalk_log_pal_rtt"
-  - name: "sidewalk_log_app_rtt"
-  - name: "sidewalk_log_stack_rtt"
+  - name: "sidewalk_log_pal"
+  - name: "sidewalk_log_app"
+  - name: "sidewalk_log_stack"
   - name: "memory_manager"
   - name: "spidrv_core"
     condition:
@@ -201,11 +201,23 @@ config_file:
       - device_generic_family_efr32xg25
     unless:
       - sidewalk_dmp_ble_support
-  - path: ble_subghz/config/efr32xg26/app_gpio_config.h
+  - path: ble_subghz/config/efr32xg26_pinout_1/app_gpio_config.h
     condition:
       - device_generic_family_efr32xg26
     unless:
       - sidewalk_dmp_ble_support
+      - brd4116a
+      - brd4117a
+      - brd4117y
+      - brd4117z
+  - path: ble_subghz/config/efr32xg26_pinout_2/app_gpio_config.h
+    condition:
+      - device_generic_family_efr32xg26
+    unless:
+      - sidewalk_dmp_ble_support
+      - brd4118a
+      - brd4120a
+      - brd4121a
 
 include:
   - path: "includes/projects/sid/sal/common/public/sid_ifc/sid_ble_cfg"
@@ -383,6 +395,9 @@ define:
       - brd4332a
 
 recommends:
+  - id: sidewalk_log_app_rtt
+  - id: sidewalk_log_pal_rtt
+  - id: sidewalk_log_stack_rtt
   - id: bluetooth_stack
     condition: [device_supports_bluetooth]
   - id: bluetooth_feature_dynamic_gattdb

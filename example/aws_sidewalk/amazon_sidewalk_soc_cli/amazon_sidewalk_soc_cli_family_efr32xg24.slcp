@@ -7,7 +7,7 @@ category: Example|AWS IoT
 
 sdk_extension:
   - id: sidewalk
-    version: 2.2.0
+    version: 2.2.1
 
 source:
   - path: main.c
@@ -33,8 +33,6 @@ component:
 - id: sidewalk_cli_util
   from: sidewalk
 - id: app_log
-  from: sidewalk
-- id: sidewalk_ota_dfu
   from: sidewalk
 - id: sidewalk_log_app_rtt
   from: sidewalk

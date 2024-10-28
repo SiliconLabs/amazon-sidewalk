@@ -159,7 +159,7 @@ define:
     condition:
       - cli
   - name: SL_SIDEWALK_EXTENSION_VERSION
-    value: "2.1.0"
+    value: "2.2.1"
 
 library:
   - path: "ble_subghz/lib/sl_lib_ble_subghz.a"

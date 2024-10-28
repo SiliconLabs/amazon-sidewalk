@@ -13,6 +13,7 @@ requires:
   - name: sidewalk_log_core
 provides:
   - name: sidewalk_log_pal_vcom
+  - name: sidewalk_log_pal
 source:
   - path: sl_sidewalk_log_pal.c
 include:

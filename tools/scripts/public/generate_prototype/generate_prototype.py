@@ -32,7 +32,6 @@ logger = logging.getLogger()
 logging.basicConfig(level=logging.INFO)
 
 parser = argparse.ArgumentParser(add_help=True)
-parser.add_argument('-i', '--instances', help="Number of instances to generate (default: 1)", required=False, default=1)
 parser.add_argument('-in',  '--input',  help="Path of the input directory",  required=True)
 parser.add_argument('-out', '--output', help="Path of the output directory", required=True)
 parser.add_argument('-p', '--aws-profile', help="Name of your AWS profile from .aws/credentials", required=False)
@@ -134,7 +133,7 @@ try:
         elif(args.aws_profile != None):
             print("Using input arguments for parameters")
             # This is when using the script with command line arguments
-            e = EnvConfig(None, args.instances, args.aws_profile, args.name, args.dst_name, args.target, args.commander)
+            e = EnvConfig(None, args.aws_profile, args.name, args.dst_name, args.target, args.commander)
             aws = AWSHandler(None, None, None, e.aws_region, e.aws_profile).client
         else:
             print("Using script through Simplicity Studio")
