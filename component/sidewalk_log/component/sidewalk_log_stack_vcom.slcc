@@ -1,0 +1,27 @@
+id: "sidewalk_log_stack_vcom"
+label: "Sidewalk Log: stack VCOM"
+package: "Flex"
+description: "Sidewalk VCOM log functionality to be used by stack layer"
+category: Example|AWS IoT
+quality: production
+metadata:
+  sbom:
+    license: Zlib
+root_path: "component/sidewalk_log/src/stack"
+
+requires:
+  - name: sidewalk_log_core
+  - name: sidewalk_base_component
+recommends:
+  - id: sidewalk_ble_subghz
+provides:
+  - name: sidewalk_log_stack_vcom
+  - name: sidewalk_log_stack
+source:
+  - path: sl_sidewalk_log_stack.c
+config_file:
+  - path: config/sl_sidewalk_log_stack_vcom_config.h
+
+template_contribution:
+  - name: component_catalog
+    value: sidewalk_log_stack_vcom

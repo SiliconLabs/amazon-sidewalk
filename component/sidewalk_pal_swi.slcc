@@ -1,0 +1,30 @@
+id: "sidewalk_pal_swi"
+label: "Sidewalk PAL SWI"
+package: "Flex"
+description: "Provides peripheral abstraction functions to sidewalk swi implementation"
+category: Example|AWS IoT
+quality: production
+metadata:
+  sbom:
+    license: Zlib
+root_path: "component/sidewalk_pal_swi"
+
+provides:
+  - name: "sidewalk_pal_swi"
+requires:
+  - name: "emlib_core"
+  - name: "sidewalk_log_pal"
+  - name: "freertos"
+  - name: "sidewalk_ble_subghz"
+recommends:
+  - name: "sidewalk_log_pal_rtt"
+source:
+  - path: "sl_sidewalk_pal_swi.c"
+config_file:
+  - path: "config/sl_sidewalk_pal_swi_config.h"
+
+#-------------- Template Contribution ----------------
+template_contribution:
+#---------------- Component Catalog ------------------
+  - name: component_catalog
+    value: sidewalk_pal_swi

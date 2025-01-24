@@ -1,0 +1,281 @@
+id: "sidewalk_common"
+label: amazon_bluetooth
+package: "Flex"
+description: "Simple component to gather all of the sidewalk related libraries and header files."
+category: Example|AWS IoT
+quality: production
+metadata:
+  sbom:
+    license: LicenseRef-amazon-sidewalk-license
+root_path: "component"
+
+config_file:
+  - path: sidewalk_common/config/ble_subghz/sl_sidewalk_common_config.h
+    condition:
+      - sl_sidewalk_radio_ble
+      - sl_sidewalk_radio_subghz
+  - path: sidewalk_common/config/ble/sl_sidewalk_common_config.h
+    condition:
+      - sl_sidewalk_radio_ble
+    unless:
+      - sl_sidewalk_radio_subghz
+  - path: sidewalk_common/config/subghz/sl_sidewalk_common_config.h
+    condition:
+      - sl_sidewalk_radio_subghz
+    unless:
+      - sl_sidewalk_radio_ble
+  - path: sidewalk_common/config/sl_sidewalk_properties.h
+
+source:
+  - path: sidewalk_common/src/sl_sidewalk_freertos_hooks.c
+    condition:
+      - freertos
+
+provides:
+  - name: "sidewalk_common"
+#######################################
+# FAMILIES WITH EXTERNAL SUBGHZ RADIO
+#######################################
+  - name: sl_sidewalk_radio_external
+    condition:
+      - device_generic_family_efr32xg21
+      - spidrv
+  - name: sl_sidewalk_radio_external
+    condition:
+      - device_generic_family_efr32xg24
+      - spidrv
+  - name: sl_sidewalk_radio_external
+    condition:
+      - device_generic_family_efr32xg26
+      - spidrv
+#######################################
+# FAMILIES WITH NATIVE SUBGHZ RADIO
+#######################################
+  - name: sl_sidewalk_radio_native
+    condition:
+      - device_generic_family_efr32xg23
+      - device_has_radio_subghz
+  - name: sl_sidewalk_radio_native
+    condition:
+      - device_generic_family_efr32xg25
+  - name: sl_sidewalk_radio_native
+    condition:
+      - device_generic_family_efr32xg28
+      - device_has_radio_subghz
+#######################################
+# COMMON FEATURE FOR SUBGHZ RADIO
+#######################################
+  - name: sl_sidewalk_radio_subghz
+    condition:
+      - sl_sidewalk_radio_native
+  - name: sl_sidewalk_radio_subghz
+    condition:
+      - sl_sidewalk_radio_external
+#######################################
+# FAMILIES WITH BLE
+#######################################
+  - name: sl_sidewalk_radio_ble
+    condition:
+      - device_generic_family_efr32xg21
+      - device_supports_bluetooth
+  - name: sl_sidewalk_radio_ble
+    condition:
+      - device_generic_family_efr32xg24
+      - device_supports_bluetooth
+  - name: sl_sidewalk_radio_ble
+    condition:
+      - device_generic_family_efr32xg26
+      - device_supports_bluetooth
+  - name: sl_sidewalk_radio_ble
+    condition:
+      - device_generic_family_efr32xg28
+      - device_supports_bluetooth
+  - name: sl_sidewalk_radio_ble
+    condition:
+      - device_generic_family_efr32xg27
+      - device_supports_bluetooth
+
+requires:
+  - name: "sidewalk_pal_swi"
+  - name: "sl_common"
+  - name: "app_assert"
+    condition:
+      - freertos
+
+define:
+  - name: DUAL_LINK_SUPPORT
+    value: 1
+    condition:
+      - sl_sidewalk_radio_external
+  - name: REGION_US915
+    condition:
+      - sl_sidewalk_radio_native
+  - name: REGION_US915
+    condition:
+      - sl_sidewalk_radio_external
+  - name: SL_RADIO_NATIVE
+    condition:
+    - sl_sidewalk_radio_native
+    unless:
+    - sidewalk_dmp_ble_support
+  - name: SL_RADIO_EXTERNAL
+    condition:
+    - sl_sidewalk_radio_external
+    unless:
+    - sidewalk_dmp_ble_support
+  - name: SL_BLE_SUPPORTED
+    condition:
+      - sl_sidewalk_radio_ble
+  - name: SL_FSK_SUPPORTED
+    condition:
+    - sl_sidewalk_radio_external
+    unless:
+    - sidewalk_dmp_ble_support
+  - name: SL_FSK_SUPPORTED
+    condition:
+    - sl_sidewalk_radio_native
+    unless:
+    - sidewalk_dmp_ble_support
+  - name: SL_CSS_SUPPORTED
+    condition:
+      - sl_sidewalk_radio_external
+    unless:
+      - sidewalk_dmp_ble_support
+  - name: RADIO_DRIVER_RAIL
+    value: 1
+    condition:
+    - sl_sidewalk_radio_native
+  - name: SL_TEMPERATURE_SENSOR_INTERNAL
+    condition:
+      - tempdrv
+  - name: SL_TEMPERATURE_SENSOR_EXTERNAL
+    condition:
+      - si70xx_driver
+  - name: BUFFER_SIZE_UP
+    value: 4096
+    condition:
+      - iostream_rtt
+  - name: SEGGER_RTT_PRINTF_BUFFER_SIZE
+    value: 256
+    condition:
+      - iostream_rtt
+  - name: SL_SIDEWALK_RTT_PRESENT
+    condition:
+      - iostream_rtt
+  - name: SL_SIDEWALK_CLI_DEFAULT_TERMINAL_ID
+    value: 0
+    condition:
+      - cli
+  - name: SL_SIDEWALK_EXTENSION_VERSION
+    value: "2.3.0"
+
+library:
+  - path: "ble_subghz/lib/sl_lib_ble_subghz.a"
+    condition:
+      - sl_sidewalk_radio_ble
+      - sl_sidewalk_radio_native
+    unless:
+      - efr32mg24a010f768im40
+      - efr32mg24a010f768im48
+      - efr32mg24a020f768im40
+      - brd2600a
+      - sidewalk_dmp_fsk_support
+      - sidewalk_dmp_ble_support
+      - device_generic_family_efr32xg27
+  - path: "ble_subghz/lib/sl_lib_ble_subghz.a"
+    condition:
+      - sl_sidewalk_radio_ble
+      - sl_sidewalk_radio_external
+    unless:
+      - efr32mg24a010f768im40
+      - efr32mg24a010f768im48
+      - efr32mg24a020f768im40
+      - brd2600a
+      - sidewalk_dmp_fsk_support
+      - sidewalk_dmp_ble_support
+      - device_generic_family_efr32xg27
+  - path: "ble_subghz/lib/sl_lib_ble.a"
+    condition:
+      - sl_sidewalk_radio_ble
+    unless:
+      - sl_sidewalk_radio_native
+      - brd2600a
+      - sidewalk_dmp_fsk_support
+  - path: "ble_subghz/lib/sl_lib_ble.a"
+    condition:
+      - sl_sidewalk_radio_ble
+    unless:
+      - sl_sidewalk_radio_external
+      - brd2600a
+      - sidewalk_dmp_fsk_support
+  - path: "ble_subghz/lib/sl_lib_ble.a"
+    condition:
+      - sidewalk_dmp_ble_support
+    unless:
+      - sidewalk_dmp_fsk_support
+  - path: "ble_subghz/lib/sl_lib_subghz.a"
+    condition:
+      - sl_sidewalk_radio_native
+    unless:
+      - sl_sidewalk_radio_ble
+      - sidewalk_dmp_ble_support
+  - path: "ble_subghz/lib/sl_lib_subghz.a"
+    condition:
+      - sl_sidewalk_radio_external
+    unless:
+      - sl_sidewalk_radio_ble
+      - sidewalk_dmp_ble_support
+  - path: "ble_subghz/lib/sl_lib_subghz.a"
+    condition:
+      - brd2600a
+    unless:
+      - sidewalk_dmp_ble_support
+  - path: "ble_subghz/lib/sl_lib_subghz.a"
+    condition:
+      - sidewalk_dmp_fsk_support
+    unless:
+      - sidewalk_dmp_ble_support
+  - path: "ble_subghz/lib/sl_lib_radio_sx126x.a"
+    condition:
+      - sl_sidewalk_radio_external
+    unless:
+      - sidewalk_dmp_ble_support
+
+toolchain_settings:
+  - option: optimize
+    value: size
+  - option: gcc_compiler_option
+    value: -DCORE_ATOMIC_METHOD=CORE_ATOMIC_METHOD_PRIMASK
+  - option: gcc_compiler_option
+    value: -fshort-enums
+  - option: gcc_compiler_option
+    value: -fno-strict-aliasing
+  - option: gcc_compiler_option
+    value: -mabi=aapcs
+  - option: gcc_compiler_option
+    value: -mcpu=cortex-m33
+  - option: gcc_compiler_option
+    value: -mthumb
+  - option: gcc_compiler_option
+    value: -mfloat-abi=hard
+  - option: gcc_compiler_option
+    value: -mfpu=fpv5-sp-d16
+  - option: gcc_compiler_option
+    value: -ffunction-sections
+  - option: gcc_compiler_option
+    value: -fdata-sections
+  - option: gcc_compiler_option
+    value: -fno-builtin
+  - option: gcc_compiler_option
+    value: -fdiagnostics-color=always
+  - option: gcc_linker_option
+    value: "-Wl,--gc-sections"
+  - option: gcc_linker_option
+    value: "-Wl,--print-memory-usage"
+
+template_contribution:
+#---------------- Component Catalog ------------------
+  - name: component_catalog
+    value: sidewalk_common
+ui_hints:
+  visibility: never

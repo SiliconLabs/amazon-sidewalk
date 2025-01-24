@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<demos xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://www.silabs.com/ss/Demo.ecore">
+	<demo name="amazon_sidewalk_soc_oob_brd2705a_fsk" label="Amazon Sidewalk - OOB (Bluetooth - FSK) BRD2705A">
+		<property key="demos.blurb" value="Amazon Sidewalk - OOB (Bluetooth - FSK) BRD2705A"/>
+		<property key="core.partCompatibility" value=".*"/>
+		<property key="core.boardCompatibility" value="brd2705a"/>
+		<property key="demos.imageFile" value="demo/amazon_sidewalk_soc_oob_brd2705a_fsk.s37"/>
+		<property key="filters" value="Wireless\ Technology|Sidewalk"/>
+		<property key="core.quality" value="PRODUCTION"/>
+    <properties key="readmeFiles" value="documentation/example/amazon_sidewalk_soc_oob/bt_subghz/readme.md"/>
+		<description>The Out-of-the-Box (OOB) application is a demo of a more concrete use of Amazon Sidewalk with communication over FSK. The application connects to AWS and sends sensor updates to the cloud. The application can be controlled from the cloud application at silabssidewalkdemo.com.</description>
+	</demo>
+	<demo name="amazon_sidewalk_soc_oob_brd4187c_ble" label="Amazon Sidewalk - SoC Bluetooth OOB BRD4187C">
+		<property key="demos.blurb" value="Amazon Sidewalk - SoC Bluetooth OOB BRD4187C"/>
+		<property key="core.partCompatibility" value=".*"/>
+		<property key="core.boardCompatibility" value="brd4187c"/>
+		<property key="demos.imageFile" value="demo/oob_ble.s37"/>
+		<property key="filters" value="Wireless\ Technology|Sidewalk"/>
+		<property key="core.quality" value="PRODUCTION"/>
+    <properties key="readmeFiles" value="documentation/example/amazon_sidewalk_soc_oob/bt/readme.md"/>
+		<description>The Out-of-the-Box (OOB) application is a demo of a more concrete use of Amazon Sidewalk with communication over bluetooth. The application connects to AWS and sends sensor updates to the cloud. The application can be controlled from the cloud application at silabssidewalkdemo.com.</description>
+	</demo>
+	<demo name="amazon_sidewalk_soc_oob_brd4332a_fsk" label="Amazon Sidewalk - OOB (Bluetooth - FSK) BRD4332A">
+		<property key="demos.blurb" value="Amazon Sidewalk - OOB (Bluetooth - FSK) BRD4332A"/>
+		<property key="core.partCompatibility" value=".*"/>
+		<property key="core.boardCompatibility" value="brd4332a"/>
+		<property key="demos.imageFile" value="demo/amazon_sidewalk_soc_oob_brd4332a_fsk.s37"/>
+		<property key="filters" value="Wireless\ Technology|Sidewalk"/>
+		<property key="core.quality" value="PRODUCTION"/>
+    <properties key="readmeFiles" value="documentation/example/amazon_sidewalk_soc_oob/bt_subghz/readme.md"/>
+		<description>The Out-of-the-Box (OOB) application is a demo of a more concrete use of Amazon Sidewalk with communication over FSK. The application connects to AWS and sends sensor updates to the cloud. The application can be controlled from the cloud application at silabssidewalkdemo.com.</description>
+	</demo>
+</demos>

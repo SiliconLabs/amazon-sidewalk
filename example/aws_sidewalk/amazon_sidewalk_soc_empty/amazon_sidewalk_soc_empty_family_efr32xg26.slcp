@@ -1,0 +1,238 @@
+project_name: amazon_sidewalk_soc_empty
+package: amazon_bluetooth
+quality: production
+label: Amazon Sidewalk - SoC Empty
+description: The Amazon Sidewalk Empty sample application is a bare-bones application.
+  This application can be used as a template to develop an Amazon Sidewalk application.
+category: Example|AWS IoT
+sdk_extension:
+  - id: sidewalk
+    version: 2.3.0
+source:
+  - path: main.c
+  - path: app_init.c
+  - path: app_process.c
+  - path: app_config/link_config/ble_subghz/app_link_config.c
+    condition:
+      - sl_sidewalk_radio_ble
+      - sl_sidewalk_radio_subghz
+  - path: app_config/link_config/ble/app_link_config.c
+    condition:
+      - sl_sidewalk_radio_ble
+    unless:
+      - sl_sidewalk_radio_subghz
+  - path: app_config/link_config/subghz/app_link_config.c
+    condition:
+      - sl_sidewalk_radio_subghz
+    unless:
+      - sl_sidewalk_radio_ble
+  - path: app_config/radio_config/external/app_radio_config.c
+    condition:
+      - sl_sidewalk_radio_external
+  - path: app_config/radio_config/native/app_radio_config.c
+    condition:
+      - sl_sidewalk_radio_native
+  - path: app_config/radio_config/none/app_radio_config.c
+    unless:
+      - sl_sidewalk_radio_subghz
+include:
+  - path: .
+    file_list:
+      - path: app_init.h
+      - path: app_process.h
+      - path: app_link_config.h
+      - path: app_radio_config.h
+component:
+  - id: sidewalk_ble_subghz
+    from: sidewalk
+  - id: sidewalk_common
+    from: sidewalk
+  - id: app_log
+    from: sidewalk
+  - id: sidewalk_log_app_rtt
+    from: sidewalk
+  - id: sidewalk_log_pal_rtt
+    from: sidewalk
+  - id: sidewalk_log_stack_rtt
+    from: sidewalk
+  - id: sidewalk_utils
+    from: sidewalk
+  - id: spidrv
+    instance:
+      - exp
+    condition:
+      - hardware_board_has_spi
+  - id: iostream_rtt
+  - id: emlib_gpio_simple_init
+    instance:
+      - exp_11
+      - exp_12
+      - exp_13
+      - exp_14
+    condition:
+      - sl_sidewalk_radio_external
+  - id: sl_system
+  - id: device_init
+  - id: clock_manager
+  - id: iostream_stdlib_config
+  - id: sleeptimer
+  - id: psa_crypto
+  - id: psa_its
+  - id: psa_crypto_ecc
+  - id: psa_crypto_ecdh
+  - id: psa_crypto_ecdsa
+  - id: psa_crypto_hmac
+  - id: psa_crypto_cmac
+  - id: psa_crypto_gcm
+  - id: psa_crypto_ccm
+  - id: psa_crypto_sha512
+  - id: psa_crypto_ecc_curve25519
+  - id: psa_crypto_ecc_secp256r1
+  - id: psa_crypto_cipher_ctr
+  - id: psa_crypto_sha256
+  - id: psa_crypto_ecc_edwards25519
+  - id: psa_crypto_eddsa
+  - id: app_assert
+  - id: freertos
+  - id: freertos_heap_4
+  - id: rail_lib_multiprotocol
+  - id: memory_manager
+requires:
+  - name: bluetooth_stack
+    condition:
+      - device_supports_bluetooth
+  - name: bluetooth_feature_dynamic_gattdb
+    condition:
+      - device_supports_bluetooth
+  - name: bluetooth_feature_gatt_server
+    condition:
+      - device_supports_bluetooth
+  - name: bluetooth_feature_gatt
+    condition:
+      - device_supports_bluetooth
+  - name: bluetooth_feature_system
+    condition:
+      - device_supports_bluetooth
+  - name: bluetooth_feature_connection
+    condition:
+      - device_supports_bluetooth
+  - name: bluetooth_feature_legacy_advertiser
+    condition:
+      - device_supports_bluetooth
+  - name: bluetooth_feature_sm
+    condition:
+      - device_supports_bluetooth
+  - name: bluetooth_on_demand_start
+    condition:
+      - device_supports_bluetooth
+define:
+  - name: MAIN_TASK_STACK_SIZE
+    value: (2048 / sizeof(configSTACK_DEPTH_TYPE))
+configuration:
+  - name: SL_SIDEWALK_COMMON_DEFAULT_LINK_TYPE
+    value: SL_SIDEWALK_LINK_BLE
+  - name: SL_SPIDRV_EXP_CS_CONTROL
+    value: spidrvCsControlApplication
+  - name: SL_SPIDRV_EXP_BITRATE
+    value: 8000000
+  - name: SL_SLEEPTIMER_PERIPHERAL
+    value: SL_SLEEPTIMER_PERIPHERAL_DEFAULT
+  - name: SL_SID_LOG_APP_ENABLED
+    value: 1
+  - name: SL_SID_LOG_PAL_ENABLED
+    value: 1
+  - name: SID_PAL_LOG_ENABLED
+    value: 1
+  - name: SL_BOARD_ENABLE_VCOM
+    value: 0
+    condition:
+      - iostream_usart
+  - name: SL_IOSTREAM_USART_VCOM_RESTRICT_ENERGY_MODE_TO_ALLOW_RECEPTION
+    value: 0
+    condition:
+      - iostream_usart
+  - name: SL_IOSTREAM_USART_VCOM_FLOW_CONTROL_TYPE
+    value: usartHwFlowControlNone
+    condition:
+      - iostream_usart
+  - name: configMINIMAL_STACK_SIZE
+    value: 160
+  - name: configTOTAL_HEAP_SIZE
+    value: 15360
+  - name: SL_STACK_SIZE
+    value: 4096
+  - name: SL_HEAP_SIZE
+    value: 2048
+  - name: NVM3_DEFAULT_NVM_SIZE
+    value: 24576
+  - name: SL_BT_RTOS_LINK_LAYER_TASK_STACK_SIZE
+    value: 1000
+  - name: SL_BT_RTOS_HOST_STACK_TASK_STACK_SIZE
+    value: 2000
+  - name: SL_BT_RTOS_EVENT_HANDLER_STACK_SIZE
+    value: 4000
+  - name: SL_BT_CONFIG_BUFFER_SIZE
+    value: 3150
+  - name: configTIMER_TASK_STACK_DEPTH
+    value: 160
+  - name: APP_LOG_AUTO_NL
+    value: 1
+  - name: SL_BT_CONFIG_MIN_TX_POWER
+    value: (-260)
+  - name: SL_BT_CONFIG_MAX_TX_POWER
+    value: (100)
+  - name: APP_LOG_LEVEL_DEBUG_PREFIX
+    value: '"<D>"'
+  - name: APP_LOG_LEVEL_INFO_PREFIX
+    value: '"<I>"'
+  - name: APP_LOG_LEVEL_WARNING_PREFIX
+    value: '"<W>"'
+  - name: APP_LOG_LEVEL_ERROR_PREFIX
+    value: '"<E>"'
+  - name: APP_LOG_LEVEL_CRITICAL_PREFIX
+    value: '"<C>"'
+  - name: configUSE_MALLOC_FAILED_HOOK
+    value: 1
+  - name: configCHECK_FOR_STACK_OVERFLOW
+    value: 2
+readme:
+  - path: ../../../documentation/example/amazon_sidewalk_soc_empty/readme.md
+ui_hints:
+  highlight:
+    - path: config/sidewalk/sidewalk.asconf
+    - path: readme.md
+      focus: true
+config_file:
+  - path: ../../../tools/cloudformation/public/CF_minimal_sidewalk.json
+    directory: sidewalk
+  - path: ../../configurator/ble/sidewalk.asconf
+    directory: sidewalk
+  - path: ../../mfg.runconf
+    directory: sidewalk
+tag:
+  - hardware:rf:band:2400|915
+  - hardware:device:sdid:225
+filter:
+  - name: Wireless Technology
+    value:
+      - Sidewalk
+      - Bluetooth
+  - name: Ecosystem
+    value:
+      - Amazon
+  - name: Device Type
+    value:
+      - SoC
+  - name: Project Difficulty
+    value:
+      - Beginner
+template_contribution:
+  - name: bluetooth_on_event
+    value:
+      include: ble_adapter.h
+      function: sl_ble_adapter_on_event
+  - name: event_handler
+    value:
+      event: kernel_start
+      include: ble_adapter.h
+      handler: sl_ble_adapter_on_kernel_start
