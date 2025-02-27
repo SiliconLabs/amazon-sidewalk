@@ -17,7 +17,7 @@ include:
   - path: "sidewalk_nvm3_migrator"
     file_list:
     - path: "sl_sidewalk_nvm3_migrator.h"
-  - path: "includes/projects/sid/sal/silabs/sid_pal/include"
+  - path: "amazon/projects/sid/sal/silabs/sid_pal/include/"
     file_list:
     - path: "nvm3_manager.h"
 config_file:

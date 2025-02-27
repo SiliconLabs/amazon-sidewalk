@@ -7,7 +7,7 @@ description: The Amazon Sidewalk Empty sample application is a bare-bones applic
 category: Example|AWS IoT
 sdk_extension:
   - id: sidewalk
-    version: 2.3.0
+    version: 2.4.0
 source:
   - path: main.c
   - path: app_init.c
@@ -58,6 +58,7 @@ component:
   - id: sidewalk_utils
     from: sidewalk
   - id: iostream_rtt
+  - id: printf
   - id: sl_system
   - id: device_init
   - id: clock_manager
@@ -116,6 +117,8 @@ define:
   - name: MAIN_TASK_STACK_SIZE
     value: (2048 / sizeof(configSTACK_DEPTH_TYPE))
 configuration:
+  - name: SL_MBEDTLS_PSA_ASSUME_EXCLUSIVE_BUFFERS
+    value: 1
   - name: SL_SIDEWALK_COMMON_DEFAULT_LINK_TYPE
     value: SL_SIDEWALK_LINK_BLE
   - name: SL_SPIDRV_EXP_CS_CONTROL

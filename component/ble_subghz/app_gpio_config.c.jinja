@@ -48,3 +48,8 @@ struct GPIO_LookupItem gpio_lookup_table[] =
 
 {% endfor %}
 };
+
+/* Ensure all declared pins have been initialized */
+_Static_assert(
+    (sizeof(gpio_lookup_table) / sizeof(struct GPIO_LookupItem)) == SL_PIN_MAX,
+    "Sizes do not match. Perhaps some of defined GPIOs left uninitialized.");

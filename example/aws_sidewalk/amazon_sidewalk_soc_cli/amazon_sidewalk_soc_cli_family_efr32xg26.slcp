@@ -9,7 +9,7 @@ description: The Bluetooth sub-GHz Command Line Interface (CLI) sample applicati
 category: Example|AWS IoT
 sdk_extension:
   - id: sidewalk
-    version: 2.3.0
+    version: 2.4.0
 source:
   - path: main.c
   - path: app_init.c
@@ -46,6 +46,7 @@ component:
     condition:
       - hardware_board_has_spi
   - id: iostream_rtt
+  - id: printf
   - id: emlib_gpio_simple_init
     instance:
       - exp_11
@@ -117,6 +118,8 @@ define:
   - name: MAIN_TASK_STACK_SIZE
     value: (4096 / sizeof(configSTACK_DEPTH_TYPE))
 configuration:
+  - name: SL_MBEDTLS_PSA_ASSUME_EXCLUSIVE_BUFFERS
+    value: 1
   - name: SL_SIDEWALK_COMMON_DEFAULT_LINK_TYPE
     value: SL_SIDEWALK_LINK_BLE
   - name: SL_SIDEWALK_COMMON_DEFAULT_LINK_CONNECTION_POLICY

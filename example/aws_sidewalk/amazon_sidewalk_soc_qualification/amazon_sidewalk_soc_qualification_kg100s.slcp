@@ -8,7 +8,7 @@ description: The SoC Qualification example is a command-line interface (CLI) bas
 category: Example|AWS IoT
 sdk_extension:
   - id: sidewalk
-    version: 2.3.0
+    version: 2.4.0
 source:
   - path: app_properties.c
   - path: main.c
@@ -71,6 +71,8 @@ component:
 define:
   - name: DEBUG_EFM
 configuration:
+  - name: SL_MBEDTLS_PSA_ASSUME_EXCLUSIVE_BUFFERS
+    value: 1
   - name: SL_SPIDRV_EXP_CS_PIN
     value: 2
   - name: SL_SPIDRV_EXP_CLK_PIN

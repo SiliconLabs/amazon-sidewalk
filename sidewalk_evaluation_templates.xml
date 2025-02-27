@@ -36,8 +36,8 @@
     <properties key="solutionReferenceId" value="example.aws_sidewalk.amazon_sidewalk_dmp_soc_light.Sidewalk_BLE.amazon_sidewalk_dmp_soc_light_family_efr32xg26.slcp"/>
     <properties key="projectFilePaths" value="example/aws_sidewalk/amazon_sidewalk_dmp_soc_light/Sidewalk_BLE/amazon_sidewalk_dmp_soc_light_family_efr32xg26.slcp"/>
     <properties key="readmeFiles" value="documentation/example/amazon_sidewalk_dmp_soc_light/readme.md"/>
-    <properties key="boardCompatibility" value="brd2608a brd2709a brd4116a brd4117a brd4118a brd4120a brd4121a brd4350a brd4351a com.silabs.board.none"/>
-    <properties key="partCompatibility" value=".*efr32mg26b.*f[32].* .*[bm]gm26.*"/>
+    <properties key="boardCompatibility" value="brd2608a brd2709a brd2713a brd4116a brd4117a brd4118a brd4120a brd4121a brd4350a brd4351a com.silabs.board.none"/>
+    <properties key="partCompatibility" value=".*efr32mg26b.*f[32].* .*[bm]gm260p[db][23]2vn.*"/>
     <properties key="ideCompatibility" value="makefile-ide simplicity-ide visual-studio-code generic-template"/>
     <properties key="toolchainCompatibility" value="gcc"/>
     <properties key="category" value="Example|AWS IoT"/>

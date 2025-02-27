@@ -71,49 +71,49 @@ requires:
 conflicts:
   - name: sidewalk_pdp
 source:
-  - path: "sources/platform/sid_mcu/semtech/hal/sx126x/sx126x_hal.c"
+  - path: "amazon/platform/sid_mcu/semtech/hal/sx126x/sx126x_hal.c"
     condition:
       - sl_sidewalk_radio_external
-  - path: "sources/platform/sid_mcu/semtech/hal/sx126x/sx126x_radio_fsk.c"
+  - path: "amazon/platform/sid_mcu/semtech/hal/sx126x/sx126x_radio_fsk.c"
     condition:
       - sl_sidewalk_radio_external
-  - path: "sources/platform/sid_mcu/semtech/hal/sx126x/sx126x_radio_lora.c"
+  - path: "amazon/platform/sid_mcu/semtech/hal/sx126x/sx126x_radio_lora.c"
     condition:
       - sl_sidewalk_radio_external
-  - path: "sources/platform/sid_mcu/semtech/hal/sx126x/sx126x_radio.c"
+  - path: "amazon/platform/sid_mcu/semtech/hal/sx126x/sx126x_radio.c"
     condition:
       - sl_sidewalk_radio_external
-  - path: "sources/projects/sid/sal/silabs/sid_pal/ble_adapter/ble_adapter.c"
+  - path: "amazon/projects/sid/sal/silabs/sid_pal/ble_adapter/ble_adapter.c"
     condition:
       - sl_sidewalk_radio_ble
-  - path: "sources/projects/sid/sal/silabs/sid_pal/serial_bus/sid_pal_serial_bus_spi.c"
+  - path: "amazon/projects/sid/sal/silabs/sid_pal/serial_bus/sid_pal_serial_bus_spi.c"
     condition:
       - spidrv
       - sl_sidewalk_radio_external
-  - path: "sources/projects/sid/sal/silabs/sid_pal/efr32xgxx_radio/silabs/efr32xgxx.c"
+  - path: "amazon/projects/sid/sal/silabs/sid_pal/efr32xgxx_radio/silabs/efr32xgxx.c"
     condition:
       - sl_sidewalk_radio_native
-  - path: "sources/projects/sid/sal/silabs/sid_pal/efr32xgxx_radio/efr32xgxx_radio_fsk.c"
+  - path: "amazon/projects/sid/sal/silabs/sid_pal/efr32xgxx_radio/efr32xgxx_radio_fsk.c"
     condition:
       - sl_sidewalk_radio_native
-  - path: "sources/projects/sid/sal/silabs/sid_pal/efr32xgxx_radio/efr32xgxx_radio_lora.c"
+  - path: "amazon/projects/sid/sal/silabs/sid_pal/efr32xgxx_radio/efr32xgxx_radio_lora.c"
     condition:
       - sl_sidewalk_radio_native
-  - path: "sources/projects/sid/sal/silabs/sid_pal/efr32xgxx_radio/efr32xgxx_radio.c"
+  - path: "amazon/projects/sid/sal/silabs/sid_pal/efr32xgxx_radio/efr32xgxx_radio.c"
     condition:
       - sl_sidewalk_radio_native
-  - path: "sources/projects/sid/sal/silabs/sid_pal/gpio.c"
-  - path: "sources/projects/sid/sal/silabs/sid_pal/assert.c"
-  - path: "sources/projects/sid/sal/silabs/sid_pal/common.c"
-  - path: "sources/projects/sid/sal/silabs/sid_pal/critical_region.c"
-  - path: "sources/projects/sid/sal/silabs/sid_pal/delay.c"
-  - path: "sources/projects/sid/sal/silabs/sid_pal/mfg_store.c"
-  - path: "sources/projects/sid/sal/silabs/sid_pal/nvm3_manager.c"
-  - path: "sources/projects/sid/sal/silabs/sid_pal/sid_pal_crypto_ifc.c"
-  - path: "sources/projects/sid/sal/silabs/sid_pal/storage_kv.c"
-  - path: "sources/projects/sid/sal/silabs/sid_pal/temperature.c"
-  - path: "sources/projects/sid/sal/silabs/sid_pal/timer.c"
-  - path: "sources/projects/sid/sal/silabs/sid_pal/uptime.c"
+  - path: "amazon/projects/sid/sal/silabs/sid_pal/gpio.c"
+  - path: "amazon/projects/sid/sal/silabs/sid_pal/assert.c"
+  - path: "amazon/projects/sid/sal/silabs/sid_pal/common.c"
+  - path: "amazon/projects/sid/sal/silabs/sid_pal/critical_region.c"
+  - path: "amazon/projects/sid/sal/silabs/sid_pal/delay.c"
+  - path: "amazon/projects/sid/sal/silabs/sid_pal/mfg_store.c"
+  - path: "amazon/projects/sid/sal/silabs/sid_pal/nvm3_manager.c"
+  - path: "amazon/projects/sid/sal/silabs/sid_pal/sid_pal_crypto_ifc.c"
+  - path: "amazon/projects/sid/sal/silabs/sid_pal/storage_kv.c"
+  - path: "amazon/projects/sid/sal/silabs/sid_pal/temperature.c"
+  - path: "amazon/projects/sid/sal/silabs/sid_pal/timer.c"
+  - path: "amazon/projects/sid/sal/silabs/sid_pal/uptime.c"
   - path: "ble_subghz/radio/ble/app_ble_config.c"
     condition:
       - sl_sidewalk_radio_ble
@@ -130,18 +130,18 @@ source:
 #############################################
 # PHY sources
 #############################################
-  - path: "sources/phys/xg28/efr32xgxx_railcfg.c"
+  - path: "phys/xg28/efr32xgxx_railcfg.c"
     condition:
     - device_generic_family_efr32xg28
     unless:
     - device_family_efr32sg28
-  - path: "sources/phys/sg28/efr32xgxx_railcfg.c"
+  - path: "phys/sg28/efr32xgxx_railcfg.c"
     condition:
     - device_family_efr32sg28
-  - path: "sources/phys/xg23/efr32xgxx_railcfg.c"
+  - path: "phys/xg23/efr32xgxx_railcfg.c"
     condition:
     - device_generic_family_efr32xg23
-  - path: "sources/phys/xg25/efr32xgxx_railcfg.c"
+  - path: "phys/xg25/efr32xgxx_railcfg.c"
     condition:
     - device_generic_family_efr32xg25
 
@@ -149,12 +149,17 @@ template_file:
   - path: /ble_subghz/app_gpio_config.c.jinja
     condition:
     - sl_sidewalk_radio_external
+    - hardware_board_has_exp_11
+    - hardware_board_has_exp_12
+    - hardware_board_has_exp_13
+    - hardware_board_has_exp_14
     unless:
-    - brd4115a
-    - brd4115b
-    - device_generic_family_efr32xg23
-    - device_generic_family_efr32xg25
-    - device_generic_family_efr32xg28
+    - sidewalk_dmp_ble_support
+  - path: /ble_subghz/app_gpio_config.c.jinja
+    condition:
+    - sl_sidewalk_radio_external
+    - brd4332a
+    unless:
     - sidewalk_dmp_ble_support
 
 config_file:
@@ -170,13 +175,12 @@ config_file:
   - path: ble_subghz/config/app_gpio_config.h
     condition:
       - sl_sidewalk_radio_external
+      - hardware_board_has_exp_11
+      - hardware_board_has_exp_12
+      - hardware_board_has_exp_13
+      - hardware_board_has_exp_14
     unless:
       - brd4332a
-      - brd4115a
-      - brd4115b
-      - device_generic_family_efr32xg23
-      - device_generic_family_efr32xg25
-      - device_generic_family_efr32xg28
       - sidewalk_dmp_ble_support
   - path: ble_subghz/config/kg100s/app_gpio_config.h
     condition:
@@ -186,111 +190,113 @@ config_file:
       - sidewalk_dmp_ble_support
 
 include:
-  - path: "includes/projects/sid/sal/common/public/sid_ifc/sid_ble_cfg"
+  - path: "amazon/projects/sid/sal/common/public/sid_ifc/sid_ble_cfg"
     file_list:
     - path: "sid_ble_link_config_ifc.h"
     - path: "sid_ble_config_ifc.h"
-  - path: "includes/projects/sid/sal/common/public/sid_pal_ifc/uptime"
+  - path: "amazon/projects/sid/sal/common/public/sid_pal_ifc/uptime"
     file_list:
     - path: "sid_pal_uptime_ifc.h"
-  - path: "includes/projects/sid/sal/common/public/sid_pal_ifc/timer"
+  - path: "amazon/projects/sid/sal/common/public/sid_pal_ifc/timer"
     file_list:
     - path: "sid_pal_timer_ifc.h"
-  - path: "includes/projects/sid/sal/common/public/sid_pal_ifc/temperature"
+  - path: "amazon/projects/sid/sal/common/public/sid_pal_ifc/temperature"
     file_list:
     - path: "sid_pal_temperature_ifc.h"
-  - path: "includes/projects/sid/sal/common/public/sid_pal_ifc/swi"
+  - path: "amazon/projects/sid/sal/common/public/sid_pal_ifc/swi"
     file_list:
     - path: "sid_pal_swi_ifc.h"
-  - path: "includes/projects/sid/sal/common/public/sid_pal_ifc/storage_kv"
+  - path: "amazon/projects/sid/sal/common/public/sid_pal_ifc/storage_kv"
     file_list:
     - path: "sid_pal_storage_kv_internal_group_ids.h"
     - path: "sid_pal_storage_kv_ifc.h"
-  - path: "includes/projects/sid/sal/common/public/sid_pal_ifc/serial_client_ifc"
+  - path: "amazon/projects/sid/sal/common/public/sid_pal_ifc/serial_client_ifc"
     file_list:
     - path: "sid_pal_serial_client_ifc.h"
-  - path: "includes/projects/sid/sal/common/public/sid_pal_ifc/radio"
+  - path: "amazon/projects/sid/sal/common/public/sid_pal_ifc/radio"
     file_list:
     - path: "sid_pal_radio_lora_defs.h"
     - path: "sid_pal_radio_ifc.h"
     - path: "sid_pal_radio_fsk_defs.h"
-  - path: "includes/projects/sid/sal/common/public/sid_pal_ifc/mfg_store"
+  - path: "amazon/projects/sid/sal/common/public/sid_pal_ifc/mfg_store"
     file_list:
     - path: "sid_pal_mfg_store_ifc.h"
-  - path: "includes/projects/sid/sal/common/public/sid_pal_ifc/log"
+  - path: "amazon/projects/sid/sal/common/public/sid_pal_ifc/log"
     file_list:
     - path: "sid_pal_log_ifc.h"
-  - path: "includes/projects/sid/sal/common/public/sid_pal_ifc/gpio"
+  - path: "amazon/projects/sid/sal/common/public/sid_pal_ifc/gpio"
     file_list:
     - path: "sid_pal_gpio_ifc.h"
-  - path: "includes/projects/sid/sal/common/public/sid_pal_ifc/delay"
+  - path: "amazon/projects/sid/sal/common/public/sid_pal_ifc/delay"
     file_list:
     - path: "sid_pal_delay_ifc.h"
-  - path: "includes/projects/sid/sal/common/public/sid_pal_ifc/crypto"
+  - path: "amazon/projects/sid/sal/common/public/sid_pal_ifc/crypto"
     file_list:
     - path: "sid_pal_crypto_ifc.h"
-  - path: "includes/projects/sid/sal/common/public/sid_pal_ifc/critical_region"
+  - path: "amazon/projects/sid/sal/common/public/sid_pal_ifc/critical_region"
     file_list:
     - path: "sid_pal_critical_region_ifc.h"
-  - path: "includes/projects/sid/sal/common/public/sid_pal_ifc/ble_adapter"
+  - path: "amazon/projects/sid/sal/common/public/sid_pal_ifc/ble_adapter"
     condition:
     - sl_sidewalk_radio_ble
     file_list:
     - path: "sid_pal_ble_adapter_ifc.h"
-  - path: "includes/projects/sid/sal/common/public/sid_pal_ifc/assert"
+  - path: "amazon/projects/sid/sal/common/public/sid_pal_ifc/assert"
     file_list:
     - path: "sid_pal_assert_ifc.h"
-  - path: "includes/projects/sid/sal/common/public/sid_ifc/sid_error"
+  - path: "amazon/projects/sid/sal/common/public/sid_ifc/sid_error"
     file_list:
     - path: "sid_error.h"
     - path: "sall_app_error.h"
-  - path: "includes/projects/sid/sal/common/public/sid_ifc/sid_900_cfg"
+  - path: "amazon/projects/sid/sal/common/public/sid_ifc/sid_900_cfg"
     file_list:
     - path: "sid_900_cfg.h"
-  - path: "includes/projects/sid/sal/common/public/sid_ifc/sid_api"
+  - path: "amazon/projects/sid/sal/common/public/sid_ifc/sid_api"
     file_list:
     - path: "sid_api.h"
-  - path: "includes/projects/sid/sal/common/public/sid_ifc/sid_ama_adapter_ifc"
+  - path: "amazon/projects/sid/sal/common/public/sid_ifc/sid_ama_adapter_ifc"
     file_list:
     - path: "sid_ama_transport_ifc.h"
-  - path: "includes/projects/sid/sal/common/public/sid_ifc/sdb_api"
+  - path: "amazon/projects/sid/sal/common/public/sid_ifc/sdb_api"
     file_list:
     - path: "sdb_api.h"
-  - path: "includes/projects/sid/sal/common/public/sid_ifc/sid_bulk_data_transfer_api"
+  - path: "amazon/projects/sid/sal/common/public/sid_ifc/sid_bulk_data_transfer_api"
     file_list:
     - path: "sid_bulk_data_transfer_api.h"
-  - path: "includes/projects/sid/sal/common/public/sid_ifc/sid_sdk_version"
+  - path: "amazon/projects/sid/sal/common/public/sid_ifc/sid_sdk_version"
     file_list:
     - path: "sid_sdk_version.h"
-  - path: "includes/projects/sid/apps/sdk/silabs/efr32xg21/common/mfg_store_app_values/include/export"
+  - path: "amazon/projects/sid/apps/sdk/silabs/efr32xg21/common/mfg_store_app_values/include/export"
     file_list:
     - path: "mfg_store_app_values.h"
-  - path: "includes/projects/sid/sal/silabs/sid_pal/include/"
+  - path: "amazon/projects/sid/sal/silabs/sid_pal/include/"
     file_list:
     - path: "gpio.h"
     - path: "delay.h"
     - path: "nvm3_manager.h"
-  - path: "includes/projects/sid/sal/silabs/sid_pal/efr32xgxx_radio/include"
+  - path: "amazon/projects/sid/sal/silabs/sid_pal/efr32xgxx_radio/include"
     condition:
     - sl_sidewalk_radio_native
     file_list:
     - path: 'silabs/efr32xgxx.h'
     - path: "efr32xgxx_config.h"
     - path: "efr32xgxx_radio.h"
-  - path: "includes/projects/sid/sal/common/internal/sid_time_ops/include"
+  - path: "amazon/projects/sid/sal/common/sid_time_ops/include"
     file_list:
     - path: "sid_time_ops.h"
+  - path: "amazon/projects/sid/sal/common/public/sid_ifc/sid_time_types"
+    file_list:
     - path: "sid_time_types.h"
-  - path: "includes/projects/sid/sal/common/internal/sid_clock_ifc"
+  - path: "amazon/projects/sid/sal/common/internal/sid_clock_ifc"
     file_list:
     - path: "sid_clock_ifc.h"
-  - path: "includes/platform/sid_mcu/semtech/hal/sx126x/include"
+  - path: "amazon/platform/sid_mcu/semtech/hal/sx126x/include"
     condition:
     - sl_sidewalk_radio_external
     file_list:
     - path: "sx126x_config.h"
     - path: "sx126x_radio.h"
-  - path: "includes/platform/sid_mcu/semtech/hal/sx126x/include/semtech"
+  - path: "amazon/platform/sid_mcu/semtech/hal/sx126x/include/semtech"
     condition:
     - sl_sidewalk_radio_external
     file_list:
@@ -299,34 +305,34 @@ include:
     - path: "sx126x_regs.h"
     - path: "sx126x_timings.h"
     - path: "sx126x.h"
-  - path: "includes/platform/sid_mcu/semtech/hal/common"
+  - path: "amazon/platform/sid_mcu/semtech/hal/common"
     condition:
     - sl_sidewalk_radio_external
     file_list:
     - path: "semtech_radio_ifc.h"
-  - path: "includes/projects/sid/sal/silabs/sid_pal/interfaces/timer_types"
+  - path: "amazon/projects/sid/sal/silabs/sid_pal/interfaces/timer_types"
     file_list:
     - path: "sid_pal_timer_types.h"
-  - path: "includes/projects/sid/sal/silabs/sid_pal/interfaces/platform_init_types"
+  - path: "amazon/projects/sid/sal/silabs/sid_pal/interfaces/platform_init_types"
     file_list:
     - path: "sid_pal_platform_init_types.h"
-  - path: "includes/projects/sid/sal/silabs/sid_pal/ble_adapter/include"
+  - path: "amazon/projects/sid/sal/silabs/sid_pal/ble_adapter/include"
     condition:
     - sl_sidewalk_radio_ble
     file_list:
     - path: "ble_adapter.h"
-  - path: "includes/projects/sid/sal/common/public/sid_pal_ifc/common"
+  - path: "amazon/projects/sid/sal/common/public/sid_pal_ifc/common"
     file_list:
     - path: "sid_pal_common_ifc.h"
-  - path: "includes/projects/sid/sal/silabs/sid_pal/serial_bus/include"
+  - path: "amazon/projects/sid/sal/silabs/sid_pal/serial_bus/include"
     file_list:
     - path: "sid_pal_serial_bus_efr32_spi_config.h"
       condition:
         - spidrv
-  - path: "includes/projects/sid/sal/common/public/sid_pal_ifc/serial_bus_ifc"
+  - path: "amazon/projects/sid/sal/common/public/sid_pal_ifc/serial_bus_ifc"
     file_list:
     - path: "sid_pal_serial_bus_ifc.h"
-  - path: "includes/projects/sid/sal/common/public/sid_ifc/sid_900_cfg"
+  - path: "amazon/projects/sid/sal/common/public/sid_ifc/sid_900_cfg"
     file_list:
     - path: "sid_900_cfg.h"
 
@@ -354,9 +360,6 @@ define:
       - device_generic_family_efr32xg27
   - name: MODULE_KG100S
     value: 2
-    condition:
-      - brd4332a
-  - name: EFR32XG21
     condition:
       - brd4332a
 

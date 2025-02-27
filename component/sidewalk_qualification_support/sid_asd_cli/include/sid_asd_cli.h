@@ -65,20 +65,33 @@ void sid_cli_free_cmd_list(void);
  */
 #define SID_CLI_REGISTER_COMMAND(function_handler_) const aceCli_moduleCmd_t function_handler_[] =
 
+#ifdef __cplusplus
+
 #define SID_CLI_DEFINE_SUB_COMMAND_SET(name_, sub_command_set_, help_, sub_command_handler_) \
-    {                                                                                        \
-        #name_, help_, ACE_CLI_SET_FUNC, .command.subCommands = sub_command_handler_         \
-    }
+    {#name_, help_, ACE_CLI_SET_FUNC, 0, {.subCommands = sub_command_handler_}}
 
 #define SID_CLI_DEFINE_COMMAND(name_, sub_command_set_, help_, function_handler_) \
-    {                                                                             \
-        #name_, help_, ACE_CLI_SET_LEAF, .command.func = &function_handler_       \
-    }
+    {#name_, help_, ACE_CLI_SET_LEAF, 0, {.func = &function_handler_}}
+
+#define SID_CLI_REGISTER_SUB_COMMAND_SET(handler_) \
+    sid_cli_add_cmd_list(handler_, (int32_t)sizeof(handler_) / sizeof(aceCli_moduleCmd_t))
+
+#define SID_CLI_SUBCMD_SET_END {NULL, NULL, 0, 0, {NULL}}
+
+#else
+
+#define SID_CLI_DEFINE_SUB_COMMAND_SET(name_, sub_command_set_, help_, sub_command_handler_) \
+    {#name_, help_, ACE_CLI_SET_FUNC, .command.subCommands = sub_command_handler_}
+
+#define SID_CLI_DEFINE_COMMAND(name_, sub_command_set_, help_, function_handler_) \
+    {#name_, help_, ACE_CLI_SET_LEAF, .command.func = &function_handler_}
 
 #define SID_CLI_REGISTER_SUB_COMMAND_SET(handler_) \
     sid_cli_add_cmd_list(handler_, (int32_t)sizeof(handler_) / sizeof(aceCli_moduleCmd_t))
 
 #define SID_CLI_SUBCMD_SET_END ACE_CLI_NULL_MODULE
+
+#endif
 
 #ifdef __cplusplus
 }

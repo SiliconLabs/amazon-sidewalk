@@ -20,6 +20,7 @@
 #include <sid_event_queue_ifc.h>
 
 #include <sid_qa.h>
+#include <sid_pal_radio_ifc.h>
 
 #ifdef __cplusplus
 extern "C" {
@@ -77,6 +78,7 @@ struct app_context {
     struct sid_handle **sidewalk_handle;
     enum app_state state;
     uint8_t counter;
+    struct sid_event_callbacks *extra_callbacks;
 };
 
 struct cli_config {
@@ -91,12 +93,14 @@ struct cli_config {
 struct pwr_meas_config {
     bool active;
     bool mode;
+    bool ble_only_flag;
     uint32_t ul_pkt_cnt;
     uint32_t msg_sent_cnt;
     size_t ul_pkt_len;
     sid_pal_timer_t timer_ul;     // uplink generation timer
     sid_pal_timer_t timer_meas;   // measurment mode timer
     struct sid_qa_pwr_meas_if *platform_if;
+    sid_pal_radio_rx_packet_t rx_packet;
 };
 
 struct uplink_msg_info {
@@ -147,6 +151,25 @@ struct uplink_test {
     uint16_t test_periodicity_secs;
     struct uplink_msg_info msg_info[50];
     struct sid_deferred_event uplink_test_event;
+};
+
+struct flood_helper_args {
+    struct sid_handle *handle;
+    struct sid_msg *msg;
+    struct sid_msg_desc *desc;
+    uint32_t flood_period;
+    uint32_t delay_secs;
+};
+
+struct flood_test {
+    uint8_t flood_msg;
+    uint32_t flood_period;
+    uint32_t delay_secs;
+    uint32_t counter;
+    uint32_t msg_idx;
+    struct sid_msg msg_helper;
+    struct sid_msg_desc desc_helper;
+    struct sid_deferred_event flood_test_event;
 };
 
 enum data_type {

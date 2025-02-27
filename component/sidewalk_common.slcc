@@ -126,6 +126,8 @@ define:
   - name: SL_BLE_SUPPORTED
     condition:
       - sl_sidewalk_radio_ble
+  - name: SID_SDK_CONFIG_ENABLE_BLE_USER_CONFIG
+    value: 1
   - name: SL_FSK_SUPPORTED
     condition:
     - sl_sidewalk_radio_external
@@ -167,7 +169,7 @@ define:
     condition:
       - cli
   - name: SL_SIDEWALK_EXTENSION_VERSION
-    value: "2.3.0"
+    value: "2.4.0"
 
 library:
   - path: "ble_subghz/lib/sl_lib_ble_subghz.a"
@@ -199,12 +201,6 @@ library:
       - sl_sidewalk_radio_ble
     unless:
       - sl_sidewalk_radio_native
-      - brd2600a
-      - sidewalk_dmp_fsk_support
-  - path: "ble_subghz/lib/sl_lib_ble.a"
-    condition:
-      - sl_sidewalk_radio_ble
-    unless:
       - sl_sidewalk_radio_external
       - brd2600a
       - sidewalk_dmp_fsk_support

@@ -9,7 +9,7 @@ description: The Hello Neighbor sample application leverages the Amazon Sidewalk
 category: Example|AWS IoT
 sdk_extension:
   - id: sidewalk
-    version: 2.3.0
+    version: 2.4.0
 source:
   - path: main.c
   - path: app_init.c
@@ -38,6 +38,7 @@ component:
   - id: sidewalk_utils
     from: sidewalk
   - id: iostream_rtt
+  - id: printf
   - id: sl_system
   - id: gpiointerrupt
   - id: simple_button
@@ -105,6 +106,8 @@ define:
   - name: MAIN_TASK_STACK_SIZE
     value: (2048 / sizeof(configSTACK_DEPTH_TYPE))
 configuration:
+  - name: SL_MBEDTLS_PSA_ASSUME_EXCLUSIVE_BUFFERS
+    value: 1
   - name: SL_SIDEWALK_COMMON_DEFAULT_LINK_TYPE
     value: SL_SIDEWALK_LINK_FSK
   - name: SL_SIDEWALK_COMMON_DEFAULT_LINK_CONNECTION_POLICY

@@ -19,7 +19,7 @@ include:
       - path: app_process.h
 sdk_extension:
   - id: sidewalk
-    version: 2.3.0
+    version: 2.4.0
 component:
   - id: app_log
     from: sidewalk
@@ -31,6 +31,7 @@ component:
     from: sidewalk
   - id: sl_system
   - id: iostream_rtt
+  - id: printf
   - id: iostream_usart
     instance:
       - vcom
@@ -52,6 +53,8 @@ define:
     value: '256'
   - name: SID_PAL_ASSERT_DISABLED
 configuration:
+  - name: SL_MBEDTLS_PSA_ASSUME_EXCLUSIVE_BUFFERS
+    value: 1
   - name: APP_LOG_ENABLE
     value: '0'
   - name: SL_SID_LOG_APP_ENABLED

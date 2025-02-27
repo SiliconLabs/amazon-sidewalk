@@ -1,5 +1,24 @@
 Silicon Labs Amazon Sidewalk Release Note
 =========================================
+# Release 2.4.0
+(release date 2025-02-14)
+
+*SiSDK 2024.12.1 - Amazon Sidewalk SDK 1.18.0*
+
+## New Features/Improvements
+### Silicon Labs Extension
+- Support for SiSDK 2024.12.1
+- Amazon Sidewalk 1.18 stack release
+- Component folder restructure
+- Caracal board supports: BRD4351A, BRD4350A, EK2713A
+- FIXED: [1394070] GPIO update for 1.18 stack to prevent array overrun
+
+## Known issues
+- [47374] - Message duplicate error during FFN: `<error> msg dup: xxxxxxxxx (xxx)`. Device recovers in next FFN session.
+
+### Supported Toolchain
+- GCC version 12.2.1
+
 # Release 2.3.0
 (release date 2025-01-22)
 
@@ -37,6 +56,7 @@ Silicon Labs Amazon Sidewalk Release Note
 
 ## Known issues
 - [47374] - Message duplicate error during FFN: `<error> msg dup: xxxxxxxxx (xxx)`. Device recovers in next FFN session.
+- SBDT transfer slows down. The feature is in Beta phase currently
 
 ## Sidewalk Assistant Known issues
 

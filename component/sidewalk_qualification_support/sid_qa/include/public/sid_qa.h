@@ -1,5 +1,5 @@
 /*
- * Copyright 2021-2023 Amazon.com, Inc. or its affiliates. All rights reserved.
+ * Copyright 2021-2024 Amazon.com, Inc. or its affiliates. All rights reserved.
  *
  * AMAZON PROPRIETARY/CONFIDENTIAL
  *
@@ -33,7 +33,7 @@ typedef void (*notify_blocked_func_t)(void);
 typedef void (*notify_unblocked_func_t)(void);
 
 typedef void (*reboot_func_t)(void);
-typedef void (*set_sub_ghz_cfg_t)(const struct sid_sub_ghz_links_config * const sub_ghz_cfg);
+typedef void (*set_sub_ghz_cfg_t)(struct sid_sub_ghz_links_config *sub_ghz_cfg);
 
 struct sid_qa_callbacks {
     reboot_func_t reboot_cmd;
@@ -58,9 +58,19 @@ sid_error_t sid_qa_init(struct sid_qa_callbacks *qa_callbacks);
 void sid_qa_set_config(struct sid_config *config_p, struct sid_qa_pwr_meas_if *platform_ifc);
 
 /**
+ * Set extra qa_callbacks
+ */
+void sid_qa_set_extra_callbacks(struct sid_event_callbacks *callbacks);
+
+/**
  *  QA process routine.
  */
 void sid_qa_process(enum qa_proc_wait_status wait_status);
+
+/**
+ * Get Sidewalk Handle
+ */
+struct sid_handle *sid_qa_get_sid_handle(void);
 
 #ifdef __cplusplus
 } /* extern "C" */
