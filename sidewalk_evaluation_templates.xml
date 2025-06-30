@@ -1,0 +1,33 @@
+<?xml version='1.0' encoding='ASCII'?>
+<model:MDescriptors xmlns:model="http://www.silabs.com/ss/Studio.ecore">
+  <descriptors name="amazon_sidewalk_dmp_soc_light" label="Amazon Sidewalk - SoC Dynamic Multiprotocol Light (BLE)" description="This is a Dynamic Multiprotocol reference application demonstrating a light bulb that can be switched via Bluetooth. Can be tested with the EFR Connect mobile app. Simultaneously this sample application leverages the Amazon Sidewalk protocol to connect to the cloud using BLE radio layer. The application connects to AWS and send or receive messages on button push.">
+    <properties key="namespace" value="template.uc"/>
+    <properties key="keywords" value="universal\ configurator"/>
+    <properties key="solutionReferenceId" value="example.aws_sidewalk.amazon_sidewalk_dmp_soc_light.Sidewalk_BLE.amazon_sidewalk_dmp_soc_light.slcp"/>
+    <properties key="projectFilePaths" value="example/aws_sidewalk/amazon_sidewalk_dmp_soc_light/Sidewalk_BLE/amazon_sidewalk_dmp_soc_light.slcp"/>
+    <properties key="readmeFiles" value="documentation/example/amazon_sidewalk_dmp_soc_light/readme.md"/>
+    <properties key="boardCompatibility" value="brd2601a brd2601b brd2606a brd2608a brd2705a brd2709a brd2713a brd4109a brd4110a brd4110b brd4111a brd4111b brd4112a brd4113a brd4116a brd4117a brd4118a brd4120a brd4121a brd4176a brd4179b brd4180a brd4180b brd4181a brd4181b brd4181c brd4186a brd4186b brd4186c brd4186z brd4187a brd4187b brd4187c brd4194a brd4196a brd4196b brd4198a brd4198b brd4332a brd4350a brd4351a brd4400a brd4400b brd4400c brd4401a brd4401b brd4401c brd4407a brd4408a brd4411a com.silabs.board.none"/>
+    <properties key="partCompatibility" value=".*efr32[bm]g21[ab].*f[17].* .*efr32[bm]g24[ab].*f[17].* .*efr32mg26b.*f[32].* .*[bm]gm260p[db][23]2vn.* .*efr32[bm]g27c.*f768.* .*efr32[fsz]g28[ab].*f[17].* .*si[bm]g301.*"/>
+    <properties key="ideCompatibility" value="makefile-ide simplicity-ide visual-studio-code generic-template"/>
+    <properties key="toolchainCompatibility" value="gcc"/>
+    <properties key="category" value="Example|AWS IoT"/>
+    <properties key="quality" value="EVALUATION"/>
+    <properties key="stockConfigCompatibility" value="com.silabs.ss.framework.project.toolchain.core.default"/>
+    <properties key="filters" value="Device\ Type|SoC Ecosystem|Amazon Project\ Difficulty|Beginner Wireless\ Technology|Bluetooth Wireless\ Technology|Sidewalk"/>
+  </descriptors>
+  <descriptors name="amazon_sidewalk_dmp_soc_light" label="Amazon Sidewalk - SoC Dynamic Multiprotocol Light (FSK)" description="This is a Dynamic Multiprotocol reference application demonstrating a light bulb that can be switched via Bluetooth. Can be tested with the EFR Connect mobile app. Simultaneously this sample application leverages the Amazon Sidewalk protocol to connect to the cloud using FSK radio layer. The application connects to AWS and send or receive messages on button push.">
+    <properties key="namespace" value="template.uc"/>
+    <properties key="keywords" value="universal\ configurator"/>
+    <properties key="solutionReferenceId" value="example.aws_sidewalk.amazon_sidewalk_dmp_soc_light.Sidewalk_FSK.amazon_sidewalk_dmp_soc_light.slcp"/>
+    <properties key="projectFilePaths" value="example/aws_sidewalk/amazon_sidewalk_dmp_soc_light/Sidewalk_FSK/amazon_sidewalk_dmp_soc_light.slcp"/>
+    <properties key="readmeFiles" value="documentation/example/amazon_sidewalk_dmp_soc_light/readme.md"/>
+    <properties key="boardCompatibility" value="brd2705a brd4400a brd4400b brd4400c brd4401a brd4401b brd4401c com.silabs.board.none"/>
+    <properties key="partCompatibility" value=".*efr32[fsz]g28[ab].*f[17].*"/>
+    <properties key="ideCompatibility" value="makefile-ide simplicity-ide visual-studio-code generic-template"/>
+    <properties key="toolchainCompatibility" value="gcc"/>
+    <properties key="category" value="Example|AWS IoT"/>
+    <properties key="quality" value="EVALUATION"/>
+    <properties key="stockConfigCompatibility" value="com.silabs.ss.framework.project.toolchain.core.default"/>
+    <properties key="filters" value="Device\ Type|SoC Ecosystem|Amazon Project\ Difficulty|Beginner Wireless\ Technology|Bluetooth Wireless\ Technology|Sidewalk"/>
+  </descriptors>
+</model:MDescriptors>

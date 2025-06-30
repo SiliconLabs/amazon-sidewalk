@@ -1,0 +1,33 @@
+id: sidewalk_sender
+label: Sidewalk sender
+package: sidewalk
+description: Provides Sidewalk message sending functions
+category: Example|AWS IoT
+quality: production
+metadata:
+  sbom:
+    license: Zlib
+root_path: component/sidewalk_sender
+provides:
+  - name: sidewalk_sender
+requires:
+  - name: freertos
+  - name: sidewalk_utils
+  - name: sidewalk_log_app
+  - name: sidewalk_ble_subghz
+recommends:
+  - name: sidewalk_log_app_rtt
+source:
+  - path: sl_sidewalk_sender.c
+include:
+  - path: .
+    file_list:
+      - path: sl_sidewalk_sender.h
+template_contribution:
+  - name: component_catalog
+    value: sidewalk_sender
+  - name: event_handler
+    value:
+      event: service_init
+      include: sl_sidewalk_sender.h
+      handler: sl_sidewalk_sender_init

@@ -1,0 +1,10 @@
+upgrade:
+  - sdk:
+      id: sidewalk
+      version: "2.5.0"
+    configuration:
+      - script: extension_update_scripts/sidewalk_2_5_0_config.lua
+        description: Configuration upgrade script
+    component:
+      - script: extension_update_scripts/sidewalk_2_5_0_component.lua
+        description: Component upgrade script

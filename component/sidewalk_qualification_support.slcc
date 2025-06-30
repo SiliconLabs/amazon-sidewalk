@@ -1,0 +1,40 @@
+id: sidewalk_qualification_support
+label: Amazon Sidewalk
+package: sidewalk
+description: Component for qualification support
+category: Example|AWS IoT
+quality: production
+metadata:
+  sbom:
+    license: Zlib AND LicenseRef-amazon-sidewalk-license
+root_path: component/sidewalk_qualification_support
+provides:
+  - name: sidewalk_qualification_support
+library:
+  - path: libs/libace.a
+  - path: libs/libsid_asd_cli.a
+  - path: libs/libsid_config_cli.a
+  - path: libs/libsid_qa.a
+include:
+  - path: ace/include
+  - path: ace/include/ace
+    file_list:
+      - path: ace_config.h
+      - path: ace_log.h
+      - path: ace_modules.h
+      - path: ace_status.h
+      - path: aceCli.h
+      - path: cli.h
+      - path: osal_alloc.h
+      - path: uthash.h
+  - path: sid_asd_cli/include
+    file_list:
+      - path: sid_asd_cli.h
+  - path: sid_config_cli/include
+    file_list:
+      - path: sid_config_cli.h
+  - path: sid_qa/include/public
+    file_list:
+      - path: sid_qa.h
+ui_hints:
+  visibility: never

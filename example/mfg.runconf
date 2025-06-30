@@ -1,0 +1,18 @@
+{
+  "sessionID": null,
+  "commanderPath": "",
+  "awsAccount": {
+    "awsAccessKeyId": "",
+    "awsSecretAccessKey": "",
+    "awsSessionToken": "",
+    "awsRegion":"us-east-1"
+  },
+  "generationRequests": [
+    {
+      "deviceProfileId": null,
+      "destinationName": "CFSDestination",
+      "targetPart": null,
+      "quantity": 1
+    }
+  ]
+}

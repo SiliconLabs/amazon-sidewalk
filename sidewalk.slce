@@ -1,0 +1,13 @@
+id: sidewalk
+label: Sidewalk
+description: Sidewalk extension for Gecko SDK Suite
+version: 2.5.0
+sdk:
+  id: simplicity_sdk
+  version: 2025.6.0
+upgrade_manifest:
+  - path: sidewalk.slcu
+component_path:
+  - path: component
+  - path: component/overridden_gsdk_components/app/common/component
+  - path: component/sidewalk_log/component

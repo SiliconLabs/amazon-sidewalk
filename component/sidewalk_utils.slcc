@@ -1,0 +1,32 @@
+id: sidewalk_utils
+label: Sidewalk utils
+package: sidewalk
+description: Provides Sidewalk utility functions
+category: Example|AWS IoT
+quality: production
+metadata:
+  sbom:
+    license: Zlib
+root_path: component/sidewalk_utils
+provides:
+  - name: sidewalk_utils
+requires:
+  - name: component_catalog
+  - name: sidewalk_ble_subghz
+source:
+  - path: sl_sidewalk_utils.c
+include:
+  - path: .
+    file_list:
+      - path: sl_sidewalk_utils.h
+      - path: sl_sidewalk_utils_types.h
+config_file:
+  - path: config/sl_sidewalk_utils_config.h
+template_contribution:
+  - name: component_catalog
+    value: sidewalk_utils
+  - name: event_handler
+    value:
+      event: service_init
+      include: sl_sidewalk_utils.h
+      handler: sl_sidewalk_utils_init

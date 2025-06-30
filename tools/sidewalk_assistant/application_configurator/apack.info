@@ -1,0 +1,13 @@
+# Adapter Pack Configurator for Sidewalk Application
+
+# Is used for SetupId
+id=sid_app_config
+label=Adapter Pack Configurator for Sidewalk Application
+
+# Trigger file extension. No period.
+uc.triggerExtension=asconf
+
+# Standard generation function
+function(uc_generate) {
+  cmd=$(python) app_configurator.py -in ${contentFolder} -out ${generationOutput}
+}

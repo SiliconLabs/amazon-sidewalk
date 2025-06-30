@@ -1,0 +1,39 @@
+id: sidewalk_cmd_executor
+label: Sidewalk command processor
+package: sidewalk
+description: Provides Sidewalk command processing functions
+category: Example|AWS IoT
+quality: production
+metadata:
+  sbom:
+    license: Zlib
+root_path: component/sidewalk_cmd_executor
+provides:
+  - name: sidewalk_cmd_executor
+requires:
+  - name: sidewalk_sender
+  - name: freertos
+  - name: sl_common
+  - name: sidewalk_utils
+  - name: simple_led
+  - name: sidewalk_log_app
+  - name: sidewalk_ble_subghz
+recommends:
+  - name: sidewalk_log_app_rtt
+source:
+  - path: sl_sidewalk_cmd_executor.c
+include:
+  - path: .
+    file_list:
+      - path: sl_sidewalk_cmd_executor.h
+template_file:
+  - path: template/sl_command_table.c.jinja
+  - path: template/sl_command_table.h.jinja
+template_contribution:
+  - name: component_catalog
+    value: sidewalk_cmd_executer
+  - name: event_handler
+    value:
+      event: service_init
+      include: sl_sidewalk_cmd_executor.h
+      handler: sl_sidewalk_cmd_executor_init

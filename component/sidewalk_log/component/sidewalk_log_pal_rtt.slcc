@@ -1,0 +1,31 @@
+id: sidewalk_log_pal_rtt
+label: 'Sidewalk Log: PAL RTT'
+package: sidewalk
+description: Sidewalk RTT log functionality to be used by PAL
+  layer
+category: Example|AWS IoT
+quality: production
+metadata:
+  sbom:
+    license: Zlib
+root_path: component/sidewalk_log/src/pal
+requires:
+  - name: segger_rtt
+  - name: iostream_rtt
+  - name: sidewalk_log_core
+provides:
+  - name: sidewalk_log_pal_rtt
+  - name: sidewalk_log_pal
+source:
+  - path: sl_sidewalk_log_pal.c
+include:
+  - path: .
+    file_list:
+      - path: sl_sidewalk_log_pal.h
+config_file:
+  - path: config/sl_sidewalk_log_pal_rtt_config.h
+define:
+  - name: SID_PAL_LOG_RTT_ENABLED
+template_contribution:
+  - name: component_catalog
+    value: sidewalk_log_pal_rtt

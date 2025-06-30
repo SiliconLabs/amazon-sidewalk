@@ -1,0 +1,33 @@
+id: sidewalk_ed25519
+label: Sidewalk component containing an Ed25519 implementation
+package: sidewalk
+description: Sidewalk component containing an Ed25519 implementation
+category: Example|AWS IoT
+quality: production
+metadata:
+  sbom:
+    license: MIT
+root_path: component/sidewalk_ed25519
+source:
+  - path: curve25519_mehdi.c
+  - path: curve25519_order.c
+  - path: curve25519_utils.c
+  - path: ed25519_sign.c
+  - path: ed25519_verify.c
+include:
+  - path: .
+    file_list:
+      - path: base_folding8.h
+      - path: BaseTypes.h
+      - path: curve25519_mehdi.h
+      - path: ed25519_signature.h
+provides:
+  - name: sidewalk_ed25519
+requires:
+  - name: psa_crypto
+  - name: psa_driver
+  - name: psa_crypto_sha512
+  - name: memory_manager
+template_contribution:
+  - name: component_catalog
+    value: sidewalk_ed25519

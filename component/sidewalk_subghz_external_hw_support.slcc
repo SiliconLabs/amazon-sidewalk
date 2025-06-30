@@ -1,0 +1,85 @@
+id: sidewalk_subghz_external_hw_support
+label: Amazon Sidewalk external Sub-GHz hardware support
+package: sidewalk
+description: This component contains the hardware support for SX1262 and LR1110
+category: Example|AWS IoT
+quality: production
+metadata:
+  sbom:
+    license: Zlib AND LicenseRef-amazon-sidewalk-license
+root_path: component
+requires:
+  - name: spidrv
+  - name: emlib_gpio_simple_init
+    condition:
+      - hardware_board_has_exp_11
+      - hardware_board_has_exp_12
+      - hardware_board_has_exp_13
+      - hardware_board_has_exp_14
+  - name: spidrv_core
+  - name: emlib_usart
+provides:
+  - name: sidewalk_subghz_external_hw_support
+recommends:
+  - id: spidrv
+    instance:
+      - exp
+  - id: emlib_gpio_simple_init
+    instance:
+      - exp_11
+      - exp_12
+      - exp_13
+      - exp_14
+config_file:
+  - path: ble_subghz/config/app_gpio_config.h
+    condition:
+      - emlib_gpio_simple_init
+    unless:
+      - brd4332a
+  - path: ble_subghz/config/kg100s/app_gpio_config.h
+    condition:
+      - brd4332a
+template_file:
+  - path: /ble_subghz/app_gpio_config.c.jinja
+    condition:
+      - emlib_gpio_simple_init
+  - path: /ble_subghz/app_gpio_config.c.jinja
+    condition:
+      - brd4332a
+template_contribution:
+  - name: component_catalog
+    value: sidewalk
+  - name: semtech_pinout
+    value:
+      id: SL_PIN_BUSY
+      pin: SL_BUSY_PIN
+      port: SL_BUSY_PORT
+  - name: semtech_pinout
+    value:
+      id: SL_PIN_ANTSW
+      pin: SL_ANTSW_PIN
+      port: SL_ANTSW_PORT
+  - name: semtech_pinout
+    value:
+      id: SL_PIN_DIO
+      pin: SL_DIO_PIN
+      port: SL_DIO_PORT
+  - name: semtech_pinout
+    value:
+      id: SL_PIN_NRESET
+      pin: SL_NRESET_PIN
+      port: SL_NRESET_PORT
+  - name: semtech_pinout
+    value:
+      id: SL_PIN_NSS
+      pin: SL_SX_CS_PIN
+      port: SL_SX_CS_PORT
+  - name: semtech_pinout
+    condition:
+      - brd4332a
+    value:
+      id: SL_PIN_KG100S_BAND_SEL
+      pin: SL_PIN_BAND_SEL_PIN
+      port: SL_PIN_BAND_SEL_PORT
+ui_hints:
+  visibility: never
