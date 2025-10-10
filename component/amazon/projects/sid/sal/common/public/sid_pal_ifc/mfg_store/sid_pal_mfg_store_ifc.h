@@ -1,5 +1,5 @@
 /*
- * Copyright 2020-2023 Amazon.com, Inc. or its affiliates. All rights reserved.
+ * Copyright 2020-2025 Amazon.com, Inc. or its affiliates. All Rights Reserved.
  *
  * AMAZON PROPRIETARY/CONFIDENTIAL
  *
@@ -103,6 +103,7 @@ typedef enum {
     SID_PAL_MFG_STORE_AMZN_PUB_ED25519 = 36,
     SID_PAL_MFG_STORE_AMZN_PUB_P256R1 = 37,
     SID_PAL_MFG_STORE_APID = 38,
+    SID_PAL_MFG_STORE_DTID = 39,
 
     /**
      * @note This arbitrary value is the number of value identifiers
@@ -160,6 +161,7 @@ typedef enum {
     SID_PAL_MFG_STORE_AMZN_PUB_ED25519_SIZE             = 32,
     SID_PAL_MFG_STORE_AMZN_PUB_P256R1_SIZE              = 64,
     SID_PAL_MFG_STORE_APID_SIZE                         = 4,
+    SID_PAL_MFG_STORE_DTID_SIZE = 14,
 } sid_pal_mfg_store_value_size_t;
 
 /**
@@ -185,6 +187,20 @@ typedef enum {
 typedef uint32_t (*sid_pal_mfg_store_app_value_to_offset_t)(int value);
 
 /**
+ * @typedef sid_pal_mfg_store_overwrite_read_t
+ * @brief Function pointer type for overwriting the default read calls
+ *
+ * @param value  Enum constant for the desired value. Use values from
+ *               sid_pal_mfg_store_value_t or application defined values
+ *               here.
+ * @param buffer Buffer to which the value will be copied.
+ * @param length Length of the value in bytes. Use values from
+ *               sid_pal_mfg_store_value_size_t here.
+ * @return True if the value is overwritten, otherwise false
+ */
+typedef bool (*sid_pal_mfg_store_overwrite_read_t)(uint16_t value, uint8_t *buffer, uint16_t length);
+
+/**
  * @brief Type which holds the start and end addresses of the manufacturing store
  */
 typedef struct {
@@ -205,6 +221,13 @@ typedef struct {
      *  provided value.
      */
     sid_pal_mfg_store_app_value_to_offset_t app_value_to_offset;
+
+    /**
+     * @brief This function allows to overwrite read calls and call the callback function
+     *  defined by overwrite_read, if the value is overwritten then it returns true
+     *  else false
+     */
+    sid_pal_mfg_store_overwrite_read_t overwrite_read;
 } sid_pal_mfg_store_region_t;
 
 /** @} (end sid_pal_mfg_ifc_types) */

@@ -1,5 +1,5 @@
 id: app_log
-label: Log
+label: Sidewalk Log
 package: sidewalk
 description: 'The Log component provides the logging functionality
   at different levels: 1) INFO 2) DEBUG 3) ERROR 4) WARNING 5)
@@ -7,7 +7,7 @@ description: 'The Log component provides the logging functionality
   the default stream type is UART and stream instance is VCOM.
   Other configuration options include log level, logging color,
   log timing and more.'
-category: Application|Utility
+category: Utility
 quality: production
 metadata:
   sbom:

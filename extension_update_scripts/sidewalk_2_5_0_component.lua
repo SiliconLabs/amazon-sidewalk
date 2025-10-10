@@ -11,7 +11,8 @@ if slc.is_provided('sl_sidewalk_default_radio_sx1262') and
   })
 end
 
-if slc.is_provided('sl_sidewalk_default_radio_efr32xgxx') then
+if slc.is_provided('sl_sidewalk_default_radio_efr32xgxx') and
+    not slc.is_selected('sidewalk_dmp_ble_support') then -- Do not add efr32xgxx to xg28 DMP BLE project
   table.insert(changeset, {
     ['component'] = 'sidewalk_subghz_efr32xgxx',
     ['action'] = 'add',

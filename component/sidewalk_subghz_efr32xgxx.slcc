@@ -1,8 +1,8 @@
 id: sidewalk_subghz_efr32xgxx
-label: Amazon Sidewalk Sub-GHz efr32xgxx
+label: Sidewalk Sub-GHz efr32xgxx
 package: sidewalk
 description: This component contains the support of native (rail) Sub-GHz FSK
-category: Example|AWS IoT
+category: Protocol
 quality: production
 metadata:
   sbom:
@@ -11,20 +11,21 @@ root_path: component
 requires:
   - name: device_has_radio_subghz
   - name: emlib_emu
+  - name: rail_lib
   - name: rail_util_pa
   - name: sidewalk_common
+  - name: sidewalk_pal
 provides:
   - name: sidewalk_subghz_efr32xgxx
   - name: sl_sidewalk_radio_native
   - name: sl_sidewalk_radio_subghz
+  - name: sl_sidewalk_radio_subghz_fsk
 source:
   - path: amazon/projects/sid/sal/silabs/sid_pal/efr32xgxx_radio/silabs/efr32xgxx.c
   - path: amazon/projects/sid/sal/silabs/sid_pal/efr32xgxx_radio/efr32xgxx_radio_fsk.c
   - path: amazon/projects/sid/sal/silabs/sid_pal/efr32xgxx_radio/efr32xgxx_radio_lora.c
   - path: amazon/projects/sid/sal/silabs/sid_pal/efr32xgxx_radio/efr32xgxx_radio.c
-  - path: ble_subghz/radio/subghz/rail/app_subghz_config.c
-    unless:
-      - sidewalk_dmp_ble_support
+  - path: sidewalk_radio_config/subghz/rail/app_subghz_config.c
   - path: phys/xg28/efr32xgxx_railcfg.c
     condition:
       - device_generic_family_efr32xg28
@@ -45,19 +46,25 @@ include:
       - path: silabs/efr32xgxx.h
       - path: efr32xgxx_config.h
       - path: efr32xgxx_radio.h
-  - path: ble_subghz/radio/subghz/rail
+  - path: sidewalk_radio_config/subghz/rail
     file_list:
       - path: app_subghz_config.h
-    unless:
-      - sidewalk_dmp_ble_support
+define:
+  - name: SL_RADIO_NATIVE
+  - name: SL_FSK_SUPPORTED
+  - name: RADIO_DRIVER_RAIL
+    value: 1
+  - name: SL_RAIL_3_API
 ui_hints:
   visibility: advanced
 conflicts:
-  - sidewalk_subghz_lr1110
-  - sidewalk_subghz_sx1262
-  - device_generic_family_efr32xg21
-  - device_generic_family_efr32xg24
-  - device_generic_family_efr32xg26
-  - device_generic_family_efr32xg27
-  - device_generic_family_efr32xg29
-  - device_generic_family_sixx301
+  - name: sidewalk_subghz_lr1110
+  - name: sidewalk_subghz_sx1262
+  - name: sidewalk_kg100s
+  - name: device_generic_family_efr32xg21
+  - name: device_generic_family_efr32xg24
+  - name: device_generic_family_efr32xg26
+  - name: device_generic_family_efr32xg27
+  - name: device_generic_family_efr32xg29
+  - name: device_generic_family_sixx301
+  - name: sidewalk_dmp_ble_support

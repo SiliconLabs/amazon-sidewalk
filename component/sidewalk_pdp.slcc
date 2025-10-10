@@ -1,5 +1,5 @@
 id: sidewalk_pdp
-label: pdp production device provisioner
+label: Sidewalk PDP - production device provisioner
 package: sidewalk
 description: Production device provisioner API
 category: PDP
@@ -75,10 +75,10 @@ source:
   - path: amazon/projects/sid/sal/silabs/sid_pal/critical_region.c
   - path: amazon/projects/sid/sal/silabs/sid_pal/uptime.c
 library:
-  - path: ble_subghz/lib/pdp_sidlib/libsid_on_dev_cert.a
-  - path: ble_subghz/lib/pdp_sidlib/libsid_clock.a
-  - path: ble_subghz/lib/pdp_sidlib/libsid_time_ops.a
-  - path: ble_subghz/lib/pdp_sidlib/libsid_log_control.a
+  - path: sidewalk_libs/pdp_sidlib/libsid_on_dev_cert.a
+  - path: sidewalk_libs/pdp_sidlib/libsid_clock.a
+  - path: sidewalk_libs/pdp_sidlib/libsid_time_ops.a
+  - path: sidewalk_libs/pdp_sidlib/libsid_log_control.a
 requires:
   - name: nvm3_default
   - name: psa_crypto
@@ -107,7 +107,7 @@ requires:
   - name: sl_core
   - name: sleeptimer
 conflicts:
-  - name: sidewalk_ble_subghz
+  - name: sidewalk_pal
 recommends:
   - name: sidewalk_log_stack_rtt
   - name: sidewalk_log_pal_rtt

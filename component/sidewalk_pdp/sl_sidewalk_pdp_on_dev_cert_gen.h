@@ -66,11 +66,9 @@ typedef struct {
   uint16_t dev_type_len;
   uint16_t dsn_len;
   uint16_t apid_len;
-  uint16_t board_id_len;
   const uint8_t *dev_type;
   const uint8_t *dsn;
   const uint8_t *apid;
-  const uint8_t *board_id;
 } SL_ATTRIBUTE_PACKED sl_sid_pdp_on_dev_cert_gen_gen_smsn_req_t;
 SL_PACK_END()
 

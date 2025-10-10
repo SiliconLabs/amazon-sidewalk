@@ -37,7 +37,7 @@
 #include "app_assert.h"
 #include "app_init.h"
 #include "app_process.h"
-#if defined(SL_CATALOG_APP_BUTTON_PRESS_PRESENT)
+#if defined(SL_CATALOG_SIMPLE_BUTTON_PRESENT)
 #include "app_button_press.h"
 #endif
 #include "FreeRTOS.h"
@@ -87,7 +87,7 @@
 void app_init(void)
 {
 
-#if defined(SL_CATALOG_APP_BUTTON_PRESS_PRESENT)
+#if defined(SL_CATALOG_SIMPLE_BUTTON_PRESENT)
   // Enable button press
   app_button_press_enable();
 #endif

@@ -1,8 +1,8 @@
 id: sidewalk_cli_util
-label: CLI Util
+label: Sidewalk CLI Util
 package: sidewalk
 description: Provides Sidewalk CLI utility functions
-category: Sidewalk|Utility
+category: Utility
 quality: production
 metadata:
   sbom:

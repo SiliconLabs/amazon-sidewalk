@@ -60,6 +60,8 @@
 
 #define RF_NOISE_FLOOR                           (-90)
 
+#define EFR32XGXX_FSK_PROCESS_DELAY_US_MIN 1000
+#define EFR32XGXX_FSK_PROCESS_DELAY_US_MAX 5000
 #define EFR32XGXX_FSK_TX_PROCESS_DELAY_US 1000
 #define EFR32XGXX_FSK_RX_PROCESS_DELAY_US 1000
 
@@ -405,10 +407,18 @@ static void radio_pp_to_efr32xgxx_pp(efr32xgxx_pkt_params_gfsk_t *fsk_pp,
 
 uint32_t sid_pal_radio_get_fsk_tx_process_delay(void)
 {
-  return EFR32XGXX_FSK_TX_PROCESS_DELAY_US;
+    const halo_drv_silabs_ctx_t *drv_ctx = efr32xgxx_get_drv_ctx();
+    return (drv_ctx->config->state_timings.tx_delay_us < EFR32XGXX_FSK_PROCESS_DELAY_US_MIN
+            || drv_ctx->config->state_timings.tx_delay_us > EFR32XGXX_FSK_PROCESS_DELAY_US_MAX)
+               ? EFR32XGXX_FSK_TX_PROCESS_DELAY_US
+               : drv_ctx->config->state_timings.tx_delay_us;
 }
 
 uint32_t sid_pal_radio_get_fsk_rx_process_delay(void)
 {
-    return EFR32XGXX_FSK_RX_PROCESS_DELAY_US;
+    const halo_drv_silabs_ctx_t *drv_ctx = efr32xgxx_get_drv_ctx();
+    return (drv_ctx->config->state_timings.rx_delay_us < EFR32XGXX_FSK_PROCESS_DELAY_US_MIN
+            || drv_ctx->config->state_timings.rx_delay_us > EFR32XGXX_FSK_PROCESS_DELAY_US_MAX)
+               ? EFR32XGXX_FSK_RX_PROCESS_DELAY_US
+               : drv_ctx->config->state_timings.rx_delay_us;
 }

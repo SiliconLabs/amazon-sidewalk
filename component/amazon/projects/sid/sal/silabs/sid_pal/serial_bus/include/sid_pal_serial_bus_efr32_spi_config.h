@@ -49,7 +49,7 @@ extern "C" {
 #include <sid_pal_serial_bus_ifc.h>
 #include <sid_error.h>
 
-#if defined(EFR32XG21) || defined(EFR32XG24) || defined(EFR32XG26) || defined(EFR32XG28)
+#if defined(EFR32XG21) || defined(EFR32XG23) || defined(EFR32XG24) || defined(EFR32XG26) || defined(EFR32XG28)
   #include "em_usart.h"
   #define USART_INSTANCE_TYPE USART_TypeDef
 #else

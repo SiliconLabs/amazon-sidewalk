@@ -105,9 +105,6 @@ sl_sid_pdp_status_t sl_sid_pdp_on_dev_cert_gen_gen_smsn(const uint8_t * const in
   req.dev_type = &in[8];
   req.dsn = &in[8 + req.dev_type_len];
   req.apid = &in[8 + req.dev_type_len + req.dsn_len];
-  if (req.board_id_len) {
-    req.board_id = &in[8 + req.dev_type_len + req.dsn_len + req.apid_len];
-  }
 
   // Note on device-type. It gets transformed into "Amazon-id" which is <device-type>-PRODUCTION
   uint16_t dev_type_total_len = req.dev_type_len + (uint16_t)sl_strlen(SL_SID_PDP_CERT_DEV_TYPE_SUFFIX) + 1;
@@ -126,16 +123,10 @@ sl_sid_pdp_status_t sl_sid_pdp_on_dev_cert_gen_gen_smsn(const uint8_t * const in
   memset(apid, 0, apid_total_len);
   memcpy(apid, (const char *)req.apid, req.apid_len);
 
-  uint16_t board_id_total_len = req.board_id_len + 1;
-  char board_id[board_id_total_len];
-  memset(board_id, 0, board_id_total_len);
-  memcpy(board_id, (const char *)req.board_id, req.board_id_len);
-
   const struct sid_on_dev_cert_info dev_info = {
     .dev_type = dev_type_production,
     .dsn = dsn,
     .apid = apid,
-    .board_id = req.board_id_len != 0 ? board_id : NULL
   };
 
   uint8_t smsn[SID_ODC_SMSN_SIZE];

@@ -2,7 +2,7 @@ id: sidewalk_ed25519
 label: Sidewalk component containing an Ed25519 implementation
 package: sidewalk
 description: Sidewalk component containing an Ed25519 implementation
-category: Example|AWS IoT
+category: Protocol
 quality: production
 metadata:
   sbom:

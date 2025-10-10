@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 Amazon.com, Inc. or its affiliates. All rights reserved.
+ * Copyright 2020-2025 Amazon.com, Inc. or its affiliates. All rights reserved.
  *
  * AMAZON PROPRIETARY/CONFIDENTIAL
  *
@@ -37,11 +37,12 @@ extern "C" {
 typedef uint32_t sid_time_t;
 
 struct sid_timespec {
-    sid_time_t tv_sec; // seconds
-    uint32_t tv_nsec; // nanoseconds
+    sid_time_t tv_sec;   // seconds
+    uint32_t tv_nsec;    // nanoseconds
 };
 
-static const struct sid_timespec SID_TIME_INFINITY = { .tv_sec = UINT32_MAX, .tv_nsec = UINT32_MAX};
+static const struct sid_timespec SID_TIME_INFINITY = {.tv_sec = UINT32_MAX, .tv_nsec = UINT32_MAX};
+static const struct sid_timespec SID_TIME_RANDOM = {.tv_sec = UINT32_MAX - 1, .tv_nsec = UINT32_MAX - 1};
 static const struct sid_timespec SID_TIME_ZERO = {.tv_sec = 0, .tv_nsec = 0};
 
 #ifdef __cplusplus

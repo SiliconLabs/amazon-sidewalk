@@ -55,7 +55,7 @@ static void gpio_irq_handler(uint8_t pin, void *context)
 {
   (void)context;
   for (uint8_t ix = 0; ix < SL_PIN_MAX; ix++) {
-    if ((pin == gpio_lookup_table[ix].gpio.pin) && (gpio_lookup_table[ix].callback)) {
+    if ((pin == gpio_lookup_table[ix].IntNO) && (gpio_lookup_table[ix].callback)) {
       gpio_lookup_table[ix].callback(ix, gpio_lookup_table[ix].callbackarg);
       break;
     }
@@ -226,7 +226,7 @@ sid_error_t sid_pal_gpio_read(uint32_t gpio_number,
 
   if (gpio_number < SL_PIN_MAX) {
     lookupptr = &gpio_lookup_table[gpio_number];
-    if(sl_gpio_get_pin_input(&lookupptr->gpio, &pin_value) != SL_STATUS_OK) {
+    if (sl_gpio_get_pin_input(&lookupptr->gpio, &pin_value) != SL_STATUS_OK) {
       retval = SID_ERROR_GENERIC;
     }
   } else {
@@ -293,7 +293,6 @@ sid_error_t sid_pal_gpio_set_irq(uint32_t gpio_number,
   sl_gpio_interrupt_flag_t flags;
 
   struct GPIO_LookupItem * lookupptr;
-  sid_error_t retval = SID_ERROR_NONE;
   sl_status_t status;
 
   switch (irq_trigger) {
@@ -329,15 +328,23 @@ sid_error_t sid_pal_gpio_set_irq(uint32_t gpio_number,
     lookupptr->irq.rising = IsRisingEdge;
     lookupptr->callback = gpio_callback;
     lookupptr->callbackarg = callback_arg;
-    int32_t pin = (int32_t)(lookupptr->gpio.pin);
-    status = sl_gpio_configure_external_interrupt(&lookupptr->gpio, &pin, flags, gpio_irq_handler, NULL);
+    if (lookupptr->IntNO != SL_GPIO_INTERRUPT_UNAVAILABLE) {
+      status = sl_gpio_deconfigure_external_interrupt(lookupptr->IntNO);
+      if (status != SL_STATUS_OK) {
+        return SID_ERROR_GENERIC;
+      }
+      lookupptr->IntNO = SL_GPIO_INTERRUPT_UNAVAILABLE;
+    }
+    status = sl_gpio_configure_external_interrupt(&lookupptr->gpio, &(lookupptr->IntNO), flags, gpio_irq_handler, NULL);
     if (status != SL_STATUS_OK) {
-      retval = SID_ERROR_GENERIC;
+      return SID_ERROR_GENERIC;
+    } else if (lookupptr->IntNO == SL_GPIO_INTERRUPT_UNAVAILABLE) {
+      return SID_ERROR_INVALID_ARGS;
     }
   } else {
-    retval = SID_ERROR_INVALID_ARGS;
+    return SID_ERROR_INVALID_ARGS;
   }
-  return retval;
+  return SID_ERROR_NONE;
 }
 
 sid_error_t sid_pal_gpio_irq_enable(uint32_t gpio_number)
@@ -347,8 +354,9 @@ sid_error_t sid_pal_gpio_irq_enable(uint32_t gpio_number)
 
   if (gpio_number < SL_PIN_MAX) {
     lookupptr = &gpio_lookup_table[gpio_number];
-    if (sl_gpio_enable_interrupts(1 << lookupptr->gpio.pin) != SL_STATUS_OK) {
-      retval = SID_ERROR_GENERIC;
+    if ((lookupptr->IntNO != SL_GPIO_INTERRUPT_UNAVAILABLE) &&
+        (sl_gpio_enable_interrupts(1 << lookupptr->IntNO) != SL_STATUS_OK)) {
+        retval = SID_ERROR_GENERIC;
     }
   } else {
     retval = SID_ERROR_INVALID_ARGS;
@@ -363,8 +371,9 @@ sid_error_t sid_pal_gpio_irq_disable(uint32_t gpio_number)
 
   if (gpio_number < SL_PIN_MAX) {
     lookupptr = &gpio_lookup_table[gpio_number];
-    if (sl_gpio_disable_interrupts(1 << lookupptr->gpio.pin) != SL_STATUS_OK) {
-      retval = SID_ERROR_GENERIC;
+    if ((lookupptr->IntNO != SL_GPIO_INTERRUPT_UNAVAILABLE) &&
+        (sl_gpio_disable_interrupts(1 << lookupptr->IntNO) != SL_STATUS_OK)) {
+        retval = SID_ERROR_GENERIC;
     }
   } else {
     retval = SID_ERROR_INVALID_ARGS;

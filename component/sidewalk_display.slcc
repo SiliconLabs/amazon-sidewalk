@@ -2,7 +2,7 @@ id: sidewalk_display
 label: Sidewalk display
 package: sidewalk
 description: Provides Sidewalk display functions
-category: Example|AWS IoT
+category: Example
 quality: production
 metadata:
   sbom:
@@ -35,3 +35,5 @@ template_contribution:
       event: service_init
       include: sl_sidewalk_display.h
       handler: sl_sidewalk_display_init
+ui_hints:
+  visibility: never

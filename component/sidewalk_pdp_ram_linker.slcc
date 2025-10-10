@@ -1,5 +1,5 @@
 id: sidewalk_pdp_ram_linker
-label: linker pdp
+label: Sidewalk linker pdp
 description: RAM linker script for PDP
 package: sidewalk
 category: PDP

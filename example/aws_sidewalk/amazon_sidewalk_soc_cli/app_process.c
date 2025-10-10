@@ -1,4 +1,4 @@
-/***************************************************************************//**
+/***************************************************************************/ /**
  * @file
  * @brief app_process.c
  *******************************************************************************
@@ -67,11 +67,12 @@
 // -----------------------------------------------------------------------------
 
 // Maximum number Queue elements
-#define MSG_QUEUE_LEN       (10U)
-#define MSG_CLI_QUEUE_LEN   (3U)
+#define MSG_QUEUE_LEN (10U)
+#define MSG_CLI_QUEUE_LEN (3U)
 
 // Unused function parameter
 #define UNUSED(x) (void)(x)
+
 // -----------------------------------------------------------------------------
 //                          Static Function Declarations
 // -----------------------------------------------------------------------------
@@ -457,8 +458,7 @@ void main_task(void *context)
  ******************************************************************************/
 void queue_event(QueueHandle_t queue, enum event_type event)
 {
-  if(queue == NULL)
-  {
+  if (queue == NULL) {
     return;
   }
   // Check if queue_event was called from ISR
@@ -721,26 +721,24 @@ static void send(app_context_t *app_context, char *message_type_str, char *messa
 
 static sl_status_t init_sidewalk(app_context_t *app_context, char *link_str)
 {
-  app_context->sid_event_cb = (struct sid_event_callbacks)
-  {
-    .context           = app_context,
-    .on_event          = on_sidewalk_event,               // Called from ISR context
-    .on_msg_received   = on_sidewalk_msg_received,        // Called from sid_process()
-    .on_msg_sent       = on_sidewalk_msg_sent,            // Called from sid_process()
-    .on_send_error     = on_sidewalk_send_error,          // Called from sid_process()
-    .on_status_changed = on_sidewalk_status_changed,      // Called from sid_process()
-    .on_factory_reset  = on_sidewalk_factory_reset,       // Called from sid_process()
+  app_context->sid_event_cb = (struct sid_event_callbacks){
+    .context = app_context,
+    .on_event = on_sidewalk_event,                     // Called from ISR context
+    .on_msg_received = on_sidewalk_msg_received,       // Called from sid_process()
+    .on_msg_sent = on_sidewalk_msg_sent,               // Called from sid_process()
+    .on_send_error = on_sidewalk_send_error,           // Called from sid_process()
+    .on_status_changed = on_sidewalk_status_changed,   // Called from sid_process()
+    .on_factory_reset = on_sidewalk_factory_reset,     // Called from sid_process()
   };
 
-  app_context->sid_cfg = (struct sid_config)
-  {
-    .link_mask   = parse_link_type(link_str),
+  app_context->sid_cfg = (struct sid_config){
+    .link_mask = parse_link_type(link_str),
     .dev_ch = {
       .type = SID_END_DEVICE_TYPE_STATIC,
       .power_type = SID_END_DEVICE_POWERED_BY_LINE_POWER_ONLY,
       .qualification_id = 0x0002,
     },
-    .callbacks   = &app_context->sid_event_cb,
+    .callbacks = &app_context->sid_event_cb,
     .link_config = NULL,
     .sub_ghz_link_config = NULL
   };
@@ -764,7 +762,7 @@ static sl_status_t init_sidewalk(app_context_t *app_context, char *link_str)
   SL_SID_LOG_APP_INFO("CSS link supported");
 #endif
 
-#if defined (SV_ENABLED)
+#if defined(SV_ENABLED)
   SL_SID_LOG_APP_INFO("Secure Vault is enabled");
 #else
   SL_SID_LOG_APP_INFO("Secure Vault is disabled");
@@ -783,7 +781,7 @@ static sl_status_t init_sidewalk(app_context_t *app_context, char *link_str)
 
   sid_error_t ret = sid_init(&app_context->sid_cfg, &tmp_sidewalk_handle);
   if (ret != SID_ERROR_NONE) {
-    if ( ret != SID_ERROR_ALREADY_INITIALIZED) {
+    if (ret != SID_ERROR_ALREADY_INITIALIZED) {
       // reset context sidewalk_handle
       app_context->sidewalk_handle = NULL;
       app_context->sid_cfg.link_mask = 0;

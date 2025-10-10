@@ -28,9 +28,9 @@ class OnDevCertGen(PDPModeBase):
     self._pdp.comm_send_receive(tx_pkt)
     self._logger.debug("Done")
 
-  def _generate_smsn(self, dev_type, dsn, apid, board_id):
+  def _generate_smsn(self, dev_type, dsn, apid):
     self._logger.debug("Generating SMSN")
-    tx_pkt = OnDevCertGen_GenSMSN(dev_type, dsn, apid, board_id).serialize()
+    tx_pkt = OnDevCertGen_GenSMSN(dev_type, dsn, apid).serialize()
     rx_pld = self._pdp.comm_send_receive(tx_pkt)
     smsn_len = int.from_bytes(rx_pld[PROTOCOL_DATA_SMSN_LEN_RANGE], "little")
     smsn = bytes(rx_pld[PROTOCOL_DATA_SMSN_VALUE_START_IDX:])
@@ -90,7 +90,7 @@ class OnDevCertGen(PDPModeBase):
 
   def _provision_dd(self, **kwargs):
     self._init()
-    smsn = self._generate_smsn(kwargs['dev_type'], kwargs['dsn'], kwargs['apid'], "")
+    smsn = self._generate_smsn(kwargs['dev_type'], kwargs['dsn'], kwargs['apid'])
     csr_ed25519 = self._generate_csr(CryptoCurve.ED25519)
     csr_p256r1 = self._generate_csr(CryptoCurve.P256R1)
     cert_chain_ed25519, cert_chain_p256r1 = self._sign_csr(kwargs['sst_prod_tag'], kwargs['sst_hsm_conn_addr'], kwargs['sst_hsm_pin'], csr_ed25519, csr_p256r1, kwargs['apid'])

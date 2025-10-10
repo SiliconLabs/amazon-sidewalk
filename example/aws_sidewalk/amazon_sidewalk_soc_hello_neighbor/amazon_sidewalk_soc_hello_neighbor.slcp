@@ -1,5 +1,5 @@
 project_name: amazon_sidewalk_soc_hello_neighbor
-package: sidewalk_sample_apps
+package: sidewalk_sample_app
 quality: production
 label: Amazon Sidewalk - SoC Hello Neighbor
 description: The Hello Neighbor sample application leverages the
@@ -10,7 +10,7 @@ description: The Hello Neighbor sample application leverages the
 category: Example|AWS IoT
 sdk_extension:
   - id: sidewalk
-    version: 2.5.0
+    version: 2.6.0
 source:
   - path: app_init.c
   - path: app_process.c
@@ -21,13 +21,11 @@ include:
       - path: app_init.h
       - path: app_process.h
 component:
-  - id: sidewalk_ble_subghz
+  - id: sidewalk_pal
     from: sidewalk
   - id: sidewalk_common
     from: sidewalk
   - id: app_log
-    from: sidewalk
-  - id: app_button_press
     from: sidewalk
   - id: sidewalk_log_app_rtt
     from: sidewalk
@@ -37,14 +35,23 @@ component:
     from: sidewalk
   - id: sidewalk_utils
     from: sidewalk
+  - id: sidewalk_ble
+    from: sidewalk
+    condition:
+      - device_supports_bluetooth
   - id: sidewalk_subghz_sx1262
     from: sidewalk
     condition:
       - sl_sidewalk_default_radio_sx1262
+  - id: sidewalk_subghz_sx1262
+    from: sidewalk
+    condition:
+      - sidewalk_kg100s
   - id: sidewalk_subghz_efr32xgxx
     from: sidewalk
     condition:
       - sl_sidewalk_default_radio_efr32xgxx
+  - id: app_button_press
   - id: iostream_rtt
   - id: printf
   - id: sl_main
@@ -142,14 +149,14 @@ configuration:
     unless:
       - sl_sidewalk_radio_ble
   - name: configTOTAL_HEAP_SIZE
-    value: 15360
+    value: 16384
     condition:
       - sl_sidewalk_radio_ble
     unless:
       - device_generic_family_efr32xg27
       - device_generic_family_sixx301
   - name: configTOTAL_HEAP_SIZE
-    value: 13312
+    value: 14336
     condition:
       - device_generic_family_efr32xg27
   - name: configTOTAL_HEAP_SIZE

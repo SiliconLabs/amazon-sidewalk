@@ -104,11 +104,12 @@ struct GPIO_PinConfig{
 /**
  * @brief Lookup item structure for GPIO configuration.
  *
- * This structure defines the lookup item for GPIO configuration, including port, pin, 
+ * This structure defines the lookup item for GPIO configuration, including port, pin,
  * pin configuration, mode, interrupt settings, and callback information.
  */
 struct GPIO_LookupItem{
   sl_gpio_t gpio;                       /*!< gpio port and pin number. */
+  int32_t IntNO;                        /*!< Interrupt number assigned by sl_gpio_configure_external_interrupt */
   struct GPIO_PinConfig PinConfig;      /*!< Configuration parameters for the GPIO pin. */
   sl_gpio_mode_t mode;                  /*!< Mode of the GPIO pin. */
   sid_pal_gpio_irq_handler_t callback;  /*!< Callback function to be called on GPIO interrupt. */

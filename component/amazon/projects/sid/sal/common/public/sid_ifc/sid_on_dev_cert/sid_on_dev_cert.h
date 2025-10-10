@@ -1,7 +1,7 @@
 /*
- * Copyright 2023 Amazon.com, Inc. or its affiliates. All rights reserved.
+ * Copyright 2023-2025 Amazon.com, Inc. or its affiliates. All rights reserved.
  *
- * AMAZON PROPRIETARY/CONFIDENTIAL
+ * PROPRIETARY/CONFIDENTIAL
  *
  * You may not use this file except in compliance with the terms and
  * conditions set forth in the accompanying LICENSE.txt file. This file is a
@@ -44,7 +44,8 @@
  *     using the sid_on_dev_cert_write_cert_chain() function.
  *     Do this for both ED25519 and P256r1 crypto algorithms.
  *
- *  6. Write to the device application server ED25519 public key
+ *  6. Optional. In case you don't need application server ED25519 public key, skip this step.
+ *     Write to the device application server ED25519 public key
  *     by sid_on_dev_cert_write_app_server_key() function.
  *
  *  7. Check the certificates and save all the data in the MFG storage.
@@ -59,7 +60,7 @@
 
 #define SID_ODC_SMSN_SIZE 32
 #define SID_ODC_CA_SERIAL_MIN_SIZE 4
-#define SID_ODC_CA_SERIAL_MAX_SIZE (2+127)
+#define SID_ODC_CA_SERIAL_MAX_SIZE (2 + 127)
 
 #define SID_ODC_ED25519_PRK_SIZE 32
 #define SID_ODC_ED25519_PUK_SIZE 32
@@ -82,10 +83,10 @@
 #define SID_ODC_P256R1_CA_MAX_SIZE (SID_ODC_CA_SERIAL_MAX_SIZE + SID_ODC_P256R1_PUK_SIZE + SID_ODC_SIGNATURE_SIZE)
 
 // Sidewalk Certificate Chain size
-#define SID_ODC_ED25519_SCC_MIN_SIZE (5*SID_ODC_ED25519_CA_MIN_SIZE + SID_ODC_ED25519_DEVICE_CERT_SIZE)
-#define SID_ODC_P256R1_SCC_MIN_SIZE (5*SID_ODC_P256R1_CA_MIN_SIZE + SID_ODC_P256R1_DEVICE_CERT_SIZE)
-#define SID_ODC_ED25519_SCC_MAX_SIZE (5*SID_ODC_ED25519_CA_MAX_SIZE + SID_ODC_ED25519_DEVICE_CERT_SIZE)
-#define SID_ODC_P256R1_SCC_MAX_SIZE (5*SID_ODC_P256R1_CA_MAX_SIZE + SID_ODC_P256R1_DEVICE_CERT_SIZE)
+#define SID_ODC_ED25519_SCC_MIN_SIZE (5 * SID_ODC_ED25519_CA_MIN_SIZE + SID_ODC_ED25519_DEVICE_CERT_SIZE)
+#define SID_ODC_P256R1_SCC_MIN_SIZE (5 * SID_ODC_P256R1_CA_MIN_SIZE + SID_ODC_P256R1_DEVICE_CERT_SIZE)
+#define SID_ODC_ED25519_SCC_MAX_SIZE (5 * SID_ODC_ED25519_CA_MAX_SIZE + SID_ODC_ED25519_DEVICE_CERT_SIZE)
+#define SID_ODC_P256R1_SCC_MAX_SIZE (5 * SID_ODC_P256R1_CA_MAX_SIZE + SID_ODC_P256R1_DEVICE_CERT_SIZE)
 #define SID_ODC_SCC_MAX_SIZE SID_ODC_P256R1_SCC_MAX_SIZE
 
 /**
@@ -101,8 +102,6 @@ struct sid_on_dev_cert_info {
     const char *dsn;
     /** Advertised product ID */
     const char *apid;
-    /** Board ID (optional) */
-    const char *board_id;
 };
 
 /**
@@ -111,6 +110,15 @@ struct sid_on_dev_cert_info {
 enum sid_on_dev_cert_algo_type {
     SID_ODC_CRYPT_ALGO_ED25519 = 1,
     SID_ODC_CRYPT_ALGO_P256R1,
+};
+
+/**
+ * @brief Enum that defines available data from mfg to print via CLI.
+ */
+enum sid_on_dev_cert_print_fileds {
+    SID_ODC_PRINT_APID = 1,
+    SID_ODC_PRINT_APP_KEY,
+    SID_ODC_PRINT_DTID,
 };
 
 /**
@@ -216,4 +224,23 @@ sid_error_t sid_on_dev_cert_write_app_server_key(const uint8_t *app_key);
  */
 sid_error_t sid_on_dev_cert_verify_and_store(void);
 
-#endif // SID_ON_DEV_CERT_H
+/**
+ * @brief read mfg data from flash space and verify certificates
+ *
+ * @return sid_error_t - SID_ERROR_GENERIC in case cert verification failed, SID_ERROR_NONE on success.
+ */
+sid_error_t sid_on_dev_cert_status_check(void);
+
+/**
+ * @brief read mfg data from flash space for printing it to CLI
+ *
+ * @param[in] info_num  - type of requested field (app_key or apid),
+ * @param[in] pData     - pointer to buffer for writing requested data,
+ * @param[in] pData     - pointer to variable which will store size of read data,
+ *
+ * @return sid_error_t - SID_ERROR_NONE
+ */
+sid_error_t
+sid_on_dev_cert_read_cert_values(enum sid_on_dev_cert_print_fileds info_num, uint8_t *data, size_t *data_size);
+
+#endif   // SID_ON_DEV_CERT_H

@@ -287,6 +287,13 @@ int32_t sid_pal_radio_set_tx_continuous_wave(uint32_t freq, int8_t power)
   return RADIO_ERROR_NONE;
 }
 
+int32_t sid_pal_radio_set_tx_continuous_preamble(uint32_t freq, int8_t power)
+{
+  (void)freq;
+  (void)power;
+  return RADIO_ERROR_NOT_SUPPORTED;
+}
+
 int32_t sid_pal_radio_start_rx(uint32_t timeout)
 {
   int32_t err = RADIO_ERROR_NONE;

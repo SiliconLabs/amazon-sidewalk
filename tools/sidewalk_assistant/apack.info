@@ -28,3 +28,7 @@ executable(generate_prototype:linux.x86_64) {
 function(uc_generate) {
   cmd=$(generate_prototype) --input ${contentFolder} --output ${generationOutput}
 }
+
+function(uc_upgrade) {
+  cmd=$(python) generateEmptyUpgradeResult.py -r ${results} 
+}

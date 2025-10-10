@@ -32,9 +32,10 @@
  * @{
  */
 
-#include <sid_error.h>
 #include <sid_pal_timer_types.h>
 #include <sid_time_types.h>
+
+#include <sid_error.h>
 
 #include <stdbool.h>
 

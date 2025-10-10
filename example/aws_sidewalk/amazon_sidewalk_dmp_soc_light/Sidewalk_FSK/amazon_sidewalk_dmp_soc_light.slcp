@@ -1,6 +1,6 @@
 project_name: amazon_sidewalk_dmp_soc_light
-package: sidewalk_sample_apps
-quality: evaluation
+package: sidewalk_sample_app
+quality: production
 label: Amazon Sidewalk - SoC Dynamic Multiprotocol Light (FSK)
 description: This is a Dynamic Multiprotocol reference application
   demonstrating a light bulb that can be switched via Bluetooth.
@@ -11,7 +11,7 @@ description: This is a Dynamic Multiprotocol reference application
 category: Example|AWS IoT
 sdk_extension:
   - id: sidewalk
-    version: 2.5.0
+    version: 2.6.0
 source:
   - path: ../app_init.c
   - path: ../app_process.c
@@ -24,15 +24,17 @@ include:
       - path: ../app_process.h
       - path: ../app_bluetooth.h
 component:
-  - id: sidewalk_ble_subghz
+  - id: sidewalk_pal
     from: sidewalk
+  - id: sidewalk_ble
+    from: sidewalk
+    condition:
+      - device_supports_bluetooth
   - id: sidewalk_dmp_fsk_support
     from: sidewalk
   - id: sidewalk_common
     from: sidewalk
   - id: app_log
-    from: sidewalk
-  - id: app_button_press
     from: sidewalk
   - id: sidewalk_nvm3_handler
     from: sidewalk
@@ -50,6 +52,7 @@ component:
     from: sidewalk
   - id: sidewalk_subghz_efr32xgxx
     from: sidewalk
+  - id: app_button_press
   - id: iostream_rtt
   - id: printf
   - id: sl_main

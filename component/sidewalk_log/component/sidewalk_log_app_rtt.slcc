@@ -3,7 +3,7 @@ label: 'Sidewalk Log: App RTT'
 package: sidewalk
 description: Sidewalk RTT log functionality to be used by app
   layer
-category: Example|AWS IoT
+category: Utility
 quality: production
 metadata:
   sbom:

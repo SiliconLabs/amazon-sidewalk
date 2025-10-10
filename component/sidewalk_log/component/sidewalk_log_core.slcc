@@ -2,7 +2,7 @@ id: sidewalk_log_core
 label: 'Sidewalk Log: Core'
 package: sidewalk
 description: Sidewalk core log functionality
-category: Example|AWS IoT
+category: Utility
 quality: production
 metadata:
   sbom:
@@ -15,13 +15,13 @@ requires:
   - name: component_catalog
   - name: sidewalk_common
     condition:
-      - sidewalk_ble_subghz
+      - sidewalk_pal
   - name: segger_rtt
     condition:
       - sidewalk_log_app_rtt
   - name: sidewalk_base_component
 recommends:
-  - id: sidewalk_ble_subghz
+  - id: sidewalk_pal
 provides:
   - name: sidewalk_log_core
 source:

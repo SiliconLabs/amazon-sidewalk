@@ -8,3 +8,9 @@ upgrade:
     component:
       - script: extension_update_scripts/sidewalk_2_5_0_component.lua
         description: Component upgrade script
+  - sdk:
+      id: sidewalk
+      version: "2.6.0"
+    component:
+      - script: extension_update_scripts/sidewalk_2_6_0_component.lua
+        description: Component upgrade script

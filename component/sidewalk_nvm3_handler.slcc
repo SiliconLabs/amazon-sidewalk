@@ -2,7 +2,7 @@ id: sidewalk_nvm3_handler
 label: Sidewalk NVM3 Handler
 package: sidewalk
 description: Provides Sidewalk NVM3 handler functions
-category: Example|AWS IoT
+category: Utility
 quality: production
 metadata:
   sbom:
@@ -26,7 +26,7 @@ requires:
   - name: nvm3_default
   - name: nvm3_default_config
   - name: sidewalk_log_pal
-  - name: sidewalk_ble_subghz
+  - name: sidewalk_pal
 recommends:
   - name: sidewalk_log_pal_rtt
 template_contribution:

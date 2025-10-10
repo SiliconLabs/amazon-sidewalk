@@ -1,8 +1,8 @@
 id: sidewalk_subghz_external_hw_support
-label: Amazon Sidewalk external Sub-GHz hardware support
+label: Sidewalk external Sub-GHz hardware support
 package: sidewalk
 description: This component contains the hardware support for SX1262 and LR1110
-category: Example|AWS IoT
+category: Protocol
 quality: production
 metadata:
   sbom:
@@ -31,21 +31,21 @@ recommends:
       - exp_13
       - exp_14
 config_file:
-  - path: ble_subghz/config/app_gpio_config.h
+  - path: sidewalk_radio_config/subghz/semtech/gpio_config/app_gpio_config.h
     condition:
       - emlib_gpio_simple_init
     unless:
-      - brd4332a
-  - path: ble_subghz/config/kg100s/app_gpio_config.h
+      - sidewalk_kg100s
+  - path: sidewalk_radio_config/subghz/semtech/gpio_config/kg100s/app_gpio_config.h
     condition:
-      - brd4332a
-template_file:
-  - path: /ble_subghz/app_gpio_config.c.jinja
-    condition:
+      - sidewalk_kg100s
+  # Add empty config file to soc projects
+  - path: sidewalk_radio_config/subghz/semtech/gpio_config/empty/app_gpio_config.h
+    unless:
+      - sidewalk_kg100s
       - emlib_gpio_simple_init
-  - path: /ble_subghz/app_gpio_config.c.jinja
-    condition:
-      - brd4332a
+template_file:
+  - path: sidewalk_radio_config/subghz/semtech/gpio_config/app_gpio_config.c.jinja
 template_contribution:
   - name: component_catalog
     value: sidewalk
@@ -76,7 +76,7 @@ template_contribution:
       port: SL_SX_CS_PORT
   - name: semtech_pinout
     condition:
-      - brd4332a
+      - sidewalk_kg100s
     value:
       id: SL_PIN_KG100S_BAND_SEL
       pin: SL_PIN_BAND_SEL_PIN

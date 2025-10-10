@@ -1,8 +1,8 @@
 id: sidewalk_qualification_support
-label: Amazon Sidewalk
+label: Sidewalk qualification support
 package: sidewalk
 description: Component for qualification support
-category: Example|AWS IoT
+category: Example
 quality: production
 metadata:
   sbom:

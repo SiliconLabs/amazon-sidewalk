@@ -3,7 +3,7 @@ label: Sidewalk NVM3 Migrator
 package: sidewalk
 description: Provides functions to migrate Sidewalk NVM3 data
   to a new structure
-category: Example|AWS IoT
+category: Protocol
 quality: production
 metadata:
   sbom:
@@ -29,7 +29,7 @@ requires:
   - name: app_assert
   - name: memory_manager
   - name: sidewalk_log_pal
-  - name: sidewalk_ble_subghz
+  - name: sidewalk_pal
 recommends:
   - name: sidewalk_log_pal_rtt
 template_contribution:

@@ -85,7 +85,8 @@
 
 #define LR11XX_CAD_DEFAULT_TX_TIMEOUT 0  // disable Tx timeout for CAD
 
-
+#define LR1110_FSK_PROCESS_DELAY_US_MIN 1000
+#define LR1110_FSK_PROCESS_DELAY_US_MAX 5000
 #define LR1110_FSK_TX_PROCESS_DELAY_US 1000
 #define LR1110_FSK_RX_PROCESS_DELAY_US 1000
 
@@ -2259,12 +2260,20 @@ static void lr_timer_cb( void* arg, sid_pal_timer_t* owner )
 
 uint32_t sid_pal_radio_get_fsk_tx_process_delay(void)
 {
-    return LR1110_FSK_TX_PROCESS_DELAY_US;
+    halo_drv_semtech_ctx_t *drv_ctx = lr11xx_get_drv_ctx();
+    return (drv_ctx->config->state_timings.tx_delay_us < LR1110_FSK_PROCESS_DELAY_US_MIN
+            || drv_ctx->config->state_timings.tx_delay_us > LR1110_FSK_PROCESS_DELAY_US_MAX)
+               ? LR1110_FSK_TX_PROCESS_DELAY_US
+               : drv_ctx->config->state_timings.tx_delay_us;
 }
 
 uint32_t sid_pal_radio_get_fsk_rx_process_delay(void)
 {
-    return LR1110_FSK_RX_PROCESS_DELAY_US;
+    halo_drv_semtech_ctx_t *drv_ctx = lr11xx_get_drv_ctx();
+    return (drv_ctx->config->state_timings.rx_delay_us < LR1110_FSK_PROCESS_DELAY_US_MIN
+            || drv_ctx->config->state_timings.rx_delay_us > LR1110_FSK_PROCESS_DELAY_US_MAX)
+               ? LR1110_FSK_RX_PROCESS_DELAY_US
+               : drv_ctx->config->state_timings.rx_delay_us;
 }
 
 #endif /* !SID_PAL_RADIO_MUTEX */

@@ -39,11 +39,19 @@
 extern "C" {
 #endif
 
+#if defined(SID_SDK_CONFIG_ENABLE_METRICS_PERSISTENCE) && SID_SDK_CONFIG_ENABLE_METRICS_PERSISTENCE
 /**
  * @def SID_PAL_KV_STORE_MAX_LENGTH_BYTES
  * @brief Maximum length in bytes for the Key-Value store.
  */
-#define SID_PAL_KV_STORE_MAX_LENGTH_BYTES 48
+#define SID_PAL_KV_STORE_MAX_LENGTH_BYTES 200
+#else
+/**
+ * @def SID_PAL_KV_STORE_MAX_LENGTH_BYTES
+ * @brief Maximum length in bytes for the Key-Value store.
+ */
+#define SID_PAL_KV_STORE_MAX_LENGTH_BYTES 60
+#endif
 
 /**
  * @brief Initialize the key value storage subsystem

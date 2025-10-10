@@ -2,7 +2,7 @@ id: sidewalk_utils
 label: Sidewalk utils
 package: sidewalk
 description: Provides Sidewalk utility functions
-category: Example|AWS IoT
+category: Utility
 quality: production
 metadata:
   sbom:
@@ -12,7 +12,7 @@ provides:
   - name: sidewalk_utils
 requires:
   - name: component_catalog
-  - name: sidewalk_ble_subghz
+  - name: sidewalk_pal
 source:
   - path: sl_sidewalk_utils.c
 include:
@@ -30,3 +30,5 @@ template_contribution:
       event: service_init
       include: sl_sidewalk_utils.h
       handler: sl_sidewalk_utils_init
+ui_hints:
+  visibility: never

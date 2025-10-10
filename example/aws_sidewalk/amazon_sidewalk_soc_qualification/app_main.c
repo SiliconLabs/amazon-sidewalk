@@ -39,6 +39,7 @@
 #include <sid_asd_cli.h>
 #include <sid_config_cli.h>
 #include <sid_qa.h>
+#include <sid_device_information.h>
 #include <mfg_store_app_values.h>
 
 #include <stdbool.h>
@@ -49,7 +50,14 @@
 #include "app_properties.c"
 #endif
 
-#define MAIN_TASK_STACK_SIZE    (4096 / sizeof(configSTACK_DEPTH_TYPE))
+#define MAIN_TASK_STACK_SIZE    (5120 / sizeof(configSTACK_DEPTH_TYPE))
+#define DEVICE_INFO_ERROR 1
+#define DEVICE_INFO_SUCCESS 0
+
+#define SERIAL_NUM_SIZE 16
+#define MAC_ADDRESS_SIZE 6
+#define PRODUCT_FW_VERSION_SIZE 8
+#define DEVICE_KIND_SIZE 22
 
 typedef struct app_context{
   TaskHandle_t main_task;
@@ -93,7 +101,7 @@ static void reboot_func(void)
 }
 
 static const sid_pal_mfg_store_region_t mfg_config = {
-  .app_value_to_offset = 0,
+  .app_value_to_offset = 0xffffffff,
 };
 
 static sid_pal_mfg_store_region_t sid_mfg_config_get(void)
@@ -106,11 +114,32 @@ static void set_sub_ghz_cfg(const struct sid_sub_ghz_links_config * const sub_gh
   if (!sub_ghz_cfg) {
     app_log_error("Null pointer passed while setting sub ghz cfg");
   }
-  else {
+#if (defined(SL_FSK_SUPPORTED) || defined(SL_CSS_SUPPORTED))
     struct sid_sub_ghz_links_config *cfg = app_get_sub_ghz_config();
     memcpy(cfg, sub_ghz_cfg, sizeof(*cfg));
+#endif
   }
-}
+// dummy values for reference only, encoded in ascii hex
+// dsn = GP13S4005095V3W2
+uint8_t dsn[SERIAL_NUM_SIZE] = {0x47, 0x50, 0x31, 0x33, 0x53, 0x34, 0x30, 0x30,
+                                0x35, 0x30, 0x39, 0x35, 0x56, 0x33, 0x57, 0x32};
+uint8_t mac[MAC_ADDRESS_SIZE] = {0x9C, 0xC8, 0xE9, 0x95, 0xCC, 0x10};
+// fw_ver = 1.85.0-4
+uint8_t fw_ver[PRODUCT_FW_VERSION_SIZE] = {0x31, 0x2e, 0x38, 0x35, 0x2e, 0x30, 0x2d, 0x34};
+// dev kind = reference_board_silabs
+uint8_t dev_kind[DEVICE_KIND_SIZE] = {0x72, 0x65, 0x66, 0x65, 0x72, 0x65, 0x6E, 0x63, 0x65, 0x5F, 0x62,
+                                      0x6F, 0x61, 0x72, 0x64, 0x5F, 0x73, 0x69, 0x6C, 0x61, 0x62, 0x73};
+
+static struct sid_device_info dev_info = {
+    .serial_number_size = SERIAL_NUM_SIZE,
+    .mac_address_size = MAC_ADDRESS_SIZE,
+    .product_fw_version_size = PRODUCT_FW_VERSION_SIZE,
+    .device_kind_size = DEVICE_KIND_SIZE,
+    .serial_number = dsn,
+    .mac_address = mac,
+    .product_fw_version = fw_ver,
+    .device_kind = dev_kind,
+};
 
 static void main_thread(void * context)
 {
@@ -128,7 +157,9 @@ static void main_thread(void * context)
 #else
     .link_config = NULL,
 #endif
+#if (defined(SL_FSK_SUPPORTED) || defined(SL_CSS_SUPPORTED))
     .sub_ghz_link_config = app_get_sub_ghz_config(),
+#endif
   };
 
 
@@ -150,6 +181,7 @@ static void main_thread(void * context)
   struct sid_qa_callbacks qa_callbacks = {
     .reboot_cmd = &reboot_func,
     .set_sub_ghz_cfg = &set_sub_ghz_cfg,
+    .device_info_cfg = &dev_info,
   };
   sid_qa_init(&qa_callbacks);
 
@@ -168,6 +200,8 @@ static void main_thread(void * context)
     sid_cli_process();
     sid_qa_process(QA_PROC_NO_WAIT);
   }
+  sid_platform_deinit();
+  vTaskDelete(NULL);
 }
 
 void app_init(void)

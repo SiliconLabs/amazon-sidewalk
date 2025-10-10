@@ -72,7 +72,6 @@ struct sid_pal_serial_bus_client {
     uint32_t speed_hz;                              /*!< baud rate.*/
     enum sid_pal_serial_bus_bit_order bit_order;    /*!< bit order.*/
     uint8_t mode;                                   /*!< serial bus mode.*/
-    const void *client_selector_extension;          /*!< pointer to the client selector data.*/
     /**
      * Callback to select client on serial bus
      *

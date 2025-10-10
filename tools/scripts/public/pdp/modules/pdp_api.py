@@ -81,18 +81,15 @@ class OnDevCertGen_Init(Base):
     self.body = bytearray()
 
 class OnDevCertGen_GenSMSN(Base):
-  def __init__(self, dev_type, dsn, apid, board_id):
+  def __init__(self, dev_type, dsn, apid):
     self.cmd = CommandList.ON_DEV_CERT_GEN_GEN_SMSN
     self.body = bytearray()
     self.body.extend(len(dev_type).to_bytes(2, BYTE_ORDER_LE))
     self.body.extend(len(dsn).to_bytes(2, BYTE_ORDER_LE))
     self.body.extend(len(apid).to_bytes(2, BYTE_ORDER_LE))
-    self.body.extend(len(board_id).to_bytes(2, BYTE_ORDER_LE))
     self.body.extend(dev_type.encode())
     self.body.extend(dsn.encode())
     self.body.extend(apid.encode())
-    if len(board_id):
-      self.body.extend(board_id.encode())
 
 class OnDevCertGen_GenCSR(Base):
   def __init__(self, crypto_curve):

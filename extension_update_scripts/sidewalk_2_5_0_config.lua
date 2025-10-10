@@ -11,4 +11,13 @@ if slc.is_selected('sidewalk_pdp') then
   })
 end
 
+if slc.is_selected('sidewalk_qualification_support') then
+  table.insert(changeset, {
+    ['option'] = 'configMINIMAL_STACK_SIZE',
+    ['value'] = '160',
+    ['status'] = 'automatic',
+    ['description'] = 'Sidewalk Qualification Support configMINIMAL_STACK_SIZE decreased to 160 bytes',
+  })
+end
+
 return changeset

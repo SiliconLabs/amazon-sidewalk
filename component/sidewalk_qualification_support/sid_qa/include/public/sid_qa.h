@@ -22,6 +22,7 @@ extern "C" {
 
 #include <sid_error.h>
 #include <sid_api.h>
+#include <sid_device_information.h>
 
 enum qa_proc_wait_status {
     QA_PROC_NO_WAIT = 0,
@@ -38,6 +39,7 @@ typedef void (*set_sub_ghz_cfg_t)(struct sid_sub_ghz_links_config *sub_ghz_cfg);
 struct sid_qa_callbacks {
     reboot_func_t reboot_cmd;
     set_sub_ghz_cfg_t set_sub_ghz_cfg;
+    struct sid_device_info *device_info_cfg;
 };
 
 struct sid_qa_pwr_meas_if {

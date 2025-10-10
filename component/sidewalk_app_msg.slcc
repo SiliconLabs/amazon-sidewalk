@@ -2,7 +2,7 @@ id: sidewalk_app_msg
 label: Sidewalk application message structure
 package: sidewalk
 description: Provides Sidewalk application message structure functions
-category: Example|AWS IoT
+category: Example
 quality: production
 metadata:
   sbom:
@@ -12,7 +12,7 @@ provides:
   - name: sidewalk_app_msg
 requires:
   - name: sl_common
-  - name: sidewalk_ble_subghz
+  - name: sidewalk_pal
 source:
   - path: sl_sidewalk_app_msg_core.c
   - path: cmd_classes/sl_sidewalk_app_msg_dev_mgmt.c
@@ -33,3 +33,5 @@ define:
 template_contribution:
   - name: component_catalog
     value: sidewalk_app_msg
+ui_hints:
+  visibility: never

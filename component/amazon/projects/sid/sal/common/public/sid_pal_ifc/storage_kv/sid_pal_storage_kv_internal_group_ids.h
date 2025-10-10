@@ -61,6 +61,22 @@
 #define SID_PAL_STORAGE_KV_INTERNAL_BULK_DATA_TRANSFER_GROUP_ID 0x4567
 #endif
 
+ /**
+ * @def SID_PAL_STORAGE_KV_INTERNAL_METRICS_GROUP_ID
+ * @brief Group ID for the internal metrics of the Key-Value storage.
+ */
+#if !defined(SID_PAL_STORAGE_KV_INTERNAL_METRICS_GROUP_ID)
+#define SID_PAL_STORAGE_KV_INTERNAL_METRICS_GROUP_ID 0x5678
+#endif
+
+ /**
+ * @def SID_PAL_STORAGE_KV_INTERNAL_SETUP_DIAG_GROUP_ID
+ * @brief Group ID for the internal setup diag of the Key-Value storage.
+ */
+#if !defined(SID_PAL_STORAGE_KV_INTERNAL_SETUP_DIAG_GROUP_ID)
+#define SID_PAL_STORAGE_KV_INTERNAL_SETUP_DIAG_GROUP_ID 0x6789
+#endif
+
 /** @} */ // end of sid_ifc group
 /** @} */ // end of sid_pal_ifc group
 /** @} */ // end of sid_pal_storage_ifc group

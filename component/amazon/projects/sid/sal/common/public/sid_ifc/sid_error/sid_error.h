@@ -109,6 +109,8 @@ typedef enum {
     SID_ERROR_INVALID_RESPONSE         = -39,
     /** Invalid State */
     SID_ERROR_INVALID_STATE            = -40,
+    /** Insufficient Results */
+    SID_ERROR_INSUFFICIENT_RESULTS = -41,
 } sid_error_t;
 
 #ifdef __cplusplus

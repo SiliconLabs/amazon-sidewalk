@@ -41,7 +41,7 @@
 #include <stdbool.h>
 #include <sid_clock_ifc.h>
 #include <sid_pal_delay_ifc.h>
-#include <sl_rail_util_pa_conversions_efr32.h>
+#include <pa_conversions_efr32.h>
 #if defined(SL_SIDEWALK_UNIT_TEST)
 #include "sl_sidewalk_log_pal_mock.h"
 #else
@@ -430,9 +430,9 @@ int32_t efr32xgxx_set_radio_init_hard(void)
   }
 
   // Image Rejection Calibration (IRCAL)
-  status = sl_rail_calibrate_ir(g_rail_handle, NULL, SL_RAIL_ANTENNA_AUTO);
+  status = sl_rail_calibrate(g_rail_handle, NULL, SL_RAIL_CAL_ONETIME_IR_CAL);
   if (status != SL_RAIL_STATUS_NO_ERROR) {
-    SL_SID_LOG_PAL_ERROR("pal rail: IR calib err: %d", status);
+    SL_SID_LOG_PAL_ERROR("pal rail: calib err: %d", status);
     err = RADIO_ERROR_HARDWARE_ERROR;
     goto ret;
   }
@@ -1057,8 +1057,7 @@ static void radio_irq(sl_rail_handle_t rail_handle, sl_rail_events_t events)
 #endif
   }
 
-  // Perform all calibrations when needed
-  // No calibration during protocol switch (when scheduled false)
+  // Perform temperature calibration when needed
   if (events & SL_RAIL_EVENT_CAL_NEEDED) {
     sl_rail_cal_mask_t pending_calib = sl_rail_get_pending_cal(rail_handle);
     if (pending_calib & SL_RAIL_CAL_TEMP) {

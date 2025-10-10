@@ -1,8 +1,8 @@
 id: sidewalk_qr_code
-label: QR Code
+label: Sidewalk QR Code
 package: sidewalk
 description: Provides Sidewalk QR code functions
-category: Example|AWS IoT
+category: Example
 quality: production
 metadata:
   sbom:
@@ -12,7 +12,7 @@ provides:
   - name: sidewalk_qr_code
 requires:
   - name: sidewalk_utils
-  - name: sidewalk_ble_subghz
+  - name: sidewalk_pal
 source:
   - path: qrcodegen.c
   - path: sl_sidewalk_qr_code.c
@@ -24,3 +24,5 @@ include:
 template_contribution:
   - name: component_catalog
     value: sidewalk_qr_code
+ui_hints:
+  visibility: never

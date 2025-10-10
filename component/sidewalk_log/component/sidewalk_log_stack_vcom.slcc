@@ -3,7 +3,7 @@ label: 'Sidewalk Log: stack VCOM'
 package: sidewalk
 description: Sidewalk VCOM log functionality to be used by stack
   layer
-category: Example|AWS IoT
+category: Utility
 quality: production
 metadata:
   sbom:
@@ -13,7 +13,7 @@ requires:
   - name: sidewalk_log_core
   - name: sidewalk_base_component
 recommends:
-  - id: sidewalk_ble_subghz
+  - id: sidewalk_pal
 provides:
   - name: sidewalk_log_stack_vcom
   - name: sidewalk_log_stack

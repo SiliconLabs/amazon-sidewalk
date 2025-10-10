@@ -1,0 +1,28 @@
+id: sidewalk_kg100s
+label: Sidewalk KG100S Support
+package: sidewalk
+description: This component pulls in the necessary dependencies for KG100S module including SX1262.
+category: Protocol
+quality: production
+metadata:
+  sbom:
+    license: Zlib AND LicenseRef-amazon-sidewalk-license
+root_path: component
+requires:
+  - name: efr32bg21b010f1024im32
+  - name: sidewalk_subghz_sx1262
+    unless:
+      - sidewalk_dmp_ble_support
+provides:
+  - name: sidewalk_kg100s
+define:
+  - name: MODULE_KG100S
+    value: 2
+config_file:
+  - override:
+      component: spidrv
+      file_id: spidrv_config
+      instance: exp
+    path: sidewalk_radio_config/subghz/semtech/gpio_config/kg100s/sl_spidrv_exp_config.h
+    unless:
+      - brd4332a

@@ -136,10 +136,10 @@ static sid_error_t ble_adapter_set_adv_data(uint8_t *data, uint8_t length);
 static sid_error_t ble_adapter_start_advertisement(void);
 static sid_error_t ble_adapter_stop_advertisement(void);
 static sid_error_t ble_adapter_get_rssi(int8_t *rssi);
-static sid_error_t ble_adapter_get_tx_power(int8_t *tx_power);
+static sid_error_t ble_adapter_get_tx_power(int16_t *tx_power);
 static sid_error_t ble_adapter_send_data(sid_ble_cfg_service_identifier_t id, uint8_t *data, uint16_t length);
 static sid_error_t ble_adapter_set_callback(const sid_pal_ble_adapter_callbacks_t *cb);
-static sid_error_t ble_adapter_set_tx_power(int8_t tx_power);
+static sid_error_t ble_adapter_set_tx_power(int16_t tx_power);
 static sid_error_t ble_adapter_disconnect(void);
 static sid_error_t ble_adapter_deinit(void);
 static sid_error_t ble_adapter_apply_user_config(sid_ble_user_config_t *cfg);
@@ -244,6 +244,10 @@ sid_error_t sid_pal_ble_adapter_create(sid_pal_ble_adapter_interface_t *handle);
 // -----------------------------------------------------------------------------
 void sl_ble_adapter_on_event(sl_bt_msg_t *evt)
 {
+  if (ctx.callback == NULL) {
+    return;
+  }
+
   const sl_bt_evt_connection_parameters_t *p_conn_params = &(evt->data.evt_connection_parameters);
   switch (SL_BT_MSG_ID(evt->header)) {
     case sl_bt_evt_system_boot_id:
@@ -336,7 +340,7 @@ sid_error_t sid_pal_ble_adapter_create(sid_pal_ble_adapter_interface_t *handle)
   return SID_ERROR_NONE;
 }
 
-static sid_error_t ble_adapter_get_tx_power(int8_t *tx_power)
+static sid_error_t ble_adapter_get_tx_power(int16_t *tx_power)
 {
   int16_t support_max_tx_power;
   int16_t support_min_tx_power;
@@ -352,7 +356,7 @@ static sid_error_t ble_adapter_get_tx_power(int8_t *tx_power)
   return SID_ERROR_NONE;
 }
 
-static sid_error_t ble_adapter_set_tx_power(int8_t tx_power)
+static sid_error_t ble_adapter_set_tx_power(int16_t tx_power)
 {
   int16_t cmd_tx_pwr = SILABS_BLE_TX_POWER_SCALE_KOEF * tx_power;
   sid_error_t ret = SID_ERROR_NONE;
@@ -623,7 +627,7 @@ static sid_error_t ble_adapter_init(const sid_ble_config_t *cfg)
   }
 
   // Set default max MTU
-  if (sl_bt_gatt_set_max_mtu(ctx.mtu_size, &ctx.mtu_size) != SL_STATUS_OK) {
+  if (sl_bt_gatt_server_set_max_mtu(ctx.mtu_size, &ctx.mtu_size) != SL_STATUS_OK) {
     sl_ble_free_resources();
     sl_ble_init_failed("pal ble: default max mtu set failed");
     return SID_ERROR_GENERIC;
@@ -1691,7 +1695,7 @@ static sid_error_t ble_adapter_apply_user_config(sid_ble_user_config_t *cfg)
       return ble_adapter_apply_adv_user_config(cfg);
     case SID_BLE_USER_CFG_CONN:
       return ble_adapter_apply_conn_user_config(cfg);
-    case SID_BLE_USER_CFG_ALL:
+    case SID_BLE_USER_CFG_ADV_AND_CONN:
       return ble_adapter_apply_all_user_config(cfg);
     default:
       return SID_ERROR_INCOMPATIBLE_PARAMS;

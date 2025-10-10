@@ -3,7 +3,7 @@ label: 'Sidewalk Log: PAL VCOM'
 package: sidewalk
 description: Sidewalk VCOM log functionality to be used by PAL
   layer
-category: Example|AWS IoT
+category: Utility
 quality: production
 metadata:
   sbom:

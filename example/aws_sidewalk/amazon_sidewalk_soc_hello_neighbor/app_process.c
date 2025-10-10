@@ -35,7 +35,7 @@
 #include <string.h>
 
 #include "sl_component_catalog.h"
-#if defined(SL_CATALOG_APP_BUTTON_PRESS_PRESENT) || defined(SL_CATALOG_SIMPLE_BUTTON_PRESENT)
+#if defined(SL_CATALOG_SIMPLE_BUTTON_PRESENT)
 #include "app_button_press.h"
 #endif
 #include "app_init.h"
@@ -45,9 +45,6 @@
 #include "sl_sidewalk_utils.h"
 #include "sid_api.h"
 #include "sl_sidewalk_common_config.h"
-#if defined(SL_BOARD_SUPPORT)
-#include "sl_sidewalk_board_support.h"
-#endif
 
 #if (defined(SL_FSK_SUPPORTED) || defined(SL_CSS_SUPPORTED))
 #include "app_subghz_config.h"
@@ -335,16 +332,6 @@ void main_thread(void *context)
     .link_config = NULL,
     .sub_ghz_link_config = NULL,
   };
-
-#if defined(SL_BOARD_SUPPORT)
-  sl_sidewalk_board_support_init();
-  SL_SID_LOG_APP_INFO("board support initialized");
-#endif
-
-#if defined(SL_BOARD_SUPPORT) && (defined(SL_TEMPERATURE_SENSOR_INTERNAL) || defined(SL_TEMPERATURE_SENSOR_EXTERNAL))
-  sl_sidewalk_start_temperature_timer();
-  SL_SID_LOG_APP_INFO("temperature measurement timer started");
-#endif
 
   // Queue creation for the sidewalk events
   g_event_queue = xQueueCreate(MSG_QUEUE_LEN, sizeof(enum event_type));

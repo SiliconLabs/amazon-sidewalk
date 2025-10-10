@@ -2,7 +2,7 @@ id: sidewalk_device_backup
 label: Sidewalk device backup
 package: sidewalk
 description: Provides Sidewalk device backup functions
-category: Example|AWS IoT
+category: Example
 quality: production
 metadata:
   sbom:
@@ -11,7 +11,6 @@ root_path: component/sidewalk_device_backup
 provides:
   - name: sidewalk_device_backup
 requires:
-  - name: sidewalk_nvm3_handler
   - name: nvm3_lib
   - name: sidewalk_log_pal
   - name: app_assert
@@ -29,7 +28,7 @@ requires:
     condition:
       - device_generic_family_efr32xg28
   - name: se_manager
-  - name: sidewalk_ble_subghz
+  - name: sidewalk_pal
 recommends:
   - name: sidewalk_log_pal_rtt
 source:
@@ -42,3 +41,5 @@ include:
 template_contribution:
   - name: component_catalog
     value: sidewalk_device_backup
+ui_hints:
+  visibility: never

@@ -2,7 +2,7 @@ id: sidewalk_dmp_fsk_support
 label: Sidewalk DMP FSK support
 package: sidewalk
 description: Provides Sidewalk DMP FSK support
-category: Example|AWS IoT
+category: Protocol
 quality: production
 metadata:
   sbom:
@@ -10,3 +10,5 @@ metadata:
 root_path: component/sidewalk_dmp_fsk_support
 provides:
   - name: sidewalk_dmp_fsk_support
+requires:
+  - name: rail_lib_multiprotocol

@@ -1,5 +1,5 @@
 project_name: amazon_sidewalk_soc_pdp
-package: sidewalk_sample_apps
+package: sidewalk_sample_app
 quality: production
 label: Amazon Sidewalk - Production Device Provisioner (PDP)
 description: The PDP application is a tool used in production
@@ -14,7 +14,7 @@ source:
   - path: app_process.c
 sdk_extension:
   - id: sidewalk
-    version: 2.5.0
+    version: 2.6.0
 component:
   - id: app_log
     from: sidewalk

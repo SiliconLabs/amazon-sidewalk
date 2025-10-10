@@ -27,7 +27,7 @@ PROJECT_ROOT_PATH = os.path.join(args.input, "../../")
 SIDEWALK_EXTENSION_PATH = os.path.join(SCRIPT_PATH, "../../../")
 SUBGHZ_CONFIG_PATH = os.path.join(
     SIDEWALK_EXTENSION_PATH,
-    "component/ble_subghz/radio/subghz/rail/",
+    "component/sidewalk_radio_config/subghz/rail/",
     SUBGHZ_CONFIG_FILE_NAME,
 )
 COMMON_CONFIG_PATH = os.path.join(PROJECT_ROOT_PATH, "config/", COMMON_CONFIG_FILE_NAME)

@@ -1,5 +1,5 @@
 /*
- * Copyright 2023-2024 Amazon.com, Inc. or its affiliates.  All rights reserved.
+ * Copyright 2023-2025 Amazon.com, Inc. or its affiliates.  All rights reserved.
  *
  * AMAZON PROPRIETARY/CONFIDENTIAL
  *
@@ -63,7 +63,7 @@ extern "C" {
 #define MEAS_PARAM_VALUE_MAX 255
 #define MEAS_TIME_MAX_S 4000
 
-enum event_type { EVENT_TYPE_SIDEWALK, EVENT_MEAS_UL_SEND, EVENT_MEAS_STOP, EVENT_UP_TEST };
+enum event_type { EVENT_TYPE_SIDEWALK, EVENT_MEAS_UL_SEND, EVENT_MEAS_STOP, EVENT_UP_TEST, EVENT_MEAS_SET_CONN };
 
 enum app_state {
     STATE_INIT,
@@ -88,17 +88,26 @@ struct cli_config {
     uint32_t rsp_msg_id;
     reboot_func_t reboot_cmd;
     set_sub_ghz_cfg_t set_sub_ghz_cfg;
+    struct sid_device_info *device_info_cfg;
+};
+
+enum pwr_meas_type {
+    PWR_MEAS_TYPE_FSK_LORA,
+    PWR_MEAS_TYPE_BLE,
+    PWR_MEAS_TYPE_FSK_LORA_SET_CONN_ONLY,
+    PWR_MEAS_TYPE_MAX,
 };
 
 struct pwr_meas_config {
     bool active;
-    bool mode;
+    enum pwr_meas_type mode;
     bool ble_only_flag;
     uint32_t ul_pkt_cnt;
     uint32_t msg_sent_cnt;
     size_t ul_pkt_len;
     sid_pal_timer_t timer_ul;     // uplink generation timer
     sid_pal_timer_t timer_meas;   // measurment mode timer
+    sid_pal_timer_t timer_set_conn;
     struct sid_qa_pwr_meas_if *platform_if;
     sid_pal_radio_rx_packet_t rx_packet;
 };

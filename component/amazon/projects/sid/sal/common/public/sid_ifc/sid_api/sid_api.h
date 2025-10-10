@@ -1,5 +1,5 @@
 /*
- * Copyright 2020-2024 Amazon.com, Inc. or its affiliates. All rights reserved.
+ * Copyright 2020-2025 Amazon.com, Inc. or its affiliates. All Rights Reserved.
  *
  * AMAZON PROPRIETARY/CONFIDENTIAL
  *
@@ -27,6 +27,8 @@
 
 #include <sid_time_types.h>
 #include <sid_error.h>
+#include <sid_diag_log_cfg.h>
+#include <sid_time_sync_config.h>
 
 #include <stdbool.h>
 #include <stddef.h>
@@ -348,17 +350,39 @@ struct sid_statistics {
 };
 
 /**
+ * The structure used to configure the delayed ack
+ */
+struct sid_delayed_ack_config {
+    /** time for the delayed ack in milliseconds. Range: 0-20000 msecs */
+    uint32_t delayed_ack;
+    /** indicates whether to get or set the delayed ack time. false: Get, true: Set */
+    bool is_set;
+};
+
+/**
+ * The structure used to configure the DL route validity
+ */
+struct sid_dlrv_config {
+    /** time for the DL route validity in mins. Range: 1 ~ 1440 mins */
+    uint16_t time;
+    /** time for the LoRa profile B NW sync time in mins. */
+    uint8_t nwsync_time;
+    /** indicates whether to get or set the dlrv time. false: Get, true: Set */
+    bool is_set;
+};
+
+/**
  * The set of options to be used with sid_option API.
  */
 enum sid_option {
-    /** Option to configure the advertised battery level. Value is a uint8_t, 0-100 */
-    SID_OPTION_BLE_BATTERY_LEVEL = 0,
+    /** Reserved option for future use */
+    SID_OPTION_RESERVED = 0,
     /** Option to configure the device profile. Value is of type struct sid_device_profile */
     SID_OPTION_900MHZ_SET_DEVICE_PROFILE = 1,
     /** Option to get the device profile configuration. Value is of type struct sid_device_profile */
     SID_OPTION_900MHZ_GET_DEVICE_PROFILE = 2,
-    /** Option to set the message policy to filter duplicates, value is 0 or 1, when set to 0, the default setting,
-     * duplicates are filtered and are not propagated using #on_msg_received, when set to 1, duplicates are detected
+    /** Option to set the message policy to filter duplicates, value is 0 or 1, when set to 0, the default  setting,
+     * duplicates are filtered and are not propagated using #on_msg_received, when set to 1,  duplicates are detected
      * and are propagated using #on_msg_receive, see #sid_msg_desc_rx_attributes
      */
     SID_OPTION_SET_MSG_POLICY_FILTER_DUPLICATES = 3,
@@ -385,10 +409,25 @@ enum sid_option {
     SID_OPTION_GET_STATISTICS = 11,
     /** Clear msg statistics for the device */
     SID_OPTION_CLEAR_STATISTICS = 12,
-    /** Get the Sidewalk ID for the device. Since Sidewalk ID is given to the device post registration. This option will
-     * only work post registration */
+    /** Get the Sidewalk ID for the device. Since Sidewalk ID is given to the device post regsitration. This option will
+     * only work post regsitration */
     SID_OPTION_GET_SIDEWALK_ID = 13,
-    /** Delimiter to enum sid_option*/
+    /** Option to set/get the time of delayed ack */
+    SID_OPTION_DELAYED_ACK_CONFIG = 14,
+    /** Option to get/set the gateway discovery policy for FSK.
+     * Value is of type struct sid_link_type_2_gw_discovery_policy_config */
+    SID_OPTION_LINK_TYPE_2_GW_DISCOVERY_POLICY = 15,
+    /** Option to get/set ble config */
+    SID_OPTION_BLE_USER_CONFIG = 16,
+    /** Option to get/set BLE use for D2D only */
+    SID_OPTION_USE_BLE_FOR_D2D_ONLY = 17,
+    /** Option to get/set ble connection policy */
+    SID_OPTION_BLE_CONNECTION_POLICY = 18,
+    /** Option to get/set DL route validity settings for the device */
+    SID_OPTION_DL_ROUTE_VALIDITY = 19,
+    /** Option to set user control for sub-ghz  */
+    SID_OPTION_SUB_GHZ_USER_CONTROL = 20,
+    /** Delimiter to enum sid_option */
     SID_OPTION_LAST,
 };
 
@@ -407,14 +446,19 @@ enum sid_time_format {
 };
 
 /**
- * The set of control events that are notfied to the developer.
+ * The set of control events that are notified to the developer.
  *  @see on_control_event_notify in #sid_event_callbacks.
  */
 enum sid_control_event_type {
-    /** Event indicating change in low latency configuraiton for #SID_LINK_TYPE_3 */
+    /** Event indicating change in low latency configuration for #SID_LINK_TYPE_3 */
     SID_CONTROL_EVENT_LOW_LATENCY_CONFIG_UPDATE = 0,
     /** Event indicating the device exceeded the traffic thresholds */
     SID_CONTROL_EVENT_TRAFFIC_THRESHOLD_RATE_EXCEEDED = 1,
+    /** Indicating gateway discovery status events. The event_data contains information about the event.
+     * See enum sid_link_type_2_gw_discovery_event for details */
+    SID_CONTROL_EVENT_LINK2_GW_DISCOVERY_STATUS = 2,
+    /** Event indicating change in DL route validity configuraiton */
+    SID_CONTROL_EVENT_DL_ROUTE_VALIDITY_CONFIG_UPDATE = 3,
     /** Delimiter to enum sid_control_event_type */
     SID_CONTROL_EVENT_LAST,
 };
@@ -434,9 +478,9 @@ enum sid_traffic_rate_limit_type {
 struct sid_traffic_rate_limit {
     /** The link type that has exceeded the traffic thresholds */
     enum sid_link_type link_type;
-    /** The threshold type that is exceeded */
+    /** The threshold type that is exceeded*/
     enum sid_traffic_rate_limit_type limit_type;
-    /** The time period in seconds after which the User can attempt send messages */
+    /** The time period in seconds after which the User can attempt send messages*/
     uint32_t try_after_secs;
 };
 
@@ -475,11 +519,11 @@ enum sid_end_device_type {
  * The source that powers the Sidewalk end device
  */
 enum sid_end_device_power_type {
-    /** The end device is powered by battery only */
+    /** The end device powered by battery only*/
     SID_END_DEVICE_POWERED_BY_BATTERY_ONLY = 1,
-    /** The end device is line powered */
+    /** The end device is line powered*/
     SID_END_DEVICE_POWERED_BY_LINE_POWER_ONLY = 2,
-    /** The end device can either be powered by battery or line powered */
+    /** The end device can either be powered by battery or line powered*/
     SID_END_DEVICE_POWERED_BY_BATTERY_AND_LINE_POWER = 3,
     SID_END_DEVICE_POWERED_BY_LAST,
 };
@@ -488,11 +532,11 @@ enum sid_end_device_power_type {
  * The characteristics of the End Point
  */
 struct sid_end_device_characteristics {
-    /** The end device type */
+    /** The end device type*/
     enum sid_end_device_type type;
-    /** The end device power source */
+    /** The end device power source*/
     enum sid_end_device_power_type power_type;
-    /** The end device ID provided at qualification */
+    /** The end device id provided at qualification*/
     uint16_t qualification_id;
 };
 
@@ -622,6 +666,16 @@ struct sid_config {
      * copied.
      */
     const struct sid_sub_ghz_links_config *sub_ghz_link_config;
+    /** Diagnostic logging configuration pointer.
+     * Contains all logging settings like pointer to buffer where logs are stored, size of the buffer and log level
+     * Allocated buffer must be of min 1KB
+     */
+    const struct sid_diag_log_config *log_config;
+    /**
+     *  Time synchronization configuration
+     *  Contains array of sync intervals in hours. If this is not provided, then default intervals will be used.
+     */
+    const struct sid_time_sync_config *time_sync_config;
 };
 
 /**
@@ -906,6 +960,25 @@ sid_error_t sid_get_status(struct sid_handle *handle, struct sid_status *current
  * @returns #SID_ERROR_UNINITIALIZED when time is not available.
  */
 sid_error_t sid_get_time(struct sid_handle *handle, enum sid_time_format format, struct sid_timespec *curr_time);
+
+/**
+ * Set time in the Sidewalk stack.
+ *
+ * @warning sid_set_time() should be called in the same caller context as sid_process().
+ *
+ * @warning sid_set_time() must not be called from within the caller context of any of the sid_event_callbacks
+ * registered during sid_init() to avoid re-entrancy and recursion problems.
+ *
+ * @param[in] handle A pointer to the handle returned by sid_init().
+ * @param[in] time A pointer to the time to set in sid_timespec format.
+ * @param[out] drift A pointer to the time drift in sid_timespec format.
+ *
+ * @returns #SID_ERROR_NONE in case of success.
+ * @returns #SID_ERROR_INVALID_ARGS when Sidewalk is not initialized or not
+ *          registered or invalid format is supplied.
+ * @returns #SID_ERROR_UNINITIALIZED when time is not available.
+ */
+sid_error_t sid_set_time(struct sid_handle *handle, const struct sid_timespec *time, const struct sid_timespec *drift);
 
 #ifdef __cplusplus
 }

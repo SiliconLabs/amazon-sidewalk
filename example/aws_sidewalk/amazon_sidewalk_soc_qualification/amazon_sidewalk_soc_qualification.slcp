@@ -1,5 +1,5 @@
 project_name: amazon_sidewalk_soc_qualification
-package: sidewalk_sample_apps
+package: sidewalk_sample_app
 quality: production
 label: Amazon Sidewalk - SoC Qualification
 description: The SoC Qualification example is a command-line interface
@@ -9,7 +9,7 @@ description: The SoC Qualification example is a command-line interface
 category: Example|AWS IoT
 sdk_extension:
   - id: sidewalk
-    version: 2.5.0
+    version: 2.6.0
 source:
   - path: app_properties.c
   - path: app_main.c
@@ -20,7 +20,7 @@ include:
 component:
   - id: sidewalk_common
     from: sidewalk
-  - id: sidewalk_ble_subghz
+  - id: sidewalk_pal
     from: sidewalk
   - id: app_log
     from: sidewalk
@@ -34,10 +34,18 @@ component:
     from: sidewalk
   - id: sidewalk_qualification_support
     from: sidewalk
+  - id: sidewalk_ble
+    from: sidewalk
+    condition:
+      - device_supports_bluetooth
   - id: sidewalk_subghz_sx1262
     from: sidewalk
     condition:
       - sl_sidewalk_default_radio_sx1262
+  - id: sidewalk_subghz_sx1262
+    from: sidewalk
+    condition:
+      - sidewalk_kg100s
   - id: sidewalk_subghz_efr32xgxx
     from: sidewalk
     condition:
