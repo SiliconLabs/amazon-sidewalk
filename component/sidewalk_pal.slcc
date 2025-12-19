@@ -200,22 +200,32 @@ library:
       - sl_sidewalk_radio_subghz
     unless:
       - sidewalk_qualification_support
+      - sidewalk_dult
+      - sidewalk_location_cli
   - path: sidewalk_libs/sl_lib_qualification_ble_subghz.a
     condition:
       - sidewalk_qualification_support
+      - sl_sidewalk_radio_ble
       - sl_sidewalk_radio_subghz
+    unless:
+      - sidewalk_dult
+      - sidewalk_location_cli
   - path: sidewalk_libs/sl_lib_ble.a
     condition:
       - sl_sidewalk_radio_ble
     unless:
       - sl_sidewalk_radio_subghz
       - sidewalk_qualification_support
+      - sidewalk_dult
+      - sidewalk_location_cli
   - path: sidewalk_libs/sl_lib_qualification_ble.a
     condition:
       - sl_sidewalk_radio_ble
       - sidewalk_qualification_support
     unless:
       - sl_sidewalk_radio_subghz
+      - sidewalk_dult
+      - sidewalk_location_cli
   - path: sidewalk_libs/sl_lib_subghz_fsk.a
     condition:
       - sl_sidewalk_radio_subghz_fsk
@@ -223,6 +233,17 @@ library:
       - sl_sidewalk_radio_ble
       - sl_sidewalk_radio_subghz_css
       - sidewalk_qualification_support
+      - sidewalk_dult
+      - sidewalk_location_cli
+  - path: sidewalk_libs/sl_lib_qualification_subghz_fsk.a
+    condition:
+      - sl_sidewalk_radio_subghz_fsk
+      - sidewalk_qualification_support
+    unless:
+      - sl_sidewalk_radio_subghz_css
+      - sl_sidewalk_radio_ble
+      - sidewalk_dult
+      - sidewalk_location_cli
   - path: sidewalk_libs/sl_lib_subghz_fsk_css.a
     condition:
       - sl_sidewalk_radio_subghz_css
@@ -230,5 +251,38 @@ library:
     unless:
       - sl_sidewalk_radio_ble
       - sidewalk_qualification_support
+      - sidewalk_dult
+      - sidewalk_location_cli
+  - path: sidewalk_libs/sl_lib_qualification_subghz_fsk_css.a
+    condition:
+      - sl_sidewalk_radio_subghz_css
+      - sl_sidewalk_radio_subghz_fsk
+      - sidewalk_qualification_support
+    unless:
+      - sl_sidewalk_radio_ble
+      - sidewalk_dult
+      - sidewalk_location_cli
+  - path: sidewalk_libs/sl_lib_ble_subghz_fsk_css_dult.a
+    condition:
+      - sidewalk_dult
+    unless:
+      - sidewalk_location_cli
+  - path: sidewalk_libs/sl_lib_ble_subghz_fsk_css_dult_location_full.a
+    condition:
+      - sidewalk_location_full
+  - path: sidewalk_libs/sl_lib_ble_subghz_fsk_css_location_ble.a
+    condition:
+      - sidewalk_location_cli
+      - sl_sidewalk_radio_ble
+      - sl_sidewalk_radio_subghz
+    unless:
+       - sidewalk_location_full
+  - path: sidewalk_libs/sl_lib_ble_location.a
+    condition:
+      - sidewalk_location_cli
+      - sl_sidewalk_radio_ble
+    unless:
+      - sidewalk_location_full
+      - sl_sidewalk_radio_subghz
 ui_hints:
   visibility: never

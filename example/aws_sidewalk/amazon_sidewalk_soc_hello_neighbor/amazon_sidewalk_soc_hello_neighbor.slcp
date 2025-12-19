@@ -10,7 +10,7 @@ description: The Hello Neighbor sample application leverages the
 category: Example|AWS IoT
 sdk_extension:
   - id: sidewalk
-    version: 2.6.0
+    version: 2.7.0
 source:
   - path: app_init.c
   - path: app_process.c
@@ -96,6 +96,12 @@ define:
 configuration:
   - name: SL_MBEDTLS_PSA_ASSUME_EXCLUSIVE_BUFFERS
     value: 1
+  - name: SL_CLOCK_MANAGER_LFRCO_PRECISION
+    value: 1
+    condition:
+      - hardware_board
+    unless:
+      - hardware_board_has_lfxo
   - name: SL_SIDEWALK_COMMON_DEFAULT_LINK_TYPE
     value: SL_SIDEWALK_LINK_BLE
     condition:

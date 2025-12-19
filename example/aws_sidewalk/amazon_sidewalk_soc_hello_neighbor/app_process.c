@@ -751,13 +751,25 @@ static bool link_switch(app_context_t *app_context, struct sid_config *config)
   enum sid_link_type current_link = config->link_mask;
   enum sid_link_type next_link = get_next_link(config->link_mask);
 
+#if defined(SL_CSS_SUPPORTED)
+  struct sid_status status;
+  if (next_link == SID_LINK_TYPE_3) {
+    sid_get_status(app_context->sidewalk_handle, &status);
+    if (status.detail.registration_status != SID_STATUS_REGISTERED) {
+      SL_SID_LOG_APP_WARNING("Registration is not allowed on CSS");
+      next_link = get_next_link(next_link);
+    }
+  }
+#endif
+
   if (current_link != next_link) {
     if (init_and_start_link(app_context, config, next_link) != 0) {
       return false;
     }
-  } else {
-    SL_SID_LOG_APP_WARNING("only one link available on this platform");
   }
+#if (defined(SL_BLE_SUPPORTED) + defined(SL_FSK_SUPPORTED) + defined(SL_CSS_SUPPORTED)) == 1
+  SL_SID_LOG_APP_WARNING("only one link available on this platform");
+#endif
 
   return true;
 }

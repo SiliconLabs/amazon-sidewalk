@@ -157,6 +157,39 @@ void cli_sid_deinit(sl_cli_command_arg_t *arguments)
   sl_app_trigger_sid_deinit();
 }
 
+#if defined(SID_SDK_INTERNAL_CONFIG_ENABLE_DULT_QA)
+/******************************************************************************
+ * CLI - dult init
+ * Initialize Sidewalk DULT-S
+ * This function can only be called once. You have to use deinit to call it again.
+ *****************************************************************************/
+void cli_dult_init(sl_cli_command_arg_t *arguments)
+{
+  (void)arguments;
+  sl_app_trigger_dult_init();
+}
+
+/******************************************************************************
+ * CLI - dult status
+ * Get status of Sidewalk DULT-S
+ *****************************************************************************/
+void cli_dult_status(sl_cli_command_arg_t *arguments)
+{
+  (void)arguments;
+  sl_app_trigger_dult_status();
+}
+
+/******************************************************************************
+ * CLI - dult deinit
+ * Deinitialize Sidewalk DULT-S
+ *****************************************************************************/
+void cli_dult_deinit(sl_cli_command_arg_t *arguments)
+{
+  (void)arguments;
+  sl_app_trigger_dult_deinit();
+}
+#endif
+
 /******************************************************************************
  * CLI - sid bleconnect
  * Initiate ble bcn connection request
@@ -636,6 +669,63 @@ void sl_app_trigger_sid_deinit(void)
   queue_event(g_event_queue, EVENT_TYPE_SID_DEINIT);
   SL_SID_LOG_APP_INFO("sidewalk deinit event");
 }
+
+#if defined(SID_SDK_INTERNAL_CONFIG_ENABLE_DULT_QA)
+/*******************************************************************************
+ * Trigger - dult init
+ * @param[in] void
+ * @returns None
+ ******************************************************************************/
+void sl_app_trigger_dult_init(void)
+{
+  queue_event(g_event_queue, EVENT_TYPE_DULT_INIT);
+  SL_SID_LOG_APP_INFO("dult init event");
+}
+
+/*******************************************************************************
+ * Trigger - dult start
+ * @param[in] void
+ * @returns None
+ ******************************************************************************/
+void sl_app_trigger_dult_start(void)
+{
+  queue_event(g_event_queue, EVENT_TYPE_DULT_START);
+  SL_SID_LOG_APP_INFO("dult start event");
+}
+
+/*******************************************************************************
+ * Trigger - dult stop
+ * @param[in] void
+ * @returns None
+ ******************************************************************************/
+void sl_app_trigger_dult_stop(void)
+{
+  queue_event(g_event_queue, EVENT_TYPE_DULT_STOP);
+  SL_SID_LOG_APP_INFO("dult stop event");
+}
+
+/*******************************************************************************
+ * Trigger - dult status
+ * @param[in] void
+ * @returns None
+ ******************************************************************************/
+void sl_app_trigger_dult_status(void)
+{
+  queue_event(g_event_queue, EVENT_TYPE_DULT_STATUS);
+  SL_SID_LOG_APP_INFO("dult status event");
+}
+
+/*******************************************************************************
+ * Trigger - dult deinit
+ * @param[in] void
+ * @returns None
+ ******************************************************************************/
+void sl_app_trigger_dult_deinit(void)
+{
+  queue_event(g_event_queue, EVENT_TYPE_DULT_DEINIT);
+  SL_SID_LOG_APP_INFO("dult deinit event");
+}
+#endif
 
 /*******************************************************************************
  * Trigger - sid get CSS dev profile id

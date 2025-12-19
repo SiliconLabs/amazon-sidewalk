@@ -192,6 +192,10 @@ enum data_type {
 void cmd_print_result(sid_error_t res, char const *p_fmt, ...);
 
 void sid_sbdt_register_cli_commands(struct app_context *context);
+void sid_dult_register_cli_commands(struct app_context *context);
+#if defined(SID_SDK_CONFIG_ENABLE_LOCATION) && SID_SDK_CONFIG_ENABLE_LOCATION
+void sid_location_register_cli_commands(struct app_context *context);
+#endif
 void sid_gwscan_register_cli_commands(struct app_context *context);
 void sid_sbdt_on_msg_recieved(const struct sid_msg_desc *msg_desc, const struct sid_msg *msg, void *context);
 void sid_sbdt_on_msg_sent(const struct sid_msg_desc *msg_desc, void *context);

@@ -50,6 +50,9 @@ extern "C" {
 #include <sx126x_config.h>
 #elif defined(SL_RADIO_EXTERNAL) && defined(SID_RADIO_PLATFORM_LR11XX)
 #include <lr11xx_config.h>
+#if defined(SL_LOCATION_FULL)
+#include <lr11xx_gnss_wifi_config.h>
+#endif
 #elif defined(SL_RADIO_NATIVE)
 #include <efr32xgxx_config.h>
 #endif
@@ -67,6 +70,9 @@ typedef struct {
 #elif defined(SL_RADIO_NATIVE)
   const radio_efr32xgxx_device_config_t *radio_cfg;
 #endif
+#endif
+#if defined(SL_LOCATION_FULL)
+  lr11xx_gnss_wifi_config_t *gnss_wifi_cfg;
 #endif
 } platform_specific_init_parameters_t;
 // -----------------------------------------------------------------------------

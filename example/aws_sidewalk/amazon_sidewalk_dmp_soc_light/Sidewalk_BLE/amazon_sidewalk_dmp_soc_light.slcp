@@ -11,7 +11,7 @@ description: This is a Dynamic Multiprotocol reference application
 category: Example|AWS IoT
 sdk_extension:
   - id: sidewalk
-    version: 2.6.0
+    version: 2.7.0
 source:
   - path: ../app_init.c
   - path: ../app_process.c
@@ -91,6 +91,12 @@ define:
 configuration:
   - name: SL_MBEDTLS_PSA_ASSUME_EXCLUSIVE_BUFFERS
     value: 1
+  - name: SL_CLOCK_MANAGER_LFRCO_PRECISION
+    value: 1
+    condition:
+      - hardware_board
+    unless:
+      - hardware_board_has_lfxo
   - name: SL_SIDEWALK_COMMON_DEFAULT_LINK_TYPE
     value: SL_SIDEWALK_LINK_BLE
   - name: SL_SID_LOG_APP_ENABLED
@@ -116,7 +122,7 @@ configuration:
   - name: configMINIMAL_STACK_SIZE
     value: 160
   - name: configTOTAL_HEAP_SIZE
-    value: 15360
+    value: 16384
   - name: SL_STACK_SIZE
     value: 2048
   - name: NVM3_DEFAULT_NVM_SIZE
@@ -132,7 +138,7 @@ configuration:
   - name: SL_BT_CONFIG_BUFFER_SIZE
     value: 3150
   - name: configTIMER_TASK_STACK_DEPTH
-    value: 300
+    value: 1024
   - name: APP_LOG_AUTO_NL
     value: 1
   - name: SL_BT_CONFIG_MIN_TX_POWER

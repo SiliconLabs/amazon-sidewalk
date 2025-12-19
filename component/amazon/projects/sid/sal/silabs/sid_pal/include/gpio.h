@@ -86,6 +86,12 @@ enum SL_PINout {
 #ifdef MODULE_KG100S
   SL_PIN_KG100S_BAND_SEL, /*!< GPIO pin for KG100S band selection. */
 #endif
+#ifdef SL_LOCATION_FULL
+  SL_PIN_GNSS_LNA,      /*!< GPIO pin for GNSS LNA signal. */
+  SL_PIN_LED_RX,        /*!< GPIO pin for LED RX signal. */
+  SL_PIN_LED_TX,        /*!< GPIO pin for LED TX signal. */
+  SL_PIN_LED_SNIFFING,  /*!< GPIO pin for LED Sniffing signal. */
+#endif
   SL_PIN_MAX              /*!< Maximum number of GPIO pins. */
 };
 

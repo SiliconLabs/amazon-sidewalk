@@ -41,6 +41,12 @@
 #include <sid_error.h>
 #include <sid_pal_common_ifc.h>
 #include <sid_pal_gpio_ifc.h>
+
+#if defined(SL_LOCATION_FULL)
+#include <lr11xx_gnss_wifi_config.h>
+#include <sid_pal_gnss_ifc.h>
+#endif
+
 #include <delay.h>
 #include "sl_sidewalk_common_config.h"
 
@@ -122,6 +128,9 @@ sid_error_t sid_pal_common_init(const platform_specific_init_parameters_t *platf
 #endif
 #endif
 
+#if defined(SL_LOCATION_FULL)
+    set_lr11xx_gnss_wifi_config(platform_init_parameters->gnss_wifi_cfg);
+#endif
   return SID_ERROR_NONE;
 }
 

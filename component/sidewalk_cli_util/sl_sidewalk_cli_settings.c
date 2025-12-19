@@ -488,12 +488,13 @@ sl_status_t sl_sidewalk_cli_util_settings_get_integer(char *value_str,
  *****************************************************************************/
 static void help_print_and_pad(const char *permission, const sl_sidewalk_cli_util_entry_t *entry)
 {
-  SL_SID_LOG_APP_INFO("%s %s.%s", permission, app_settings_domain_str[entry->domain], entry->key);
-  size_t string_length = strlen(permission) + strlen(app_settings_domain_str[entry->domain]) + strlen(entry->key);
-  for (; string_length < 60; string_length++) {
-    SL_SID_LOG_APP_INFO(" ");
+  char formatted_string[64];
+  int ret = snprintf(formatted_string, sizeof(formatted_string), "%s %s.%s", 
+                     permission, app_settings_domain_str[entry->domain], entry->key);
+  if (ret >= (int)sizeof(formatted_string)) {
+    SL_SID_LOG_APP_ERROR("Buffer too small for help string, truncated");
   }
-  SL_SID_LOG_APP_INFO("%s", entry->description ? entry->description : " ");
+  SL_SID_LOG_APP_INFO("%-60s%s", formatted_string, entry->description ? entry->description : " ");
 }
 
 /**************************************************************************//**

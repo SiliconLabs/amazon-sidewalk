@@ -41,6 +41,9 @@ source:
   - path: amazon/platform/sid_mcu/semtech/hal/lr11xx/semtech/lr11xx_system.c
   - path: amazon/platform/sid_mcu/semtech/hal/lr11xx/semtech/lr11xx_wifi.c
   - path: sidewalk_radio_config/subghz/semtech/lr1110/app_subghz_config.c
+  - path: sidewalk_radio_config/subghz/semtech/lr1110/app_location_config.c
+    condition:
+      - sidewalk_location_full
 include:
   - path: amazon/platform/sid_mcu/semtech/hal/lr11xx/include
     file_list:
@@ -56,6 +59,7 @@ include:
       - path: lr11xx_crypto_engine.h
       - path: lr11xx_driver_version.h
       - path: lr11xx_gnss_types.h
+      - path: lr11xx_gnss_wifi_config.h
       - path: lr11xx_gnss.h
       - path: lr11xx_hal.h
       - path: lr11xx_lr_fhss_types.h
@@ -77,6 +81,9 @@ include:
   - path: sidewalk_radio_config/subghz/semtech/lr1110
     file_list:
       - path: app_subghz_config.h
+      - path: app_location_config.h
+        condition:
+          - sidewalk_location_full
 define:
   - name: SID_RADIO_PLATFORM_LR11XX
     value: "1"

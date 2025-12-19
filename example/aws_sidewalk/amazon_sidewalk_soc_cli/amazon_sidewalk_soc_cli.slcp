@@ -10,7 +10,7 @@ description: The Bluetooth sub-GHz Command Line Interface (CLI)
 category: Example|AWS IoT
 sdk_extension:
   - id: sidewalk
-    version: 2.6.0
+    version: 2.7.0
 source:
   - path: app_init.c
   - path: app_process.c
@@ -56,6 +56,10 @@ component:
     from: sidewalk
     condition:
       - sl_sidewalk_default_radio_efr32xgxx
+  - id: sidewalk_dult_static_gatt
+    from: sidewalk
+    condition:
+      - sidewalk_dult
   - id: iostream_rtt
   - id: printf
   - id: sl_main
@@ -75,6 +79,11 @@ component:
       - sl_sidewalk_radio_ble
   - id: memory_manager
   - id: power_manager
+requires:
+  - name: gatt_configuration
+    condition:
+      - device_supports_bluetooth
+      - sidewalk_dult
 define:
   - name: MAIN_TASK_STACK_SIZE
     value: (4096 / sizeof(configSTACK_DEPTH_TYPE))
@@ -100,23 +109,29 @@ configuration:
   - name: SL_CLOCK_MANAGER_DEFAULT_HF_CLOCK_SOURCE
     value: SL_CLOCK_MANAGER_DEFAULT_HF_CLOCK_SOURCE_HFRCODPLL
     unless:
-      - hardware_board_rb
+      - hardware_board
   - name: SL_CLOCK_MANAGER_DEFAULT_LF_CLOCK_SOURCE
     value: SL_CLOCK_MANAGER_DEFAULT_LF_CLOCK_SOURCE_LFXO
     unless:
-      - hardware_board_rb
+      - hardware_board
   - name: SL_CLOCK_MANAGER_HFXO_EN
     value: 1
     unless:
-      - hardware_board_rb
+      - hardware_board
   - name: SL_CLOCK_MANAGER_LFXO_EN
     value: 1
     unless:
-      - hardware_board_rb
+      - hardware_board
   - name: SL_CLOCK_MANAGER_HFRCO_DPLL_EN
     value: 1
     unless:
-      - hardware_board_rb
+      - hardware_board
+  - name: SL_CLOCK_MANAGER_LFRCO_PRECISION
+    value: 1
+    condition:
+      - hardware_board
+    unless:
+      - hardware_board_has_lfxo
   - name: SL_SIDEWALK_COMMON_DEFAULT_LINK_TYPE
     value: SL_SIDEWALK_LINK_BLE
     condition:
@@ -236,6 +251,10 @@ configuration:
     value: '"<E>"'
   - name: APP_LOG_LEVEL_CRITICAL_PREFIX
     value: '"<C>"'
+  - name: SL_BT_CONFIG_USER_ADVERTISERS
+    value: 2
+    condition:
+      - sidewalk_dult
   - name: configUSE_MALLOC_FAILED_HOOK
     value: 1
   - name: configCHECK_FOR_STACK_OVERFLOW
@@ -245,6 +264,9 @@ readme:
 ui_hints:
   highlight:
     - path: config/sidewalk/sidewalk.asconf
+    - path: config/btconf/gatt_configuration.btconf
+      condition:
+        - sidewalk_dult
     - path: readme.md
       focus: true
 config_file:
@@ -260,6 +282,13 @@ config_file:
       - sl_sidewalk_radio_native
   - path: ../../mfg.runconf
     directory: sidewalk
+  - override:
+      component: gatt_configuration
+      file_id: gatt_configuration_file_id
+    path: gatt_configuration.btconf
+    directory: btconf
+    condition:
+      - sidewalk_dult
 filter:
   - name: Wireless Technology
     value:
@@ -295,6 +324,14 @@ template_contribution:
         stop'
       shortcuts:
         - name: sid
+  - name: cli_group
+    value:
+      name: dult
+      help: 'DULT-S interraction: init, deinit, status'
+      shortcuts:
+        - name: dult
+    condition:
+      - sidewalk_dult
   - name: cli_command
     value:
       name: init
@@ -367,3 +404,36 @@ template_contribution:
         notify or response; arg1: ASCII encoded string; arg2:
         Link type for auto connect mode'
       group: sidewalk
+  - name: cli_command
+    value:
+      name: init
+      handler: cli_dult_init
+      argument:
+        - type: additional
+          help: More args...
+      help: Initialize Sidewalk DULT-S
+      group: dult
+    condition:
+      - sidewalk_dult
+  - name: cli_command
+    value:
+      name: deinit
+      handler: cli_dult_deinit
+      argument:
+        - type: additional
+          help: More args...
+      help: Deinitialize Sidewalk DULT-S
+      group: dult
+    condition:
+      - sidewalk_dult
+  - name: cli_command
+    value:
+      name: status
+      handler: cli_dult_status
+      argument:
+        - type: additional
+          help: More args...
+      help: Get Sidewalk DULT-S status
+      group: dult
+    condition:
+      - sidewalk_dult

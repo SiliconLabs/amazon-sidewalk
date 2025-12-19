@@ -83,13 +83,13 @@ Settings in the *sidewalk* section are directly related to the Sidewalk general 
 
 | Variable | R/W | Type | Values | Description |
 |---|---|---|---|---|
-| sidewalk.started_link | R | string | BLE<br>FSK<br>CSS<br>NONE | Currently started link |
+| sidewalk.started_link | R | string | BLE, FSK, CSS, NONE | Currently started link |
 | sidewalk.region | R | string | US | Regulatory domain for Sidewalk |
-| sidewalk.state | R | string | READY<br>NOT READY<br>SECURE CHANNEL READY | Device state |
+| sidewalk.state | R | string | READY, NOT READY, SECURE CHANNEL READY | Device state |
 | sidewalk.time | R | string | "1350808426.972536238" | Gives Endpoint time (GPS time format) |
-| sidewalk.link_connection_policy | RW | string | ml<br>ac | Link connection policy (multi-link or auto connect) |
-| sidewalk.multi_link_policy | RW | string | def<br>pow<br>per<br>lat<br>rel | Multi-link policy (default, power save, performance, latency or reliability) |
-| sidewalk.auto_connect_params | RW | string | "\<link\>,\<enabled\>,\<priority\>,\<timeout\>" | Auto connect parameters (ie: ble,1,10,30 or fsk,0,20,60) |
+| sidewalk.link_connection_policy | RW | string | ml, ac | Link connection policy (multi-link or auto connect) |
+| sidewalk.multi_link_policy | RW | string | def, pow, per, lat, rel | Multi-link policy (default, power save, performance, latency or reliability) |
+| sidewalk.auto_connect_params | RW | string | "\<link\>, \<enabled\>, \<priority\>, \<timeout\>" | Auto connect parameters (ie: ble,1,10,30 or fsk,0,20,60) |
 
 ### *radio* Section Settings
 
@@ -109,7 +109,7 @@ The settings in the *ble* section are directly related to the Sidewalk BLE stack
 | Variable | R/W | Type | Values | Description |
 |---|---|---|---|---|
 | ble.ble_mtu | R | integer | 256 | BLE Maximum Transmission Unit in bytes |
-| ble.random_mac | R | string | PUBLIC<br>RANDOM_PRIVATE_NON_RESOLVABLE<br>STATIC_RANDOM<br>RANDOM_PRIVATE_RESOLVABLE | Randomize MAC address |
+| ble.random_mac | R | string | PUBLIC, RANDOM_PRIVATE_NON_RESOLVABLE, STATIC_RANDOM, RANDOM_PRIVATE_RESOLVABLE | Randomize MAC address |
 | ble.output_power | R | integer | Numeric value, for example 22 for 22dBm | TX output power in dBm |
 
 ### *fsk* Section Settings
@@ -121,7 +121,7 @@ Settings in the *fsk* section are directly related to the Sidewalk FSK stack beh
 | fsk.data_rate | R | integer | data rate value in Kbps | Current data rate used in FSK in Kbps |
 | fsk.min_freq | R | integer | frequency value in MHz | Start frequency for FSK in MHz |
 | fsk.max_freq | R | integer | frequency value in MHz | Stop frequency for FSK in MHz |
-| fsk.power_profile | R/W | integer | 1<br>2 | Power profile currently in use |
+| fsk.power_profile | R/W | integer | 1, 2 | Power profile currently in use |
 | fsk.fsk_mtu | R | integer | 256 | FSK Maximum Transmission Unit in bytes |
 | fsk.rx_window_count | R | integer | INFINITE | Number of RX opportunities (always infinite) |
 | fsk.rx_window_separation | R/W | integer | 252 | Time between RX opportunities in ms |
@@ -135,7 +135,7 @@ Settings in the *css* section are directly related to the Sidewalk CSS stack beh
 | css.bandwidth | R | integer | bandwidth value in KHz | Current bandwidth used in CSS in kHz |
 | css.min_freq | R | integer | frequency value in MHz | Start frequency for CSS in MHz |
 | css.max_freq | R | integer | frequency value in MHz | Stop frequency for CSS in MHz |
-| css.power_profile | R/W | string | A<br>B | Power profile currently in use |
+| css.power_profile | R/W | string | A, B | Power profile currently in use |
 | css.css_mtu | R | integer | 256 | CSS Maximum Transmission Unit in bytes |
 | css.rx_window_count | R/W | integer | - | Choose the number of RX opportunities |
 | css.rx_window_separation | R/W | integer | - | Time between RX opportunities |

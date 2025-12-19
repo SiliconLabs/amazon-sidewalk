@@ -48,6 +48,13 @@ extern "C" {
 #include "sl_emlib_gpio_init_exp_13_config.h"
 #include "sl_emlib_gpio_init_exp_14_config.h"
 
+#ifdef SL_LOCATION_FULL
+#include "sl_emlib_gpio_init_exp_3_config.h"
+#include "sl_emlib_gpio_init_exp_5_config.h"
+#include "sl_emlib_gpio_init_exp_7_config.h"
+#include "sl_emlib_gpio_init_exp_9_config.h"
+#endif
+
 // -----------------------------------------------------------------------------
 //                              Macros and Typedefs
 // -----------------------------------------------------------------------------
@@ -76,6 +83,22 @@ extern "C" {
 
 #define SL_SX_CS_PIN                             SL_SPIDRV_EXP_CS_PIN
 #define SL_SX_CS_PORT                            SL_SPIDRV_EXP_CS_PORT
+
+#ifdef SL_LOCATION_FULL
+
+#define SL_GNSS_LNA_PIN                      SL_EMLIB_GPIO_INIT_EXP_3_PIN
+#define SL_GNSS_LNA_PORT                     SL_EMLIB_GPIO_INIT_EXP_3_PORT
+
+#define SL_LED_RX_PIN                        SL_EMLIB_GPIO_INIT_EXP_9_PIN
+#define SL_LED_RX_PORT                       SL_EMLIB_GPIO_INIT_EXP_9_PORT
+
+#define SL_LED_TX_PIN                        SL_EMLIB_GPIO_INIT_EXP_7_PIN
+#define SL_LED_TX_PORT                       SL_EMLIB_GPIO_INIT_EXP_7_PORT
+
+#define SL_LED_SNIFFING_PIN                  SL_EMLIB_GPIO_INIT_EXP_5_PIN
+#define SL_LED_SNIFFING_PORT                 SL_EMLIB_GPIO_INIT_EXP_5_PORT
+
+#endif
 
 #ifdef __cplusplus
 }

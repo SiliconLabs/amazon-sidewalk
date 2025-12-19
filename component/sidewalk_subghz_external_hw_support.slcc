@@ -81,5 +81,33 @@ template_contribution:
       id: SL_PIN_KG100S_BAND_SEL
       pin: SL_PIN_BAND_SEL_PIN
       port: SL_PIN_BAND_SEL_PORT
+  - name: semtech_pinout
+    condition:
+      - sidewalk_location_full
+    value:
+      id: SL_PIN_GNSS_LNA
+      pin: SL_GNSS_LNA_PIN
+      port: SL_GNSS_LNA_PORT
+  - name: semtech_pinout
+    condition:
+      - sidewalk_location_full
+    value:
+      id: SL_PIN_LED_RX
+      pin: SL_LED_RX_PIN
+      port: SL_LED_RX_PORT
+  - name: semtech_pinout
+    condition:
+      - sidewalk_location_full
+    value:
+      id: SL_PIN_LED_TX
+      pin: SL_LED_TX_PIN
+      port: SL_LED_TX_PORT
+  - name: semtech_pinout
+    condition:
+      - sidewalk_location_full
+    value:
+      id: SL_PIN_LED_SNIFFING
+      pin: SL_LED_SNIFFING_PIN
+      port: SL_LED_SNIFFING_PORT
 ui_hints:
   visibility: never

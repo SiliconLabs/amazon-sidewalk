@@ -33,7 +33,7 @@ From the v2.5.0 version the release notes will be published in an other place. P
 ### Silicon Labs Extension
 - Support for SiSDK 2024.12.0
 - Updated Out-of-the-box demo binaries
-- FIXED: [1379968] RSSI difference in FSK FFN between SDK versions. 
+- FIXED: [1379968] RSSI difference in FSK FFN between SDK versions.
 - FIXED: [1383700] Sidewalk API for BLE TX Power not working
 
 ## Known issues

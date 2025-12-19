@@ -1,0 +1,129 @@
+id: sidewalk_location_cli
+label: Sidewalk Location CLI
+quality: production
+description: This component offers CLI commands for Sidewalk Location
+category: Utility
+package: "sidewalk"
+metadata:
+  sbom:
+    license: MSLA
+root_path: component/sidewalk_location_cli
+provides:
+  - name: sidewalk_location_cli
+  - name: sidewalk_location_full
+    condition:
+      - sl_sidewalk_radio_ble
+      - sidewalk_subghz_lr1110
+      - hardware_board_has_exp_3
+      - hardware_board_has_exp_5
+      - hardware_board_has_exp_7
+      - hardware_board_has_exp_9
+requires:
+  - name: sidewalk_dult
+  - name: sidewalk_dult_dynamic_gatt
+source:
+  - path: sl_sidewalk_location_cli.c
+include:
+  - path: .
+    file_list:
+      - path: sl_sidewalk_location_cli.h
+  - path: ../amazon/platform/sid_mcu/semtech/hal/location_driver/lora_basic_modem/smtc_modem_api
+    file_list:
+      - path: smtc_modem_api.h
+      - path: smtc_modem_geolocation_api.h
+      - path: smtc_modem_relay_api.h
+      - path: smtc_modem_test_api.h
+      - path: smtc_modem_utilities.h
+  - path: ../amazon/platform/sid_mcu/semtech/hal/location_driver/lora_basic_modem/smtc_modem_core/geolocation_services
+    file_list:
+      - path: gnss_helpers_defs.h
+      - path: wifi_helpers_defs.h
+  - path: ../amazon/projects/sid/sal/common/public/sid_ifc/sid_location
+    file_list:
+      - path: sid_location.h
+  - path: ../amazon/projects/sid/sal/common/public/sid_pal_ifc/gnss
+    file_list:
+      - path: sid_pal_gnss_ifc.h
+define:
+  - name: SMTC_MODEM_HAL_IRQ_FROM_SID_PAL
+    condition:
+      - sidewalk_location_full
+  - name: LR11XX_E707
+    condition:
+      - sidewalk_location_full
+  - name: LR11XX
+    condition:
+      - sidewalk_location_full
+  - name: SL_LOCATION_FULL
+    condition:
+      - sidewalk_location_full
+  - name: SID_SDK_CONFIG_ENABLE_GNSS
+    value: 0
+    unless:
+      - sidewalk_location_full
+  - name: SID_SDK_CONFIG_ENABLE_GNSS
+    value: 1
+    condition:
+      - sidewalk_location_full
+  - name: SID_SDK_CONFIG_ENABLE_WIFI
+    value: 0
+    unless:
+      - sidewalk_location_full
+  - name: SID_SDK_CONFIG_ENABLE_WIFI
+    value: 1
+    condition:
+      - sidewalk_location_full
+ui_hints:
+  visibility: advanced
+template_contribution:
+  - name: component_catalog
+    value: sidewalk_location_cli
+  - name: cli_command
+    value:
+      name: location_init
+      handler: sl_sidewalk_location_cli_init
+      help: Initializes the location service
+  - name: cli_command
+    value:
+      name: location_deinit
+      handler: sl_sidewalk_location_cli_deinit
+      help: Deinitializes the location service
+  - name: cli_command
+    value:
+      name: location_send
+      handler: sl_sidewalk_location_cli_send
+      argument:
+        - type: uint32
+          help: effort level
+      help: Starts a location scan and immediately sends the result to the cloud
+  - name: cli_command
+    value:
+      name: location_send_buf
+      handler: sl_sidewalk_location_cli_send_buf
+      argument:
+        - type: uint32
+          help: effort level
+      help: Sends a previously saved location scan result to the cloud
+    condition:
+      - sidewalk_location_full
+  - name: cli_command
+    value:
+      name: location_scan
+      handler: sl_sidewalk_location_cli_scan
+      argument:
+        - type: uint32
+          help: effort level
+      help: Starts a location scan and saves the result for later use
+    condition:
+      - sidewalk_location_full
+  - name: cli_command
+    value:
+      name: location_alm_start
+      handler: sl_sidewalk_location_cli_alm_start
+      help: Start the almanac demodulation service to update over satellite
+
+
+
+
+
+

@@ -11,7 +11,7 @@ description: This is a Dynamic Multiprotocol reference application
 category: Example|AWS IoT
 sdk_extension:
   - id: sidewalk
-    version: 2.6.0
+    version: 2.7.0
 source:
   - path: ../app_init.c
   - path: ../app_process.c
@@ -26,10 +26,6 @@ include:
 component:
   - id: sidewalk_pal
     from: sidewalk
-  - id: sidewalk_ble
-    from: sidewalk
-    condition:
-      - device_supports_bluetooth
   - id: sidewalk_dmp_fsk_support
     from: sidewalk
   - id: sidewalk_common
@@ -76,6 +72,14 @@ component:
   - id: freertos_heap_4
   - id: rail_lib_multiprotocol
   - id: memory_manager
+  - id: bluetooth_stack
+  - id: bluetooth_feature_dynamic_gattdb
+  - id: bluetooth_feature_gatt_server
+  - id: bluetooth_feature_system
+  - id: bluetooth_feature_connection_role_peripheral
+  - id: bluetooth_feature_legacy_advertiser
+  - id: bluetooth_feature_sm
+  - id: bluetooth_on_demand_start
 requires:
   - name: gatt_configuration
     condition:

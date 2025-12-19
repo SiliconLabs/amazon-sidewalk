@@ -55,7 +55,7 @@ provides:
       - hardware_board_has_exp_14
       - sl_sidewalk_family_has_radio_external_support
       - hardware_board_mainboard_wstk
-  - name: sl_sidewalk_board_has_radio_external_support
+  - name: sl_sidewalk_default_radio_sx1262
     condition:
       - brd4332a
   - name: sl_sidewalk_default_radio_sx1262
@@ -142,7 +142,7 @@ define:
     condition:
       - cli
   - name: SL_SIDEWALK_EXTENSION_VERSION
-    value: 2.6.0
+    value: 2.7.0
   - name: EFR32XG21
     condition:
       - device_generic_family_efr32xg21

@@ -1,7 +1,7 @@
 id: sidewalk
 label: Sidewalk
-description: Sidewalk extension for Gecko SDK Suite
-version: 2.6.0
+description: Sidewalk extension for Simplicity SDK Suite
+version: 2.7.0
 sdk:
   id: simplicity_sdk
   version: 2025.6.2
@@ -11,3 +11,5 @@ component_path:
   - path: component
   - path: component/overridden_gsdk_components/app/common/component
   - path: component/sidewalk_log/component
+vendor: silabs
+supplier: Silicon Laboratories Inc.

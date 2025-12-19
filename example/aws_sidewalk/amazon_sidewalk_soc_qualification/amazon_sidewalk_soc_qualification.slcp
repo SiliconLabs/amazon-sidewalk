@@ -9,7 +9,7 @@ description: The SoC Qualification example is a command-line interface
 category: Example|AWS IoT
 sdk_extension:
   - id: sidewalk
-    version: 2.6.0
+    version: 2.7.0
 source:
   - path: app_properties.c
   - path: app_main.c
@@ -74,23 +74,29 @@ configuration:
   - name: SL_CLOCK_MANAGER_DEFAULT_HF_CLOCK_SOURCE
     value: SL_CLOCK_MANAGER_DEFAULT_HF_CLOCK_SOURCE_HFRCODPLL
     unless:
-      - hardware_board_rb
+      - hardware_board
   - name: SL_CLOCK_MANAGER_DEFAULT_LF_CLOCK_SOURCE
     value: SL_CLOCK_MANAGER_DEFAULT_LF_CLOCK_SOURCE_LFXO
     unless:
-      - hardware_board_rb
+      - hardware_board
   - name: SL_CLOCK_MANAGER_HFXO_EN
     value: 1
     unless:
-      - hardware_board_rb
+      - hardware_board
   - name: SL_CLOCK_MANAGER_LFXO_EN
     value: 1
     unless:
-      - hardware_board_rb
+      - hardware_board
   - name: SL_CLOCK_MANAGER_HFRCO_DPLL_EN
     value: 1
     unless:
-      - hardware_board_rb
+      - hardware_board
+  - name: SL_CLOCK_MANAGER_LFRCO_PRECISION
+    value: 1
+    condition:
+      - hardware_board
+    unless:
+      - hardware_board_has_lfxo
   - name: SL_SIDEWALK_COMMON_DEFAULT_LINK_TYPE
     value: SL_SIDEWALK_LINK_FSK
     condition:

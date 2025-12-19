@@ -62,6 +62,11 @@
 #include "sl_sidewalk_ota_dfu.h"
 #endif
 
+#if defined(SID_SDK_INTERNAL_CONFIG_ENABLE_DULT_QA)
+#include "sid_detect_unwanted_location_tracker.h"
+#include "sid_network_address.h"
+#endif
+
 // -----------------------------------------------------------------------------
 //                              Macros and Typedefs
 // -----------------------------------------------------------------------------
@@ -72,6 +77,54 @@
 
 // Unused function parameter
 #define UNUSED(x) (void)(x)
+
+#if defined(SID_SDK_INTERNAL_CONFIG_ENABLE_DULT_QA)
+
+static const struct sid_detect_unwanted_location_tracker_accessory_info dult_info = {
+  .product_data = (const uint8_t *)"sidewalk",
+  .manufacturer_name = (const uint8_t *)"sidewalk",
+  .model_name = (const uint8_t *)"sidewalk v1",
+  .capabilities = SID_DETECT_UNWANTED_DETECTION_TRACKER_CAPABILITY_SOUND | SID_DETECT_UNWANTED_DETECTION_TRACKER_CAPABILITY_MOTION_DETECTION | SID_DETECT_UNWANTED_DETECTION_TRACKER_CAPABILITY_IDENTIFIER_LOOKUP_BLE,
+  .firmware_version = SID_DETECT_UNWANTED_LOCATION_TRACKER_FIRMWARE_VERSION(SID_SDK_MAJOR_VERSION,
+                                                                            SID_SDK_MINOR_VERSION,
+                                                                            SID_SDK_BUILD_VERSION),
+  .category = 1,
+  .network_id = 3,   // IETF DULT Temporary Registry: 1-Apple, 2-Google, 3-Sidewalk
+};
+
+static void on_owner_proximity_change(enum sid_owner_proximity_state state, void *context)
+{
+}
+
+static void on_non_owner_find_event(const struct sid_non_owner_find_event *event, void *context)
+{
+}
+
+static void on_motion_detection_event(const struct sid_motion_detection_event *event, void *context)
+{
+}
+
+static size_t on_identifier_read(uint8_t *buf, size_t len, void *context)
+{
+  struct sid_address address = sid_address_get_local();
+  sid_error_t result = sid_address_to_raw_buffer(&address, buf, len);
+  return result == SID_ERROR_NONE ? sid_address_get_size(&address) : 0;
+}
+
+static struct sid_detect_unwanted_location_tracker_event_callbacks dult_callbacks = {
+  .context = NULL,
+  .on_identifier_read = on_identifier_read,
+  .on_motion_detection_event = on_motion_detection_event,
+  .on_non_owner_find_event = on_non_owner_find_event,
+  .on_owner_proximity_change = on_owner_proximity_change,
+};
+
+static struct sid_detect_unwanted_location_tracker_config config = {
+  .info = &dult_info,
+  .callbacks = &dult_callbacks,
+};
+
+#endif
 
 // -----------------------------------------------------------------------------
 //                          Static Function Declarations
@@ -206,6 +259,24 @@ static sl_status_t deinit_sidewalk(app_context_t *app_context);
  ******************************************************************************/
 static void reset_sidewalk(app_context_t *context);
 
+#if defined(SID_SDK_INTERNAL_CONFIG_ENABLE_DULT_QA)
+/*******************************************************************************
+ * Function to initialize dult
+ *
+ * @param[in] app_context The context which is applicable for the current application
+ * @returns Status of the request
+ ******************************************************************************/
+static sl_status_t init_dult(app_context_t *context);
+
+/*******************************************************************************
+ * Function to deinitialize dult
+ *
+ * @param[in] app_context The context which is applicable for the current application
+ * @returns Status of the request
+ ******************************************************************************/
+static sl_status_t deinit_dult(app_context_t *context);
+#endif
+
 /*******************************************************************************
  * Function to request connection
  *
@@ -312,6 +383,26 @@ void main_task(void *context)
             SL_SID_LOG_APP_ERROR("sidewalk deinitialization failed");
           }
           break;
+
+#if defined(SID_SDK_INTERNAL_CONFIG_ENABLE_DULT_QA)
+        case EVENT_TYPE_DULT_INIT:
+          if (init_dult(app_context) != SL_STATUS_OK) {
+            SL_SID_LOG_APP_ERROR("dult initialization failed");
+          }
+          break;
+
+        // case EVENT_TYPE_DULT_STATUS:
+        // if (stop_sidewalk(app_context) != SL_STATUS_OK) {
+        //   SL_SID_LOG_APP_ERROR("dult status failed");
+        // }
+        // break;
+
+        case EVENT_TYPE_DULT_DEINIT:
+          if (deinit_dult(app_context) != SL_STATUS_OK) {
+            SL_SID_LOG_APP_ERROR("dult deinitialization failed");
+          }
+          break;
+#endif
 
         case EVENT_TYPE_SID_GET_CSS_DEV_PROF_ID:
           get_sidewalk_css_dev_prof_id(app_context);
@@ -768,6 +859,12 @@ static sl_status_t init_sidewalk(app_context_t *app_context, char *link_str)
   SL_SID_LOG_APP_INFO("Secure Vault is disabled");
 #endif
 
+#if defined(SID_SDK_INTERNAL_CONFIG_ENABLE_DULT_QA)
+  SL_SID_LOG_APP_INFO("DULT is enabled");
+  SL_SID_LOG_APP_WARNING("DULT - Only issue 'dult init' after 'sid init ble' and before 'sid start ble'");
+  SL_SID_LOG_APP_WARNING("DULT - Only issue 'dult deinit' after 'sid stop ble' and before 'sid deinit'");
+#endif
+
 #if (defined(SL_FSK_SUPPORTED) || defined(SL_CSS_SUPPORTED))
   app_context->sid_cfg.sub_ghz_link_config = app_get_sub_ghz_config();
 #endif
@@ -885,3 +982,50 @@ static void reset_sidewalk(app_context_t *context)
     SL_SID_LOG_APP_WARNING("sidewalk is not ready");
   }
 }
+
+#if defined(SID_SDK_INTERNAL_CONFIG_ENABLE_DULT_QA)
+static sl_status_t init_dult(app_context_t *context)
+{
+  sid_error_t ret = sid_detect_unwanted_location_tracker_init(&config, context->sidewalk_handle);
+  if (ret == SID_ERROR_ALREADY_INITIALIZED) {
+    SL_SID_LOG_APP_ERROR("dult already initialized");
+  }
+  /* Not reset sidewalk handle if 'dult init' is issued during sidewalk started state */
+  else if (ret == SID_ERROR_INVALID_STATE) {
+    SL_SID_LOG_APP_ERROR("dult cannot be initialized during sidewalk started state, error: %d", (int)ret);
+  }
+  else if (ret != SID_ERROR_NONE)
+  {
+    SL_SID_LOG_APP_ERROR("dult initialization failed, error: %d", (int)ret);
+    context->sidewalk_handle = NULL;
+    context->sid_cfg.link_mask = 0;
+  }
+  else
+  {
+    SL_SID_LOG_APP_INFO("dult initialized");
+  }
+
+  return (ret == SID_ERROR_NONE) ? SL_STATUS_OK : SL_STATUS_FAIL;
+}
+
+static sl_status_t deinit_dult(app_context_t *context)
+{
+  sid_error_t ret = sid_detect_unwanted_location_tracker_deinit(context->sidewalk_handle);
+
+  /* Not reset sidewalk handle if 'dult deinit' is issued during sidewalk started state */
+  if(ret == SID_ERROR_INVALID_STATE) {
+    SL_SID_LOG_APP_ERROR("dult is not initialized or");
+    SL_SID_LOG_APP_ERROR("dult cannot be deinitialized during sidewalk started state, error: %d", (int)ret);
+  } else if (ret != SID_ERROR_NONE) {
+    SL_SID_LOG_APP_ERROR("dult deinitialization failed, error: %d", (int)ret);
+    context->sidewalk_handle = NULL;
+    context->sid_cfg.link_mask = 0;
+  }
+  else
+  {
+    SL_SID_LOG_APP_INFO("dult deinitialized");
+  }
+
+  return (ret == SID_ERROR_NONE) ? SL_STATUS_OK : SL_STATUS_FAIL;
+}
+#endif

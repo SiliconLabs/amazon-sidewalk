@@ -119,6 +119,32 @@ void cli_sid_stop(sl_cli_command_arg_t *arguments);
  ******************************************************************************/
 void cli_sid_deinit(sl_cli_command_arg_t *arguments);
 
+#if defined(SID_SDK_INTERNAL_CONFIG_ENABLE_DULT_QA)
+/*******************************************************************************
+ * CLI - dult init
+ *
+ * @param[in] arguments CLI arguments
+ * @returns None
+ ******************************************************************************/
+void cli_dult_init(sl_cli_command_arg_t *arguments);
+
+/*******************************************************************************
+ * CLI - dult status
+ *
+ * @param[in] arguments CLI arguments
+ * @returns None
+ ******************************************************************************/
+void cli_dult_status(sl_cli_command_arg_t *arguments);
+
+/*******************************************************************************
+ * CLI - dult deinit
+ *
+ * @param[in] arguments CLI arguments
+ * @returns None
+ ******************************************************************************/
+void cli_dult_deinit(sl_cli_command_arg_t *arguments);
+#endif
+
 /*******************************************************************************
  * CLI - ble connect
  *
@@ -284,6 +310,32 @@ void sl_app_trigger_sid_stop(char *link_str);
  * @returns None
  ******************************************************************************/
 void sl_app_trigger_sid_deinit(void);
+
+#if defined(SID_SDK_INTERNAL_CONFIG_ENABLE_DULT_QA)
+/*******************************************************************************
+ * Function to trigger dult init
+ *
+ * @param[in] void
+ * @returns None
+ ******************************************************************************/
+void sl_app_trigger_dult_init(void);
+
+/*******************************************************************************
+ * Function to trigger dult status
+ *
+ * @param[in] void
+ * @returns None
+ ******************************************************************************/
+void sl_app_trigger_dult_status(void);
+
+/*******************************************************************************
+ * Function to trigger dult deinit
+ *
+ * @param[in] void
+ * @returns None
+ ******************************************************************************/
+void sl_app_trigger_dult_deinit(void);
+#endif
 
 /*******************************************************************************
  * Function to trigger sid get CSS dev profile id
