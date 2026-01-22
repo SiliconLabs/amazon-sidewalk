@@ -1,0 +1,105 @@
+id: sidewalk_subghz_lr1110
+label: Sidewalk Sub-GHz LR1110
+package: sidewalk
+description: This component contains the support of Semtech LR1110 Sub-GHz chip
+category: Protocol
+quality: production
+metadata:
+  sbom:
+    license: Zlib AND LicenseRef-amazon-sidewalk-license
+root_path: component
+requires:
+  - name: sl_sidewalk_family_has_radio_external_support
+  - name: sidewalk_subghz_external_hw_support
+  - name: sidewalk_common
+  - name: sidewalk_pal
+  - name: hardware_board_rb # exclude dev kits and explorer kit boards but not SOCs
+    condition:
+      - hardware_board
+provides:
+  - name: sidewalk_subghz_lr1110
+  - name: sidewalk_external_subghz_chip
+  - name: sl_sidewalk_radio_external
+  - name: sl_sidewalk_radio_subghz
+  - name: sl_sidewalk_radio_subghz_fsk
+  - name: sl_sidewalk_radio_subghz_css
+source:
+  - path: amazon/platform/sid_mcu/semtech/hal/lr11xx/lr11xx_hal.c
+  - path: amazon/platform/sid_mcu/semtech/hal/lr11xx/lr11xx_halo.c
+  - path: amazon/platform/sid_mcu/semtech/hal/lr11xx/lr11xx_radio_fsk.c
+  - path: amazon/platform/sid_mcu/semtech/hal/lr11xx/lr11xx_radio_lora.c
+  - path: amazon/platform/sid_mcu/semtech/hal/lr11xx/lr11xx_radio.c
+  - path: amazon/platform/sid_mcu/semtech/hal/lr11xx/semtech/lr11xx_bootloader.c
+  - path: amazon/platform/sid_mcu/semtech/hal/lr11xx/semtech/lr11xx_crypto_engine.c
+  - path: amazon/platform/sid_mcu/semtech/hal/lr11xx/semtech/lr11xx_driver_version.c
+  - path: amazon/platform/sid_mcu/semtech/hal/lr11xx/semtech/lr11xx_gnss.c
+  - path: amazon/platform/sid_mcu/semtech/hal/lr11xx/semtech/lr11xx_lr_fhss.c
+  - path: amazon/platform/sid_mcu/semtech/hal/lr11xx/semtech/lr11xx_radio_timings.c
+  - path: amazon/platform/sid_mcu/semtech/hal/lr11xx/semtech/lr11xx_radio.c
+  - path: amazon/platform/sid_mcu/semtech/hal/lr11xx/semtech/lr11xx_regmem.c
+  - path: amazon/platform/sid_mcu/semtech/hal/lr11xx/semtech/lr11xx_rttof.c
+  - path: amazon/platform/sid_mcu/semtech/hal/lr11xx/semtech/lr11xx_system.c
+  - path: amazon/platform/sid_mcu/semtech/hal/lr11xx/semtech/lr11xx_wifi.c
+  - path: sidewalk_radio_config/subghz/semtech/lr1110/app_subghz_config.c
+  - path: sidewalk_radio_config/subghz/semtech/lr1110/app_location_config.c
+    condition:
+      - sidewalk_location_full
+include:
+  - path: amazon/platform/sid_mcu/semtech/hal/lr11xx/include
+    file_list:
+      - path: lr11xx_config.h
+      - path: lr11xx_halo.h
+      - path: halo_lr11xx_radio.h
+  - path: amazon/platform/sid_mcu/semtech/hal/lr11xx/include/semtech
+    file_list:
+      - path: lr_fhss_v1_base_types.h
+      - path: lr11xx_bootloader_types.h
+      - path: lr11xx_bootloader.h
+      - path: lr11xx_crypto_engine_types.h
+      - path: lr11xx_crypto_engine.h
+      - path: lr11xx_driver_version.h
+      - path: lr11xx_gnss_types.h
+      - path: lr11xx_gnss_wifi_config.h
+      - path: lr11xx_gnss.h
+      - path: lr11xx_hal.h
+      - path: lr11xx_lr_fhss_types.h
+      - path: lr11xx_lr_fhss.h
+      - path: lr11xx_radio_timings.h
+      - path: lr11xx_radio_types.h
+      - path: lr11xx_radio.h
+      - path: lr11xx_regmem.h
+      - path: lr11xx_rttof_types.h
+      - path: lr11xx_rttof.h
+      - path: lr11xx_system_types.h
+      - path: lr11xx_system.h
+      - path: lr11xx_types.h
+      - path: lr11xx_wifi_types.h
+      - path: lr11xx_wifi.h
+  - path: amazon/platform/sid_mcu/semtech/hal/common
+    file_list:
+      - path: semtech_radio_ifc.h
+  - path: sidewalk_radio_config/subghz/semtech/lr1110
+    file_list:
+      - path: app_subghz_config.h
+      - path: app_location_config.h
+        condition:
+          - sidewalk_location_full
+define:
+  - name: SID_RADIO_PLATFORM_LR11XX
+    value: "1"
+  - name: SL_RADIO_EXTERNAL
+  - name: SL_FSK_SUPPORTED
+  - name: SL_CSS_SUPPORTED
+  - name: DUAL_LINK_SUPPORT
+    value: 1
+ui_hints:
+  visibility: advanced
+conflicts:
+  - name: sidewalk_subghz_sx1262
+  - name: sidewalk_subghz_efr32xgxx
+  - name: sidewalk_kg100s
+  - name: device_generic_family_efr32xg25
+  - name: device_generic_family_efr32xg27
+  - name: device_generic_family_efr32xg29
+  - name: device_generic_family_sixx301
+  - name: sidewalk_dmp_ble_support

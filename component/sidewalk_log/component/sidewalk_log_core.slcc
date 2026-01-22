@@ -1,0 +1,36 @@
+id: sidewalk_log_core
+label: 'Sidewalk Log: Core'
+package: sidewalk
+description: Sidewalk core log functionality
+category: Utility
+quality: production
+metadata:
+  sbom:
+    license: Zlib
+root_path: component/sidewalk_log/src/core
+requires:
+  - name: iostream
+  - name: sidewalk_app_log
+  - name: component_catalog
+  - name: sidewalk_common
+    condition:
+      - sidewalk_pal
+  - name: segger_rtt
+    condition:
+      - sidewalk_log_app_rtt
+  - name: sidewalk_base_component
+recommends:
+  - id: sidewalk_pal
+provides:
+  - name: sidewalk_log_core
+source:
+  - path: sl_sidewalk_log_core.c
+include:
+  - path: .
+    file_list:
+      - path: sl_sidewalk_log_core.h
+template_contribution:
+  - name: component_catalog
+    value: sidewalk_log_core
+ui_hints:
+  visibility: never

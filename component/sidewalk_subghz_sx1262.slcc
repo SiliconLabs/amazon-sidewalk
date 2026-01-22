@@ -1,0 +1,69 @@
+id: sidewalk_subghz_sx1262
+label: Sidewalk Sub-GHz SX1262
+package: sidewalk
+description: This component contains the support of Semtech SX1262 Sub-GHz chip. If you are using KG100S module, first add 'Sidewalk KG100S Support' component to the project.
+category: Protocol
+quality: production
+metadata:
+  sbom:
+    license: Zlib AND LicenseRef-amazon-sidewalk-license
+root_path: component
+requires:
+  - name: sl_sidewalk_family_has_radio_external_support
+  - name: sidewalk_subghz_external_hw_support
+  - name: sidewalk_common
+  - name: sidewalk_pal
+  - name: hardware_board_rb # exclude dev kits and explorer kit boards but not SOCs
+    condition:
+      - hardware_board
+provides:
+  - name: sidewalk_subghz_sx1262
+  - name: sidewalk_external_subghz_chip
+  - name: sl_sidewalk_radio_external
+  - name: sl_sidewalk_radio_subghz
+  - name: sl_sidewalk_radio_subghz_fsk
+  - name: sl_sidewalk_radio_subghz_css
+library:
+  - path: sidewalk_libs/sl_lib_radio_sx126x.a
+source:
+  - path: amazon/platform/sid_mcu/semtech/hal/sx126x/sx126x_hal.c
+  - path: amazon/platform/sid_mcu/semtech/hal/sx126x/sx126x_radio_fsk.c
+  - path: amazon/platform/sid_mcu/semtech/hal/sx126x/sx126x_radio_lora.c
+  - path: amazon/platform/sid_mcu/semtech/hal/sx126x/sx126x_radio.c
+  - path: sidewalk_radio_config/subghz/semtech/sx1262/app_subghz_config.c
+include:
+  - path: amazon/platform/sid_mcu/semtech/hal/sx126x/include
+    file_list:
+      - path: sx126x_config.h
+      - path: sx126x_radio.h
+  - path: amazon/platform/sid_mcu/semtech/hal/sx126x/include/semtech
+    file_list:
+      - path: sx126x_hal.h
+      - path: sx126x_halo.h
+      - path: sx126x_regs.h
+      - path: sx126x_timings.h
+      - path: sx126x.h
+  - path: amazon/platform/sid_mcu/semtech/hal/common
+    file_list:
+      - path: semtech_radio_ifc.h
+  - path: sidewalk_radio_config/subghz/semtech/sx1262
+    file_list:
+      - path: app_subghz_config.h
+define:
+  - name: SID_RADIO_PLATFORM_SX126X
+    value: "1"
+  - name: SL_RADIO_EXTERNAL
+  - name: SL_FSK_SUPPORTED
+  - name: SL_CSS_SUPPORTED
+  - name: DUAL_LINK_SUPPORT
+    value: 1
+ui_hints:
+  visibility: advanced
+conflicts:
+  - name: sidewalk_subghz_lr1110
+  - name: sidewalk_subghz_efr32xgxx
+  - name: device_generic_family_efr32xg25
+  - name: device_generic_family_efr32xg27
+  - name: device_generic_family_efr32xg29
+  - name: device_generic_family_sixx301
+  - name: sidewalk_dmp_ble_support

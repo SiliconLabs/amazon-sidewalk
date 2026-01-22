@@ -1,0 +1,402 @@
+project_name: amazon_sidewalk_soc_cli
+package: sidewalk_sample_app
+quality: production
+label: Amazon Sidewalk - SoC CLI
+description: The Bluetooth sub-GHz Command Line Interface (CLI) sample application allows the user to interact with the endpoint using CLI commands. The application leverages the Amazon Sidewalk protocol to exchange data between the endpoint and the AWS Cloud using one of the 3 radio layers.
+category: Example|AWS IoT
+source:
+- path: app_init.c
+- path: app_process.c
+- path: app_cli.c
+- path: app_cli_settings.c
+include:
+- path: .
+  file_list:
+  - path: app_init.h
+  - path: app_process.h
+  - path: app_cli_settings.h
+  - path: app_cli.h
+component:
+- id: sidewalk_common
+- id: sidewalk_cli_util
+- id: sidewalk_pal
+- id: sidewalk_app_log
+- id: sidewalk_log_app_rtt
+- id: sidewalk_log_pal_rtt
+- id: sidewalk_log_stack_rtt
+- id: sidewalk_utils
+- id: sidewalk_ble
+  condition:
+  - device_supports_bluetooth
+- id: sidewalk_subghz_sx1262
+  condition:
+  - sl_sidewalk_default_radio_sx1262
+- id: sidewalk_subghz_sx1262
+  condition:
+  - sidewalk_kg100s
+- id: sidewalk_subghz_efr32xgxx
+  condition:
+  - sl_sidewalk_default_radio_efr32xgxx
+- id: sidewalk_dult_static_gatt
+  condition:
+  - sidewalk_dult
+- id: iostream_rtt
+- id: printf
+- id: sl_main
+- id: cli
+  instance:
+  - inst
+- id: device_init
+- id: clock_manager
+- id: iostream_stdlib_config
+- id: sleeptimer
+- id: app_assert
+- id: freertos
+- id: freertos_heap_4
+- id: rail_lib_multiprotocol
+  condition:
+  - sl_sidewalk_radio_native
+  - sl_sidewalk_radio_ble
+- id: memory_manager
+- id: power_manager
+requires:
+- name: gatt_configuration
+  condition:
+  - device_supports_bluetooth
+  - sidewalk_dult
+define:
+- name: MAIN_TASK_STACK_SIZE
+  value: (4352 / sizeof(configSTACK_DEPTH_TYPE))
+  unless:
+  - device_generic_family_efr32xg27
+  - device_generic_family_sixx301
+  - brd4186z
+- name: MAIN_TASK_STACK_SIZE   #xg27
+  value: (5376 / sizeof(configSTACK_DEPTH_TYPE))
+  condition:
+  - device_generic_family_efr32xg27
+- name: MAIN_TASK_STACK_SIZE   #sixx301
+  value: (5376 / sizeof(configSTACK_DEPTH_TYPE))
+  condition:
+  - device_generic_family_sixx301
+- name: MAIN_TASK_STACK_SIZE
+  value: (2304 / sizeof(configSTACK_DEPTH_TYPE))
+  condition:
+  - brd4186z
+configuration:
+- name: SL_BT_CONFIG_MAX_CONNECTIONS
+  value: 1
+  condition:
+  - sl_sidewalk_radio_ble
+- name: SL_MBEDTLS_PSA_ASSUME_EXCLUSIVE_BUFFERS
+  value: 1
+- name: SL_CLOCK_MANAGER_DEFAULT_HF_CLOCK_SOURCE
+  value: SL_CLOCK_MANAGER_DEFAULT_HF_CLOCK_SOURCE_HFRCODPLL
+  unless:
+  - hardware_board
+- name: SL_CLOCK_MANAGER_DEFAULT_LF_CLOCK_SOURCE
+  value: SL_CLOCK_MANAGER_DEFAULT_LF_CLOCK_SOURCE_LFXO
+  unless:
+  - hardware_board
+- name: SL_CLOCK_MANAGER_HFXO_EN
+  value: 1
+  unless:
+  - hardware_board
+- name: SL_CLOCK_MANAGER_LFXO_EN
+  value: 1
+  unless:
+  - hardware_board
+- name: SL_CLOCK_MANAGER_HFRCO_DPLL_EN
+  value: 1
+  unless:
+  - hardware_board
+- name: SL_CLOCK_MANAGER_LFRCO_PRECISION
+  value: 1
+  condition:
+  - hardware_board
+  unless:
+  - hardware_board_has_lfxo
+- name: SL_SIDEWALK_COMMON_DEFAULT_LINK_TYPE
+  value: SL_SIDEWALK_LINK_BLE
+  condition:
+  - sl_sidewalk_radio_ble
+- name: SL_SIDEWALK_COMMON_DEFAULT_LINK_TYPE
+  value: SL_SIDEWALK_LINK_FSK
+  condition:
+  - sl_sidewalk_radio_subghz
+  unless:
+  - sl_sidewalk_radio_ble
+- name: SL_SIDEWALK_COMMON_DEFAULT_LINK_CONNECTION_POLICY
+  value: SID_LINK_CONNECTION_POLICY_MULTI_LINK_MANAGER
+- name: SL_SIDEWALK_COMMON_DEFAULT_MULTI_LINK_POLICY
+  value: SID_LINK_MULTI_LINK_POLICY_RELIABILITY
+- name: SL_SPIDRV_EXP_CS_CONTROL
+  value: spidrvCsControlApplication
+  condition:
+  - spidrv
+- name: SL_SPIDRV_EXP_BITRATE
+  value: 8000000
+  condition:
+  - spidrv
+- name: SL_SLEEPTIMER_PERIPHERAL
+  value: SL_SLEEPTIMER_PERIPHERAL_DEFAULT
+- name: SL_SID_LOG_APP_ENABLED
+  value: 1
+- name: SL_SID_LOG_PAL_ENABLED
+  value: 1
+- name: SID_PAL_LOG_ENABLED
+  value: 1
+- name: SL_BOARD_ENABLE_VCOM
+  value: 0
+  condition:
+  - iostream_usart
+- name: SL_IOSTREAM_USART_VCOM_RESTRICT_ENERGY_MODE_TO_ALLOW_RECEPTION
+  value: 0
+  condition:
+  - iostream_usart
+- name: SL_IOSTREAM_USART_VCOM_FLOW_CONTROL_TYPE
+  value: usartHwFlowControlNone
+  condition:
+  - iostream_usart
+- name: SL_CLI_INST_IOSTREAM_HANDLE
+  value: sl_iostream_rtt_handle
+- name: configTOTAL_HEAP_SIZE   #xg23, xg25
+  value: 9216
+  condition:
+  - sl_sidewalk_radio_native
+  unless:
+  - sl_sidewalk_radio_ble
+- name: configTOTAL_HEAP_SIZE   #xg21, xg24, xg26, xg28, xg29, kg100s
+  value: 17408
+  condition:
+  - sl_sidewalk_radio_ble
+  unless:
+  - device_generic_family_efr32xg27
+  - device_generic_family_sixx301
+- name: configTOTAL_HEAP_SIZE   #xg27
+  value: 13312
+  condition:
+  - device_generic_family_efr32xg27
+- name: configTOTAL_HEAP_SIZE   #sixx301
+  value: 20480
+  condition:
+  - device_generic_family_sixx301
+- name: SL_STACK_SIZE
+  value: 2048
+- name: NVM3_DEFAULT_NVM_SIZE
+  value: 24576
+- name: SL_MAIN_START_TASK_STACK_SIZE_BYTES
+  value: 2048
+- name: SL_BT_RTOS_EVENT_HANDLER_STACK_SIZE
+  value: 4000
+  condition:
+  - sl_sidewalk_radio_ble
+  unless:
+  - device_generic_family_efr32xg27
+- name: SL_CLI_INPUT_BUFFER_SIZE
+  value: 256
+- name: APP_LOG_AUTO_NL
+  value: 1
+- name: SL_BT_CONFIG_MIN_TX_POWER
+  value: (-260)
+  condition:
+  - sl_sidewalk_radio_ble
+- name: SL_BT_CONFIG_MAX_TX_POWER
+  value: (100)
+  condition:
+  - sl_sidewalk_radio_ble
+- name: APP_LOG_LEVEL_DEBUG_PREFIX
+  value: '"<D>"'
+- name: APP_LOG_LEVEL_INFO_PREFIX
+  value: '"<I>"'
+- name: APP_LOG_LEVEL_WARNING_PREFIX
+  value: '"<W>"'
+- name: APP_LOG_LEVEL_ERROR_PREFIX
+  value: '"<E>"'
+- name: APP_LOG_LEVEL_CRITICAL_PREFIX
+  value: '"<C>"'
+- name: SL_BT_CONFIG_USER_ADVERTISERS
+  value: 2
+  condition:
+  - sidewalk_dult
+- name: configUSE_MALLOC_FAILED_HOOK
+  value: 1
+- name: configCHECK_FOR_STACK_OVERFLOW
+  value: 2
+readme:
+- path: ../../../documentation/example/amazon_sidewalk_soc_cli/bt_subghz/readme.md
+ui_hints:
+  highlight:
+  - path: config/sidewalk/sidewalk.asconf
+  - path: config/btconf/gatt_configuration.btconf
+    condition:
+    - sidewalk_dult
+  - path: readme.md
+    focus: true
+config_file:
+- path: ../../../tools/cloudformation/public/CF_minimal_sidewalk.json
+  directory: sidewalk
+- path: ../../configurator/fsk/sidewalk.asconf
+  directory: sidewalk
+  condition:
+  - sl_sidewalk_radio_native
+- path: ../../configurator/ble/sidewalk.asconf
+  directory: sidewalk
+  unless:
+  - sl_sidewalk_radio_native
+- path: ../../mfg.runconf
+  directory: sidewalk
+- override:
+    component: gatt_configuration
+    file_id: gatt_configuration_file_id
+  path: gatt_configuration.btconf
+  directory: btconf
+  condition:
+  - sidewalk_dult
+filter:
+- name: Wireless Technology
+  value:
+  - Sidewalk
+  - Bluetooth
+- name: Ecosystem
+  value:
+  - Amazon
+- name: Device Type
+  value:
+  - SoC
+- name: Project Difficulty
+  value:
+  - Advanced
+template_contribution:
+- name: bluetooth_on_event
+  value:
+    include: ble_adapter.h
+    function: sl_ble_adapter_on_event
+  condition:
+  - sl_sidewalk_radio_ble
+- name: event_handler
+  value:
+    event: kernel_start
+    include: ble_adapter.h
+    handler: sl_ble_adapter_on_kernel_start
+  condition:
+  - sl_sidewalk_radio_ble
+- name: cli_group
+  value:
+    name: sidewalk
+    help: 'Sidewalk stack interraction: init, deinit, start, stop'
+    shortcuts:
+    - name: sid
+- name: cli_group
+  value:
+    name: dult
+    help: 'DULT-S interraction: init, deinit, status'
+    shortcuts:
+    - name: dult
+  condition:
+  - sidewalk_dult
+- name: cli_command
+  value:
+    name: init
+    handler: cli_sid_init
+    argument:
+    - type: string
+      help: ble, fsk or css
+    - type: additional
+      help: More args...
+    help: 'Initialize Sidewalk stack for chosen communication link: ble, fsk or css'
+    group: sidewalk
+- name: cli_command
+  value:
+    name: start
+    handler: cli_sid_start
+    argument:
+    - type: string
+      help: ble, fsk or css
+    - type: additional
+      help: More args...
+    help: 'Initialize Sidewalk stack for chosen communication link: ble, fsk or css'
+    group: sidewalk
+- name: cli_command
+  value:
+    name: stop
+    handler: cli_sid_stop
+    argument:
+    - type: string
+      help: ble, fsk or css
+    - type: additional
+      help: More args
+    help: 'Stop Sidewalk stack for chosen communication link: ble, fsk or css'
+    group: sidewalk
+- name: cli_command
+  value:
+    name: deinit
+    handler: cli_sid_deinit
+    help: Deinitialize Sidewalk stack
+    group: sidewalk
+- name: cli_command
+  value:
+    name: reset
+    handler: cli_sid_reset
+    help: Deregister Sidewalk device and returns to factory settings
+    group: sidewalk
+- name: cli_command
+  value:
+    name: bleconnect
+    handler: cli_sid_ble_connect
+    help: Before sending uplink to sidewalk network, you first need to connect to the network. Connection will timeout after 30sec of innactivity.
+    group: sidewalk
+- name: cli_command
+  value:
+    name: send
+    handler: cli_sid_send
+    argument:
+    - type: string
+      help: get, set, notify or response
+    - type: string
+      help: ASCII encoded string
+    - type: stringopt
+      help: ble, fsk or css
+    help: 'Send a custom message to the cloud. arg0: get, set, notify or response; arg1: ASCII encoded string; arg2: Link type for auto connect mode'
+    group: sidewalk
+- name: cli_command
+  value:
+    name: init
+    handler: cli_dult_init
+    argument:
+    - type: additional
+      help: More args...
+    help: Initialize Sidewalk DULT-S
+    group: dult
+  condition:
+  - sidewalk_dult
+- name: cli_command
+  value:
+    name: deinit
+    handler: cli_dult_deinit
+    argument:
+    - type: additional
+      help: More args...
+    help: Deinitialize Sidewalk DULT-S
+    group: dult
+  condition:
+  - sidewalk_dult
+- name: cli_command
+  value:
+    name: status
+    handler: cli_dult_status
+    argument:
+    - type: additional
+      help: More args...
+    help: Get Sidewalk DULT-S status
+    group: dult
+  condition:
+  - sidewalk_dult
+sdk_extension:
+- id: sidewalk
+  vendor: silabs
+  version: 2.8.0
+sdk:
+  id: simplicity_sdk
+  vendor: silabs
+  version: 2025.12.0

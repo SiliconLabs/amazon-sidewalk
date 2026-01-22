@@ -1,0 +1,13 @@
+id: sidewalk_ble_subghz
+label: Sidewalk BLE SubGhz Dummy
+package: sidewalk
+description: This is just a dummy component to support slcu.
+category: Utility
+quality: production
+metadata:
+  sbom:
+    license: Zlib
+provides:
+  - name: sidewalk_ble_subghz
+ui_hints:
+  visibility: never

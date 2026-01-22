@@ -1,0 +1,14 @@
+id: sidewalk_dmp_ble_support
+label: Sidewalk DMP BLE support
+package: sidewalk
+description: Provides Sidewalk DMP BLE support
+category: Protocol
+quality: production
+metadata:
+  sbom:
+    license: Zlib
+root_path: component/sidewalk_dmp_ble_support
+provides:
+  - name: sidewalk_dmp_ble_support
+requires:
+  - name: rail_lib_multiprotocol

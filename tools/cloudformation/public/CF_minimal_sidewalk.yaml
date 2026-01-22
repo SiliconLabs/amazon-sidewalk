@@ -1,0 +1,336 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: This is a minimal AWS stack descriptor for Sidewalk project within Silicon Labs.
+Resources:
+####################################################################
+# Type: AWS::SQS::Queue
+# Our SQS queue which we will republish into from our destination
+# rule.
+####################################################################
+  CFSReceiveQueue: 
+    Type: AWS::SQS::Queue
+    Properties: 
+      QueueName: CFSReceiveQueue
+####################################################################
+# Type: AWS::SQS::QueuePolicy
+# This policy is for the SQS to allow us to interract with it.
+####################################################################
+  CFSReceiveQueuePolicy:
+    Type: AWS::SQS::QueuePolicy
+    Properties:
+      PolicyDocument:
+        Id: CFSReceiveQueuePolicy
+        Version: '2012-10-17'
+        Statement:
+          - Sid: SendPermission
+            Effect: Allow
+            Action:
+              - sqs:*
+            Resource: !GetAtt CFSReceiveQueue.Arn
+      Queues:
+        - !Ref CFSReceiveQueue
+####################################################################
+# Type: AWS::S3::Bucket
+# Our S3 Bucket.
+####################################################################
+  S3Bucket: 
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: !Join 
+        - '-'
+        - - sidewalk-sl
+          - !Select 
+            - 0
+            - !Split 
+              - '-'
+              - !Select 
+                - 2
+                - !Split 
+                  - /
+                  - !Ref 'AWS::StackId'
+      VersioningConfiguration:
+        Status: Suspended
+      PublicAccessBlockConfiguration:
+        BlockPublicAcls: Yes
+        BlockPublicPolicy: Yes
+        IgnorePublicAcls: Yes
+        RestrictPublicBuckets: Yes
+      Tags:
+        - Key: Terraform
+          Value: !Sub 'false'
+        - Key: CreatedBy
+          Value: !Sub 'CloudFormation'
+        - Key: Team
+          Value: !Sub 'Sidewalk'
+        - Key: Project
+          Value: !Sub 'Sidewalk'
+####################################################################
+# Type: AWS::IAM::Role
+# This role is for the fuota.
+####################################################################
+  CFSFuotaServiceRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: CFSFuotaServiceRole
+      Description: Allows IoT to call AWS services on your behalf.
+      MaxSessionDuration: 3600
+      Policies: 
+        - 
+          PolicyName: CFSFuotaTaskPolicy
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+            - Effect: Allow
+              Sid: PerformFuotaTasks
+              Action:
+              - iotwireless:CreateFuotaTask
+              - iotwireless:DisassociateMulticastGroupFromFuotaTask
+              - iotwireless:DisassociateWirelessDeviceFromFuotaTask
+              - iotwireless:StartFuotaTask
+              - iotwireless:GetFuotaTask
+              - iotwireless:DeleteFuotaTask
+              - iotwireless:AssociateWirelessDeviceWithFuotaTask
+              - iotwireless:ListFuotaTasks
+              - iotwireless:ListMulticastGroupsByFuotaTask
+              - iotwireless:UpdateFuotaTask
+              - iotwireless:AssociateMulticastGroupWithFuotaTask
+              Resource:
+              - '*'
+        - 
+          PolicyName: CFSBucketAllowPolicy
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+            - Effect: Allow
+              Sid: ViewS3
+              Action:
+              - s3:ListBucketVersions
+              - s3:ListBucket
+              - s3:GetObject
+              Resource: !GetAtt S3Bucket.Arn
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal: 
+              Service: 
+                - iotwireless.amazonaws.com
+            Action:
+              - sts:AssumeRole
+####################################################################
+# Type: AWS::IAM::Role
+# This role is for the destination.
+####################################################################
+  CFSDestinationRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: CFSDestinationRole
+      Description: Allows IoT to call AWS services on your behalf.
+      MaxSessionDuration: 3600
+      Policies: 
+        - 
+          PolicyName: CFSDestinationPolicy
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+            - Effect: Allow
+              Action:
+              - iot:Connect
+              - iot:DescribeEndpoint
+              - iot:Publish
+              Resource:
+              - '*'
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal: 
+              Service: 
+                - iotwireless.amazonaws.com
+            Action:
+              - sts:AssumeRole
+####################################################################
+# Type: AWS::IAM::Role
+# This role is for generic republishing.
+####################################################################
+  CFSRepublishRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: CFSRepublishRole
+      Description: Allows IoT to call AWS services on your behalf.
+      MaxSessionDuration: 3600
+      Policies: 
+        - 
+          PolicyName: CFSRepublishPolicy
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+            - Effect: Allow
+              Action:
+              - iot:*
+              - sqs:*
+              - iotwireless:*
+              - logs:*
+              Resource:
+              - '*'
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Sid: CFSRepublishPolicy
+            Principal: 
+              Service: 
+                - iot.amazonaws.com
+            Action:
+              - sts:AssumeRole
+####################################################################
+# Type: AWS::IAM::Role
+# This role is for our republish lambda function.
+####################################################################
+  CFSRepublishLambdaRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: CFSRepublishLambdaRole
+      Description: Allows IoT to call AWS services on your behalf.
+      MaxSessionDuration: 3600
+      Policies: 
+        - 
+          PolicyName: CFSRepublishPolicy
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+            - Effect: Allow
+              Action:
+              - iot:*
+              - sqs:*
+              - iotwireless:*
+              - logs:*
+              Resource:
+              - '*'
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Sid: LambdaAccessibleServices
+            Principal: 
+              Service: 
+                - lambda.amazonaws.com
+            Action:
+              - sts:AssumeRole
+####################################################################
+# Type: AWS::IoT::TopicRule
+# Destination rule which republishes the incoming messages to SQS,
+# mqtt and a lambda function.
+# All three are not necessary it mostly for unique use cases.
+####################################################################
+  CFSDestinationRule:
+    Type: AWS::IoT::TopicRule
+    Properties:
+      RuleName: CFSDestinationRule
+      TopicRulePayload:
+        RuleDisabled: false
+        Sql: SELECT *
+        Actions:
+        - Lambda:
+            FunctionArn: !GetAtt CFSRepublishLambda.Arn
+        - Republish:
+            Qos: 0
+            Topic: sidewalk/received
+            RoleArn: !GetAtt CFSRepublishRole.Arn
+        - Sqs:
+            QueueUrl: !GetAtt CFSReceiveQueue.QueueName
+            RoleArn: !GetAtt CFSRepublishRole.Arn
+####################################################################
+# Type: AWS::Lambda::Permission
+# This permission allows the lambda function to get triggered by
+# the iot core.
+####################################################################
+  CFSRepublishLambdaPermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName: !GetAtt CFSRepublishLambda.Arn
+      Action: lambda:InvokeFunction
+      Principal: iot.amazonaws.com
+      SourceAccount: !Ref AWS::AccountId
+      SourceArn: !GetAtt CFSDestinationRule.Arn
+####################################################################
+# Type: AWS::Lambda::Function
+# Lambda function which decodes the raw input messages 
+# from Sidewalk and republish them to test/[application]/[device_id] MQTT topic
+####################################################################
+  CFSRepublishLambda:
+    Type: AWS::Lambda::Function
+    Properties:
+      Handler: index.lambda_handler
+      Runtime: python3.8
+      Role: !GetAtt CFSRepublishLambdaRole.Arn
+      Code:
+        ZipFile: | 
+          import json
+          import base64
+          import boto3
+          import struct
+
+          from enum import Enum, auto
+
+          class SAMC_CMD_CLS(Enum):
+              SL_SID_APP_MSG_CMD_CLS_DEV_MGMT = 0
+              SL_SID_APP_MSG_CMD_CLS_CLOUD_MGMT = auto()
+              SL_SID_APP_MSG_CMD_CLS_SID = auto()
+              SL_SID_APP_MSG_CMD_CLS_DMP_SOC_LIGHT = auto()
+              
+          class SAMC():
+              SL_SID_APP_MSG_PROTO_VER = 1
+              SL_SID_APP_MSG_LENGTH = 5
+              proto_ver_bits = 0x0f
+              cmd_cls_bits = 0xf0
+
+              def __init__(self, device_id):
+                  self.client = boto3.client('iot-data', region_name='us-east-1')
+                  self.wireless_device_id = device_id
+                  self.topic = 'test/'
+
+              def identifyMessagePacket(self, payload_data):
+                  if len(payload_data) == self.SL_SID_APP_MSG_LENGTH:
+                      packed_struct = struct.unpack("5b", payload_data)
+                      if packed_struct[0] & self.proto_ver_bits == SAMC.SL_SID_APP_MSG_PROTO_VER:
+                          if (packed_struct[0] & self.cmd_cls_bits) >> 4 == SAMC_CMD_CLS.SL_SID_APP_MSG_CMD_CLS_DMP_SOC_LIGHT.value:
+                              self.topic += 'dmp_soc_light/'
+                      else:
+                          print("Wrong proto version!")
+                  else:
+                      print("Payload is not recognised as Sidewalk Application Message Component by Silicon Labs!")
+
+              def publishMessage(self, payload_data_to_publish):
+                  self.topic += f'{self.wireless_device_id}'
+                  response = self.client.publish(
+                          topic=self.topic,
+                          qos=1,
+                          payload=payload_data_to_publish
+                      )
+
+          def lambda_handler(event, context):
+              message = json.dumps(event)
+              print(message)
+              
+              payload_ascii = base64.b64decode(event["PayloadData"])
+              print(f'Payload ASCII is {payload_ascii}')
+              
+              payload_hex = bytearray.fromhex(payload_ascii.decode())
+              
+              decoded_payload = payload_hex.decode("iso-8859-2")
+              decoded_data = json.dumps({"payload":decoded_payload, "WirelessDeviceId":event["WirelessDeviceId"], "WirelessMetadata":event["WirelessMetadata"]})
+
+              samc = SAMC(event["WirelessDeviceId"])
+              samc.identifyMessagePacket(payload_hex)
+              samc.publishMessage(decoded_data)
+####################################################################
+# Type: AWS::IoTWireless::Destination
+# Destination for the Sidewalk devices
+####################################################################
+  CFSDestination:
+    Type: AWS::IoTWireless::Destination
+    Properties: 
+      Expression: CFSDestinationRule
+      ExpressionType: RuleName
+      Name: CFSDestination
+      RoleArn: !GetAtt CFSDestinationRole.Arn

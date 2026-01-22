@@ -1,0 +1,206 @@
+id: sidewalk_common
+label: Sidewalk common
+package: sidewalk
+description: Simple component to gather all of the sidewalk related
+  libraries and header files.
+category: Protocol
+quality: production
+metadata:
+  sbom:
+    license: LicenseRef-amazon-sidewalk-license
+root_path: component
+config_file:
+  - path: sidewalk_common/config/ble_subghz/sl_sidewalk_common_config.h
+    condition:
+      - sl_sidewalk_radio_ble
+      - sl_sidewalk_radio_subghz
+  - path: sidewalk_common/config/ble/sl_sidewalk_common_config.h
+    condition:
+      - sl_sidewalk_radio_ble
+    unless:
+      - sl_sidewalk_radio_subghz
+  - path: sidewalk_common/config/subghz/sl_sidewalk_common_config.h
+    condition:
+      - sl_sidewalk_radio_subghz
+    unless:
+      - sl_sidewalk_radio_ble
+  - path: sidewalk_common/config/sl_sidewalk_properties.h
+source:
+  - path: sidewalk_common/src/sl_sidewalk_freertos_hooks.c
+    condition:
+      - freertos
+provides:
+  - name: sidewalk_common
+  - name: sl_sidewalk_family_has_radio_external_support
+    condition:
+      - device_generic_family_efr32xg21
+  - name: sl_sidewalk_family_has_radio_external_support
+    condition:
+      - device_generic_family_efr32xg23
+  - name: sl_sidewalk_family_has_radio_external_support
+    condition:
+      - device_generic_family_efr32xg24
+  - name: sl_sidewalk_family_has_radio_external_support
+    condition:
+      - device_generic_family_efr32xg26
+  - name: sl_sidewalk_family_has_radio_external_support
+    condition:
+      - device_generic_family_efr32xg28
+  - name: sl_sidewalk_board_has_radio_external_support
+    condition:
+      - hardware_board_has_spi
+      - hardware_board_has_exp_11
+      - hardware_board_has_exp_12
+      - hardware_board_has_exp_13
+      - hardware_board_has_exp_14
+      - sl_sidewalk_family_has_radio_external_support
+      - hardware_board_mainboard_wstk
+  - name: sl_sidewalk_default_radio_sx1262
+    condition:
+      - brd4332a
+  - name: sl_sidewalk_default_radio_sx1262
+    condition:
+      - sl_sidewalk_board_has_radio_external_support
+      - device_generic_family_efr32xg21
+  - name: sl_sidewalk_default_radio_sx1262
+    condition:
+      - sl_sidewalk_board_has_radio_external_support
+      - device_generic_family_efr32xg24
+  - name: sl_sidewalk_default_radio_sx1262
+    condition:
+      - sl_sidewalk_board_has_radio_external_support
+      - device_generic_family_efr32xg26
+  - name: sl_sidewalk_default_radio_efr32xgxx
+    condition:
+      - device_generic_family_efr32xg23
+      - device_has_radio_subghz
+  - name: sl_sidewalk_default_radio_efr32xgxx
+    condition:
+      - device_generic_family_efr32xg25
+      - device_has_radio_subghz
+  - name: sl_sidewalk_default_radio_efr32xgxx
+    condition:
+      - device_generic_family_efr32xg28
+      - device_has_radio_subghz
+  - name: sl_sidewalk_family_supports_2_btns
+    condition:
+      - device_generic_family_efr32xg21
+      - hardware_board_supports_1_rf_band # to exclude kg100s
+  - name: sl_sidewalk_family_supports_2_btns
+    condition:
+      - device_generic_family_efr32xg23
+  - name: sl_sidewalk_family_supports_2_btns
+    condition:
+      - device_generic_family_efr32xg24
+  - name: sl_sidewalk_family_supports_2_btns
+    condition:
+      - device_generic_family_efr32xg25
+  - name: sl_sidewalk_family_supports_2_btns
+    condition:
+      - device_generic_family_efr32xg26
+  - name: sl_sidewalk_family_supports_2_btns
+    condition:
+      - device_generic_family_efr32xg28
+  - name: sl_sidewalk_family_supports_2_btns
+    condition:
+      - device_generic_family_sixx301
+requires:
+  - name: sidewalk_pal_swi
+  - name: sl_common
+  - name: app_assert
+    condition:
+      - freertos
+  - name: sidewalk_kg100s
+    condition:
+      - brd4332a
+define:
+  - name: REGION_US915
+    condition:
+      - sl_sidewalk_radio_native
+  - name: REGION_US915
+    condition:
+      - sl_sidewalk_radio_external
+  - name: SL_TEMPERATURE_SENSOR_INTERNAL
+    condition:
+      - tempdrv
+  - name: SL_TEMPERATURE_SENSOR_EXTERNAL
+    condition:
+      - si70xx_driver
+  - name: BUFFER_SIZE_UP
+    value: 4096
+    condition:
+      - iostream_rtt
+  - name: SEGGER_RTT_PRINTF_BUFFER_SIZE
+    value: 256
+    condition:
+      - iostream_rtt
+  - name: SL_SIDEWALK_RTT_PRESENT
+    condition:
+      - iostream_rtt
+  - name: SL_SIDEWALK_CLI_DEFAULT_TERMINAL_ID
+    value: 0
+    condition:
+      - cli
+  - name: SL_SIDEWALK_EXTENSION_VERSION
+    value: 2.8.0
+  - name: EFR32XG21
+    condition:
+      - device_generic_family_efr32xg21
+  - name: EFR32XG24
+    condition:
+      - device_generic_family_efr32xg24
+  - name: EFR32XG26
+    condition:
+      - device_generic_family_efr32xg26
+  - name: EFR32XG28
+    condition:
+      - device_generic_family_efr32xg28
+  - name: EFR32XG23
+    condition:
+      - device_generic_family_efr32xg23
+  - name: EFR32XG25
+    condition:
+      - device_generic_family_efr32xg25
+  - name: EFR32XG27
+    condition:
+      - device_generic_family_efr32xg27
+  - name: EFR32XG29
+    condition:
+      - device_generic_family_efr32xg29
+  - name: SIXX301
+    condition:
+      - device_generic_family_sixx301
+toolchain_settings:
+  - option: optimize
+    value: size
+  - option: gcc_compiler_option
+    value: -fshort-enums
+  - option: gcc_compiler_option
+    value: -fno-strict-aliasing
+  - option: gcc_compiler_option
+    value: -mabi=aapcs
+  - option: gcc_compiler_option
+    value: -mcpu=cortex-m33
+  - option: gcc_compiler_option
+    value: -mthumb
+  - option: gcc_compiler_option
+    value: -mfloat-abi=hard
+  - option: gcc_compiler_option
+    value: -mfpu=fpv5-sp-d16
+  - option: gcc_compiler_option
+    value: -ffunction-sections
+  - option: gcc_compiler_option
+    value: -fdata-sections
+  - option: gcc_compiler_option
+    value: -fno-builtin
+  - option: gcc_compiler_option
+    value: -fdiagnostics-color=always
+  - option: gcc_linker_option
+    value: -Wl,--gc-sections
+  - option: gcc_linker_option
+    value: -Wl,--print-memory-usage
+template_contribution:
+  - name: component_catalog
+    value: sidewalk_common
+ui_hints:
+  visibility: never

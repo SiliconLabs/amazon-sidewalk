@@ -1,0 +1,217 @@
+project_name: amazon_sidewalk_soc_qualification
+package: sidewalk_sample_app
+quality: production
+label: Amazon Sidewalk - SoC Qualification
+description: The SoC Qualification example is a command-line interface (CLI) based sample application. It enables testing of the Sidewalk API functions via the command line. This is the reference application for Sidewalk qualification.
+category: Example|AWS IoT
+source:
+- path: app_properties.c
+- path: app_main.c
+include:
+- path: .
+  file_list:
+  - path: application_properties.h
+component:
+- id: sidewalk_common
+- id: sidewalk_pal
+- id: sidewalk_app_log
+- id: sidewalk_log_app_rtt
+- id: sidewalk_log_pal_rtt
+- id: sidewalk_log_stack_rtt
+- id: sidewalk_utils
+- id: sidewalk_qualification_support
+- id: sidewalk_ble
+  condition:
+  - device_supports_bluetooth
+- id: sidewalk_subghz_sx1262
+  condition:
+  - sl_sidewalk_default_radio_sx1262
+- id: sidewalk_subghz_sx1262
+  condition:
+  - sidewalk_kg100s
+- id: sidewalk_subghz_efr32xgxx
+  condition:
+  - sl_sidewalk_default_radio_efr32xgxx
+- id: iostream_rtt
+- id: printf
+- id: sl_main
+- id: device_init
+- id: clock_manager
+- id: iostream_stdlib_config
+- id: sleeptimer
+- id: app_assert
+- id: freertos
+- id: freertos_heap_4
+- id: rail_lib_multiprotocol
+  condition:
+  - sl_sidewalk_radio_native
+  - sl_sidewalk_radio_ble
+- id: memory_manager
+- id: power_manager
+define:
+- name: DEBUG_EFM
+configuration:
+- name: SL_MBEDTLS_PSA_ASSUME_EXCLUSIVE_BUFFERS
+  value: 1
+- name: SL_CLOCK_MANAGER_DEFAULT_HF_CLOCK_SOURCE
+  value: SL_CLOCK_MANAGER_DEFAULT_HF_CLOCK_SOURCE_HFRCODPLL
+  unless:
+  - hardware_board
+- name: SL_CLOCK_MANAGER_DEFAULT_LF_CLOCK_SOURCE
+  value: SL_CLOCK_MANAGER_DEFAULT_LF_CLOCK_SOURCE_LFXO
+  unless:
+  - hardware_board
+- name: SL_CLOCK_MANAGER_HFXO_EN
+  value: 1
+  unless:
+  - hardware_board
+- name: SL_CLOCK_MANAGER_LFXO_EN
+  value: 1
+  unless:
+  - hardware_board
+- name: SL_CLOCK_MANAGER_HFRCO_DPLL_EN
+  value: 1
+  unless:
+  - hardware_board
+- name: SL_CLOCK_MANAGER_LFRCO_PRECISION
+  value: 1
+  condition:
+  - hardware_board
+  unless:
+  - hardware_board_has_lfxo
+- name: SL_SIDEWALK_COMMON_DEFAULT_LINK_TYPE
+  value: SL_SIDEWALK_LINK_FSK
+  condition:
+  - sl_sidewalk_radio_subghz
+  unless:
+  - sl_sidewalk_radio_ble
+- name: SL_SPIDRV_EXP_CS_CONTROL
+  value: spidrvCsControlApplication
+  condition:
+  - spidrv
+- name: SL_SPIDRV_EXP_BITRATE
+  value: 8000000
+  condition:
+  - spidrv
+- name: SL_SID_LOG_APP_ENABLED
+  value: 1
+- name: SL_SID_LOG_PAL_ENABLED
+  value: 1
+- name: SID_PAL_LOG_ENABLED
+  value: 1
+- name: configMINIMAL_STACK_SIZE
+  value: 160
+- name: configTOTAL_HEAP_SIZE   #xg23, xg25
+  value: 9216
+  condition:
+  - sl_sidewalk_radio_native
+  unless:
+  - sl_sidewalk_radio_ble
+- name: configTOTAL_HEAP_SIZE   #xg21, xg24, xg26, xg28, kg100s
+  value: 15360
+  condition:
+  - sl_sidewalk_radio_ble
+- name: SL_STACK_SIZE
+  value: 2048
+- name: NVM3_DEFAULT_NVM_SIZE
+  value: 24576
+- name: SL_MAIN_START_TASK_STACK_SIZE_BYTES
+  value: 2048
+- name: SL_BT_RTOS_LINK_LAYER_TASK_STACK_SIZE
+  value: 1000
+  condition:
+  - sl_sidewalk_radio_ble
+- name: SL_BT_RTOS_HOST_STACK_TASK_STACK_SIZE
+  value: 2000
+  condition:
+  - sl_sidewalk_radio_ble
+- name: SL_BT_RTOS_EVENT_HANDLER_STACK_SIZE
+  value: 4000
+  condition:
+  - sl_sidewalk_radio_ble
+- name: SL_BT_CONFIG_BUFFER_SIZE
+  value: 3150
+  condition:
+  - sl_sidewalk_radio_ble
+- name: configTIMER_TASK_STACK_DEPTH
+  value: 160
+- name: APP_LOG_AUTO_NL
+  value: 1
+- name: SL_BT_CONFIG_MIN_TX_POWER
+  value: (-260)
+  condition:
+  - sl_sidewalk_radio_ble
+- name: SL_BT_CONFIG_MAX_TX_POWER
+  value: (100)
+  condition:
+  - sl_sidewalk_radio_ble
+- name: APP_LOG_LEVEL_DEBUG_PREFIX
+  value: '"<debug>"'
+- name: APP_LOG_LEVEL_INFO_PREFIX
+  value: '"<info>"'
+- name: APP_LOG_LEVEL_WARNING_PREFIX
+  value: '"<warning>"'
+- name: APP_LOG_LEVEL_ERROR_PREFIX
+  value: '"<error>"'
+- name: APP_LOG_LEVEL_CRITICAL_PREFIX
+  value: '"<critical>"'
+- name: configUSE_MALLOC_FAILED_HOOK
+  value: 1
+- name: configCHECK_FOR_STACK_OVERFLOW
+  value: 2
+readme:
+- path: ../../../documentation/example/amazon_sidewalk_soc_qualification/readme.md
+ui_hints:
+  highlight:
+  - path: config/sidewalk/sidewalk.asconf
+  - path: readme.md
+    focus: true
+config_file:
+- path: ../../../tools/cloudformation/public/CF_minimal_sidewalk.json
+  directory: sidewalk
+- path: ../../configurator/fsk/sidewalk.asconf
+  directory: sidewalk
+  condition:
+  - sl_sidewalk_radio_native
+- path: ../../configurator/ble/sidewalk.asconf
+  directory: sidewalk
+  unless:
+  - sl_sidewalk_radio_native
+- path: ../../mfg.runconf
+  directory: sidewalk
+filter:
+- name: Wireless Technology
+  value:
+  - Sidewalk
+  - Bluetooth
+- name: Ecosystem
+  value:
+  - Amazon
+- name: Device Type
+  value:
+  - SoC
+- name: Project Difficulty
+  value:
+  - Beginner
+template_contribution:
+- name: bluetooth_on_event
+  value:
+    include: ble_adapter.h
+    function: sl_ble_adapter_on_event
+  condition:
+  - sl_sidewalk_radio_ble
+- name: event_handler
+  value:
+    event: kernel_start
+    include: ble_adapter.h
+    handler: sl_ble_adapter_on_kernel_start
+  condition:
+  - sl_sidewalk_radio_ble
+sdk_extension:
+- id: sidewalk
+  vendor: silabs
+  version: 2.8.0
+sdk:
+  id: simplicity_sdk
+  vendor: silabs
+  version: 2025.12.0

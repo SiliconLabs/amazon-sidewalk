@@ -1,0 +1,11 @@
+id: app_button_press
+label: Sidewalk App Button Press Dummy
+package: sidewalk
+description: This is just a dummy component to support slcu.
+category: Utility
+quality: production
+metadata:
+  sbom:
+    license: Zlib
+ui_hints:
+  visibility: never

@@ -1,0 +1,48 @@
+id: sidewalk_ble
+label: Sidewalk BLE
+package: sidewalk
+description: This component contains the support of BLE link
+category: Protocol
+quality: production
+metadata:
+  sbom:
+    license: Zlib AND LicenseRef-amazon-sidewalk-license
+root_path: component
+provides:
+  - name: sl_sidewalk_radio_ble
+requires:
+  - name: sidewalk_pal
+  - name: sidewalk_common
+  - name: device_supports_bluetooth
+  - name: bluetooth_stack
+  - name: bluetooth_feature_dynamic_gattdb
+  - name: bluetooth_feature_gatt_server
+  - name: bluetooth_feature_system
+  - name: bluetooth_feature_connection_role_peripheral
+  - name: bluetooth_feature_legacy_advertiser
+  - name: bluetooth_feature_sm
+  - name: bluetooth_on_demand_start
+source:
+  - path: amazon/projects/sid/sal/silabs/sid_pal/ble_adapter/ble_adapter.c
+  - path: sidewalk_radio_config/ble/app_ble_config.c
+config_file:
+  - path: sidewalk_radio_config/ble/app_ble_config.h
+    condition:
+      - sl_sidewalk_radio_ble
+include:
+  - path: amazon/projects/sid/sal/common/public/sid_pal_ifc/ble_adapter
+    file_list:
+      - path: sid_pal_ble_adapter_ifc.h
+  - path: amazon/projects/sid/sal/silabs/sid_pal/ble_adapter/include
+    file_list:
+      - path: ble_adapter.h
+  - path: amazon/projects/sid/sal/common/public/sid_ifc/sid_ble_cfg
+    file_list:
+      - path: sid_ble_link_config_ifc.h
+      - path: sid_ble_config_ifc.h
+define:
+  - name: SL_BLE_SUPPORTED
+  - name: SID_SDK_CONFIG_ENABLE_BLE_USER_CONFIG
+    value: 1
+ui_hints:
+  visibility: advanced
