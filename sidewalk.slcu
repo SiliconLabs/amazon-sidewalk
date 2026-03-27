@@ -1,0 +1,33 @@
+upgrade:
+  - sdk:
+      id: sidewalk
+      version: "2.5.0"
+    configuration:
+      - script: extension_update_scripts/sidewalk_2_5_0_config.lua
+        description: Configuration upgrade script
+    component:
+      - script: extension_update_scripts/sidewalk_2_5_0_component.lua
+        description: Component upgrade script
+  - sdk:
+      id: sidewalk
+      version: "2.6.0"
+    component:
+      - script: extension_update_scripts/sidewalk_2_6_0_component.lua
+        description: Component upgrade script
+  - sdk:
+      id: sidewalk
+      version: "2.8.0"
+    component:
+      - script: extension_update_scripts/sidewalk_2_8_0_component.lua
+        description: Component upgrade script
+  - sdk:
+      id: sidewalk
+      vendor: silabs
+      version: "2.8.1"
+    component:
+      - trigger: 
+          id: sidewalk_led_manager
+          package: sidewalk
+          vendor: silabs
+        description: The Sidewalk LED Manager component includes two modified functions. DMP application files require corresponding updates. For migration instructions, refer to the DMP application README in Sidewalk v2.8.1.
+        status: user_verification
