@@ -1,0 +1,32 @@
+objectType: docLeaf
+id: sidewalk-sw-components
+access: public
+status: active
+version: "2.8.2"
+docSpaceParent: ../_docspace-sidewalk.yml
+authors:
+  - lucie.labadie@silabs.com
+  - peter.kolontari@silabs.com
+contentType: markdown
+title: "Sidewalk Software Components"
+description: ""
+sourceDir: .
+menu:
+  items:
+    - BLE: ../../component/sidewalk_ble/readme.md
+    - SubGHz driver EFR32xGxx: ../../component/sidewalk_subghz_efr32xgxx/readme.md
+    - SubGHz driver Semtech SX1262: ../../component/sidewalk_subghz_sx1262/readme.md
+    - SubGHz driver Semtech LR1110: ../../component/sidewalk_subghz_lr1110/readme.md
+    - KG100S: ../../component/sidewalk_kg100s/readme.md
+    - PAL SWI: ../../component/sidewalk_pal_swi/readme.md
+    - DMP BLE: ../../component/sidewalk_dmp_ble_support/readme.md
+    - DMP FSK: ../../component/sidewalk_dmp_fsk_support/readme.md
+    - ED25519: ../../component/sidewalk_ed25519/readme.md
+    - NVM3 Handler: ../../component/sidewalk_nvm3_handler/readme.md
+    - NVM3 Migrator: ../../component/sidewalk_nvm3_migrator/readme.md
+    - Log App RTT: ../../component/sidewalk_log_app_rtt/readme.md
+    - Log App VCOM: ../../component/sidewalk_log_app_vcom/readme.md
+    - Log PAL RTT: ../../component/sidewalk_log_pal_rtt/readme.md
+    - Log PAL VCOM: ../../component/sidewalk_log_pal_vcom/readme.md
+    - Log Stack RTT: ../../component/sidewalk_log_stack_rtt/readme.md
+    - Log Stack VCOM: ../../component/sidewalk_log_stack_vcom/readme.md

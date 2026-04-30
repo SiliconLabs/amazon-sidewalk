@@ -1,0 +1,39 @@
+id: sidewalk_nvm3_handler
+label: Sidewalk NVM3 Handler
+package: sidewalk
+description: Provides Sidewalk NVM3 handler functions
+category: Utility
+quality: production
+metadata:
+  sbom:
+    license: Zlib
+root_path: component
+provides:
+  - name: sidewalk_nvm3_handler
+source:
+  - path: sidewalk_nvm3_handler/sl_sidewalk_nvm3_handler.c
+include:
+  - path: sidewalk_nvm3_handler
+    file_list:
+      - path: sl_sidewalk_nvm3_handler.h
+  - path: amazon/projects/sid/sal/silabs/sid_pal/include/
+    file_list:
+      - path: nvm3_manager.h
+config_file:
+  - path: sidewalk_nvm3_handler/config/sl_sidewalk_nvm3_handler_config.h
+requires:
+  - name: nvm3_lib
+  - name: nvm3_default
+  - name: nvm3_default_config
+  - name: sidewalk_log_pal
+  - name: sidewalk_pal
+recommends:
+  - id: sidewalk_log_pal_rtt
+template_contribution:
+  - name: component_catalog
+    value: sidewalk_nvm3_handler
+  - name: event_handler
+    value:
+      event: service_init
+      include: sl_sidewalk_nvm3_handler.h
+      handler: sl_sidewalk_nvm3_handler_init

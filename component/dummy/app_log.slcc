@@ -1,0 +1,13 @@
+id: app_log
+label: Sidewalk Log Dummy
+package: sidewalk
+description: This is just a dummy component to support slcu.
+category: Utility
+quality: production
+metadata:
+  sbom:
+    license: Zlib
+provides:
+  - name: app_log
+ui_hints:
+  visibility: never
