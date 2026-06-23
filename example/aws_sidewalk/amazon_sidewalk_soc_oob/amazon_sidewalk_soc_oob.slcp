@@ -1,0 +1,269 @@
+project_name: amazon_sidewalk_soc_oob
+package: sidewalk_sample_app
+quality: experimental
+label: Amazon Sidewalk - OOB (Bluetooth - FSK)
+description: The Out-of-the-Box (OOB) application is an example
+  of a more concrete use of Amazon Sidewalk with communication
+  over FSK, CSS or BLE. The application connects to AWS and send
+  sensor updates to the cloud. The application can be controlled
+  from the cloud application at silabssidewalkdemo.com.
+category: Example|AWS IoT
+source:
+  - path: app_init.c
+  - path: app_process.c
+  - path: app_cmd.c
+include:
+  - path: .
+    file_list:
+      - path: app_init.h
+      - path: app_process.h
+component:
+  - id: sidewalk_app_log
+  - id: sidewalk_utils
+  - id: sidewalk_cmd_executor
+  - id: sidewalk_sender
+  - id: sidewalk_device_backup
+  - id: sidewalk_display
+    condition:
+      - device_generic_family_efr32xg24
+  - id: sidewalk_qr_code
+  - id: sidewalk_pal
+  - id: sidewalk_common
+  - id: sidewalk_log_app_rtt
+  - id: sidewalk_log_pal_rtt
+  - id: sidewalk_log_stack_rtt
+  - id: sidewalk_utils
+  - id: sidewalk_assistant
+  - id: sidewalk_ble
+    condition:
+      - device_supports_bluetooth
+  - id: sidewalk_subghz_sx1262
+    condition:
+      - sl_sidewalk_default_radio_sx1262
+  - id: sidewalk_subghz_efr32xgxx
+    condition:
+      - sl_sidewalk_default_radio_efr32xgxx
+  - id: iostream_rtt
+  - id: printf
+  - id: sl_main
+  - id: simple_button # xg24, xg28
+    instance:
+      - btn0
+      - btn1
+    condition:
+      - sl_sidewalk_family_supports_2_btns
+  - id: simple_led # xg24, xg28
+    instance:
+      - led0
+    condition:
+      - sl_sidewalk_family_supports_2_btns
+  - id: simple_led # xg24, xg28, kg100s
+    instance:
+      - led1
+  - id: device_init
+  - id: clock_manager
+  - id: iostream_stdlib_config
+  - id: sleeptimer
+  - id: app_assert
+  - id: freertos
+  - id: freertos_heap_4
+  - id: rail_lib_multiprotocol
+    condition:
+      - sl_sidewalk_radio_native
+      - sl_sidewalk_radio_ble
+  - id: rht_unidriver_driver
+    condition:
+      - device_generic_family_efr32xg24
+  - id: tempdrv
+    condition:
+      - brd4332a
+  - id: tempdrv
+    condition:
+      - device_generic_family_efr32xg28
+  - id: memory_manager
+define:
+  - name: SV_ENABLED
+  - name: MAIN_TASK_STACK_SIZE
+    value: (4352 / sizeof(configSTACK_DEPTH_TYPE))
+  - name: OOC_RCV_TASK_STACK_SIZE
+    value: (4352 / sizeof(configSTACK_DEPTH_TYPE))
+configuration:
+  - name: SL_MBEDTLS_PSA_ASSUME_EXCLUSIVE_BUFFERS
+    value: 1
+  - name: SL_SIDEWALK_COMMON_DEFAULT_LINK_TYPE
+    value: SL_SIDEWALK_LINK_BLE
+    condition:
+      - device_generic_family_efr32xg24
+  - name: SL_SIDEWALK_COMMON_DEFAULT_LINK_TYPE
+    value: SL_SIDEWALK_LINK_FSK
+    condition:
+      - device_generic_family_efr32xg28
+  - name: SL_SIDEWALK_COMMON_DEFAULT_LINK_TYPE
+    value: SL_SIDEWALK_LINK_FSK
+    condition:
+      - brd4332a
+  - name: SL_SIDEWALK_COMMON_DEFAULT_LINK_CONNECTION_POLICY
+    value: SID_LINK_CONNECTION_POLICY_MULTI_LINK_MANAGER
+  - name: SL_SIDEWALK_COMMON_DEFAULT_MULTI_LINK_POLICY
+    value: SID_LINK_MULTI_LINK_POLICY_RELIABILITY
+  - name: SL_SPIDRV_EXP_CS_CONTROL
+    value: spidrvCsControlApplication
+  - name: SL_SPIDRV_EXP_BITRATE
+    value: 8000000
+  - name: SL_SID_LOG_APP_ENABLED
+    value: 1
+  - name: SL_SID_LOG_PAL_ENABLED
+    value: 1
+  - name: SID_PAL_LOG_ENABLED
+    value: 1
+  - name: SL_BOARD_ENABLE_VCOM
+    value: 0
+    condition:
+      - iostream_usart
+  - name: SL_IOSTREAM_USART_VCOM_RESTRICT_ENERGY_MODE_TO_ALLOW_RECEPTION
+    value: 0
+    condition:
+      - iostream_usart
+  - name: SL_IOSTREAM_UART_VCOM_RESTRICT_ENERGY_MODE_TO_ALLOW_RECEPTION
+    value: 0
+    condition:
+      - iostream_uart
+  - name: SL_IOSTREAM_USART_VCOM_FLOW_CONTROL_TYPE
+    value: usartHwFlowControlNone
+    condition:
+      - iostream_usart
+  - name: configMINIMAL_STACK_SIZE
+    value: 1024
+  - name: configTOTAL_HEAP_SIZE
+    value: 30720
+  - name: SL_STACK_SIZE
+    value: 2048
+  - name: NVM3_DEFAULT_NVM_SIZE
+    value: 24576
+  - name: SL_MAIN_START_TASK_STACK_SIZE_BYTES
+    value: 2048
+  - name: SL_BT_RTOS_LINK_LAYER_TASK_STACK_SIZE
+    value: 2000
+  - name: SL_BT_RTOS_HOST_STACK_TASK_STACK_SIZE
+    value: 4000
+  - name: SL_BT_RTOS_EVENT_HANDLER_STACK_SIZE
+    value: 4000
+  - name: SL_BT_CONFIG_BUFFER_SIZE
+    value: 6300
+  - name: configTIMER_TASK_STACK_DEPTH
+    value: 1024
+  - name: APP_LOG_AUTO_NL
+    value: 1
+  - name: SL_BT_CONFIG_MIN_TX_POWER
+    value: (-260)
+  - name: SL_BT_CONFIG_MAX_TX_POWER
+    value: (100)
+  - name: APP_LOG_LEVEL_DEBUG_PREFIX
+    value: '"<D>"'
+  - name: APP_LOG_LEVEL_INFO_PREFIX
+    value: '"<I>"'
+  - name: APP_LOG_LEVEL_WARNING_PREFIX
+    value: '"<W>"'
+  - name: APP_LOG_LEVEL_ERROR_PREFIX
+    value: '"<E>"'
+  - name: APP_LOG_LEVEL_CRITICAL_PREFIX
+    value: '"<C>"'
+  - name: configUSE_MALLOC_FAILED_HOOK
+    value: 1
+  - name: configCHECK_FOR_STACK_OVERFLOW
+    value: 2
+readme:
+  - path: ../../../documentation/example/amazon_sidewalk_soc_oob/bt_subghz/readme.md
+ui_hints:
+  highlight:
+    - path: config/sidewalk/sidewalk.asconf
+      condition:
+        - sidewalk_assistant
+    - path: readme.md
+      focus: true
+config_file:
+  - path: ../../../tools/cloudformation/public/CF_minimal_sidewalk.json
+    directory: sidewalk
+  - path: ../../configurator/ble/sidewalk.asconf
+    directory: sidewalk
+  - path: ../../mfg.runconf
+    directory: sidewalk
+tag:
+  - toolchain:gcc
+  - toolchain:llvm
+filter:
+  - name: Wireless Technology
+    value:
+      - Sidewalk
+      - Bluetooth
+  - name: Ecosystem
+    value:
+      - Amazon
+  - name: Device Type
+    value:
+      - SoC
+  - name: Project Difficulty
+    value:
+      - Advanced
+template_contribution:
+  - name: bluetooth_on_event
+    value:
+      include: ble_adapter.h
+      function: sl_ble_adapter_on_event
+  - name: event_handler
+    value:
+      event: kernel_start
+      include: ble_adapter.h
+      handler: sl_ble_adapter_on_kernel_start
+  - name: sidewalk_command
+    value:
+      name: :led0=
+      handler: sidewalk_cmd_cb_led0
+      help: SIDEWALK_COMMAND_ID_led0
+      index: SIDEWALK_COMMAND_ID_led0
+    condition:
+      - sl_sidewalk_family_supports_2_btns
+  - name: sidewalk_command
+    value:
+      name: :led1=
+      handler: sidewalk_cmd_cb_led1
+      help: SIDEWALK_COMMAND_ID_led1
+      index: SIDEWALK_COMMAND_ID_led1
+  - name: sidewalk_command
+    value:
+      name: :display=
+      handler: sidewalk_cmd_cb_display
+      help: SIDEWALK_COMMAND_ID_display
+      index: SIDEWALK_COMMAND_ID_display
+    condition:
+      - sidewalk_display
+  - name: sidewalk_command
+    value:
+      name: ready
+      handler: sidewalk_cmd_cb_ready
+      help: SIDEWALK_COMMAND_ID_ready
+      index: SIDEWALK_COMMAND_ID_ready
+  - name: sidewalk_command
+    value:
+      name: 'url '
+      handler: sidewalk_cmd_cb_url
+      help: SIDEWALK_COMMAND_ID_url
+      index: SIDEWALK_COMMAND_ID_url
+  - name: sidewalk_command
+    value:
+      name: 'ack '
+      handler: sidewalk_cmd_cb_ack
+      help: SIDEWALK_COMMAND_ID_ack
+      index: SIDEWALK_COMMAND_ID_ack
+  - name: sidewalk_command
+    value:
+      name: 'tink '
+      handler: sidewalk_cmd_cb_tink
+      help: SIDEWALK_COMMAND_ID_tink
+      index: SIDEWALK_COMMAND_ID_tink
+  - name: sidewalk_command
+    value:
+      name: disconnect
+      handler: sidewalk_cmd_cb_disconnect
+      help: SIDEWALK_COMMAND_ID_disconnect
+      index: SIDEWALK_COMMAND_ID_disconnect

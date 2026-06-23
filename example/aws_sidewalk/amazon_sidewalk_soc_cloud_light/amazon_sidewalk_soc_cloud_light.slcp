@@ -1,0 +1,314 @@
+project_name: amazon_sidewalk_soc_cloud_light
+package: sidewalk_sample_app
+quality: evaluation
+label: Amazon Sidewalk - SoC Cloud Light
+description: The Amazon Sidewalk Cloud Light application is a lightweight
+  end-to-end solution which provides an embedded application and a corresponding
+  easily deployable web app.
+category: Example|AWS IoT
+source:
+  - path: app_cmd.c
+  - path: app_init.c
+  - path: app_link_config.c
+  - path: app_process.c
+  - path: app_radio_config.c
+include:
+  - path: .
+    file_list:
+      - path: app_link_config.h
+      - path: app_process.h
+      - path: app_radio_config.h
+component:
+  - id: sidewalk_pal
+  - id: sidewalk_common
+  - id: sidewalk_app_log
+  - id: sidewalk_display
+    condition:
+      - device_generic_family_efr32xg24
+  - id: sidewalk_log_app_rtt
+  - id: sidewalk_log_pal_rtt
+  - id: sidewalk_log_stack_rtt
+  - id: sidewalk_utils
+  - id: sidewalk_assistant
+  - id: sidewalk_cmd_executor2
+  - id: sidewalk_web_utils
+  - id: sidewalk_ble
+    condition:
+      - device_supports_bluetooth
+  - id: sidewalk_subghz_sx1262
+    condition:
+      - sl_sidewalk_default_radio_sx1262
+  - id: sidewalk_subghz_sx1262
+    condition:
+      - sidewalk_kg100s
+  - id: sidewalk_subghz_efr32xgxx
+    condition:
+      - sl_sidewalk_default_radio_efr32xgxx
+  - id: app_button_press
+    package: platform_core
+  - id: iostream_rtt
+  - id: printf
+  - id: sl_main
+  - id: simple_button
+    instance:
+      - btn0
+  - id: simple_button
+    instance:
+      - btn1
+    condition:
+      - sl_sidewalk_family_supports_2_btns
+  - id: simple_led
+    instance:
+      - led0
+    condition:
+      - sl_sidewalk_family_supports_2_btns
+  - id: simple_led
+    instance:
+      - led1
+  - id: rht_unidriver_driver
+    condition:
+      - device_generic_family_efr32xg24
+  - id: tempdrv
+    condition:
+      - brd4332a
+  - id: tempdrv
+    condition:
+      - device_generic_family_efr32xg28
+  - id: device_init
+  - id: clock_manager
+  - id: iostream_stdlib_config
+  - id: sleeptimer
+  - id: app_assert
+  - id: freertos
+  - id: freertos_heap_4
+  - id: rail_lib_multiprotocol
+    condition:
+      - sl_sidewalk_radio_native
+      - sl_sidewalk_radio_ble
+  - id: memory_manager
+  - id: power_manager
+define:
+  - name: MAIN_TASK_STACK_SIZE
+    value: (4352 / sizeof(configSTACK_DEPTH_TYPE))
+    unless:
+      - device_generic_family_efr32xg27
+      - device_generic_family_sixx301
+  - name: MAIN_TASK_STACK_SIZE #xg27
+    value: (5376 / sizeof(configSTACK_DEPTH_TYPE))
+    condition:
+      - device_generic_family_efr32xg27
+  - name: MAIN_TASK_STACK_SIZE #sixx301
+    value: (5376 / sizeof(configSTACK_DEPTH_TYPE))
+    condition:
+      - device_generic_family_sixx301
+  - name: CMD_EXECUTOR_TASK_STACK_SIZE
+    value: (4352 / sizeof(configSTACK_DEPTH_TYPE))
+configuration:
+  - name: SL_BT_CONFIG_MAX_CONNECTIONS
+    value: 1
+    condition:
+      - sl_sidewalk_radio_ble
+  - name: SL_MBEDTLS_PSA_ASSUME_EXCLUSIVE_BUFFERS
+    value: 1
+  - name: SL_CLOCK_MANAGER_LFRCO_PRECISION
+    value: 1
+    condition:
+      - hardware_board
+    unless:
+      - hardware_board_has_lfxo
+  - name: SL_SIDEWALK_COMMON_DEFAULT_LINK_TYPE
+    value: SL_SIDEWALK_LINK_BLE
+    condition:
+      - sl_sidewalk_radio_ble
+  - name: SL_SIDEWALK_COMMON_DEFAULT_LINK_TYPE
+    value: SL_SIDEWALK_LINK_FSK
+    condition:
+      - sl_sidewalk_radio_subghz
+    unless:
+      - sl_sidewalk_radio_ble
+  - name: SL_SPIDRV_EXP_CS_CONTROL
+    value: spidrvCsControlApplication
+    condition:
+      - spidrv
+  - name: SL_SPIDRV_EXP_BITRATE
+    value: 8000000
+    condition:
+      - spidrv
+  - name: SL_SLEEPTIMER_PERIPHERAL
+    value: SL_SLEEPTIMER_PERIPHERAL_DEFAULT
+  - name: SL_SID_LOG_APP_ENABLED
+    value: 1
+  - name: SL_SID_LOG_PAL_ENABLED
+    value: 1
+  - name: SID_PAL_LOG_ENABLED
+    value: 1
+  - name: SL_BOARD_ENABLE_VCOM
+    value: 0
+    condition:
+      - iostream_usart
+  - name: SL_IOSTREAM_USART_VCOM_RESTRICT_ENERGY_MODE_TO_ALLOW_RECEPTION
+    value: 0
+    condition:
+      - iostream_usart
+  - name: SL_IOSTREAM_USART_VCOM_FLOW_CONTROL_TYPE
+    value: usartHwFlowControlNone
+    condition:
+      - iostream_usart
+  - name: SL_CLI_INST_IOSTREAM_HANDLE
+    value: sl_iostream_rtt_handle
+  - name: configTOTAL_HEAP_SIZE #xg23, xg25
+    value: 9216
+    condition:
+      - sl_sidewalk_radio_native
+    unless:
+      - sl_sidewalk_radio_ble
+  - name: configTOTAL_HEAP_SIZE #xg21, xg24, xg26, xg28, xg29, kg100s
+    value: 30720
+    condition:
+      - sl_sidewalk_radio_ble
+    unless:
+      - device_generic_family_efr32xg27
+      - device_generic_family_sixx301
+  - name: configTOTAL_HEAP_SIZE #xg27
+    value: 13312
+    condition:
+      - device_generic_family_efr32xg27
+  - name: configTOTAL_HEAP_SIZE #sixx301
+    value: 20480
+    condition:
+      - device_generic_family_sixx301
+  - name: SL_STACK_SIZE
+    value: 2048
+  - name: NVM3_DEFAULT_NVM_SIZE
+    value: 24576
+  - name: SL_MAIN_START_TASK_STACK_SIZE_BYTES
+    value: 2048
+  - name: SL_BT_RTOS_LINK_LAYER_TASK_STACK_SIZE
+    value: 2000
+  - name: SL_BT_RTOS_HOST_STACK_TASK_STACK_SIZE
+    value: 4000
+  - name: SL_BT_RTOS_EVENT_HANDLER_STACK_SIZE
+    value: 4000
+    condition:
+      - sl_sidewalk_radio_ble
+    unless:
+      - device_generic_family_efr32xg27
+  - name: APP_LOG_AUTO_NL
+    value: 1
+  - name: SL_BT_CONFIG_MIN_TX_POWER
+    value: (-260)
+    condition:
+      - sl_sidewalk_radio_ble
+  - name: SL_BT_CONFIG_MAX_TX_POWER
+    value: (100)
+    condition:
+      - sl_sidewalk_radio_ble
+  - name: APP_LOG_LEVEL_DEBUG_PREFIX
+    value: '"<D>"'
+  - name: APP_LOG_LEVEL_INFO_PREFIX
+    value: '"<I>"'
+  - name: APP_LOG_LEVEL_WARNING_PREFIX
+    value: '"<W>"'
+  - name: APP_LOG_LEVEL_ERROR_PREFIX
+    value: '"<E>"'
+  - name: APP_LOG_LEVEL_CRITICAL_PREFIX
+    value: '"<C>"'
+  - name: configUSE_MALLOC_FAILED_HOOK
+    value: 1
+  - name: configCHECK_FOR_STACK_OVERFLOW
+    value: 2
+readme:
+  - path: ../../../documentation/example/amazon_sidewalk_soc_cloud_light/readme.md
+ui_hints:
+  highlight:
+    - path: config/sidewalk/sidewalk.asconf
+      condition:
+        - sidewalk_assistant
+    - path: readme.md
+      focus: true
+tag:
+  - toolchain:gcc
+  - toolchain:llvm
+filter:
+  - name: Wireless Technology
+    value:
+      - Sidewalk
+      - Bluetooth
+  - name: Ecosystem
+    value:
+      - Amazon
+  - name: Device Type
+    value:
+      - SoC
+  - name: Project Difficulty
+    value:
+      - Beginner
+template_contribution:
+  - name: bluetooth_on_event
+    value:
+      include: ble_adapter.h
+      function: sl_ble_adapter_on_event
+    condition:
+      - sl_sidewalk_radio_ble
+  - name: event_handler
+    value:
+      event: kernel_start
+      include: ble_adapter.h
+      handler: sl_ble_adapter_on_kernel_start
+    condition:
+      - sl_sidewalk_radio_ble
+  - name: sidewalk_web_utils_application
+    value:
+      name: cloud_light
+  - name: sidewalk_web_utils_sensor
+    value:
+      id: BUTTON0_S_COUNTER
+  - name: sidewalk_web_utils_sensor
+    value:
+      id: BUTTON1_S_COUNTER
+    condition:
+      - sl_sidewalk_family_supports_2_btns
+  - name: sidewalk_web_utils_sensor
+    value:
+      id: BUTTON1_L_PRESS
+    condition:
+      - sl_sidewalk_family_supports_2_btns
+  - name: sidewalk_web_utils_sensor
+    value:
+      id: CURRENT_LINK_REPORT
+  - name: sidewalk_web_utils_sensor
+    value:
+      id: ROOM_TEMPERATURE_INTERVAL
+    condition:
+      - rht_unidriver_driver
+  - name: sidewalk_web_utils_sensor
+    value:
+      id: ROOM_TEMPERATURE
+    condition:
+      - rht_unidriver_driver
+  - name: sidewalk_web_utils_sensor
+    value:
+      id: CORE_TEMPERATURE_INTERVAL
+    condition:
+      - tempdrv
+  - name: sidewalk_web_utils_sensor
+    value:
+      id: CORE_TEMPERATURE
+    condition:
+      - tempdrv
+  - name: sidewalk_web_utils_actuator
+    value:
+      id: LED0_SET
+    condition:
+      - sl_sidewalk_family_supports_2_btns
+  - name: sidewalk_web_utils_actuator
+    value:
+      id: LED1_SET
+  - name: sidewalk_web_utils_actuator
+    value:
+      id: LINK_SWITCH_TO_NEXT
+  - name: sidewalk_web_utils_actuator
+    value:
+      id: DISPLAY_TEXT
+    condition:
+      - sidewalk_display

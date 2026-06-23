@@ -1,0 +1,25 @@
+objectType: docLeaf
+id: sidewalk-sample-applications
+access: public
+status: active
+version: "2.9.0"
+docSpaceParent: ../_docspace-sidewalk.yml
+authors:
+  - lucie.labadie@silabs.com
+  - adam.darnai@silabs.com
+contentType: markdown
+title: "Sidewalk Sample Applications"
+description: ""
+sourceDir: .
+menu:
+  items:
+    - Out-of-the-Box Demo (Bluetooth): ../../example/amazon_sidewalk_soc_oob/bt/readme.md
+    - Out-of-the-Box Demo (Bluetooth Sub-GHz): ../../example/amazon_sidewalk_soc_oob/bt_subghz/readme.md
+    - Hello Neighbor: ../../example/amazon_sidewalk_soc_hello_neighbor/readme.md
+    - Cloud Light: ../../example/amazon_sidewalk_soc_cloud_light/readme.md
+    - CLI Application: ../../example/amazon_sidewalk_soc_cli/bt_subghz/readme.md
+    - Dynamic Multiprotocol Light: ../../example/amazon_sidewalk_dmp_soc_light/readme.md
+    - Location Application: ../../example/amazon_sidewalk_soc_location/readme.md
+    - Empty: ../../example/amazon_sidewalk_soc_empty/readme.md
+    - Production Device Provisioner: ../../example/amazon_sidewalk_soc_pdp/readme.md
+    - Qualification: ../../example/amazon_sidewalk_soc_qualification/readme.md

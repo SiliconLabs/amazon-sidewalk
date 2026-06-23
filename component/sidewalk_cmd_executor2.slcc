@@ -1,0 +1,29 @@
+id: sidewalk_cmd_executor2
+label: Sidewalk Command Executor
+package: sidewalk
+description: Provides string based command processing functions
+category: Example
+quality: evaluation
+metadata:
+  sbom:
+    license: Zlib
+root_path: component/sidewalk_cmd_executor2
+provides:
+  - name: sidewalk_cmd_executor2
+requires:
+  - name: freertos
+  - name: sidewalk_log_app
+recommends:
+  - id: sidewalk_log_app_rtt
+source:
+  - path: sl_sidewalk_cmd_executor2.c
+include:
+  - path: .
+    file_list:
+      - path: sl_sidewalk_cmd_executor2.h
+      - path: sl_sidewalk_cmd_executor2_types.h
+template_contribution:
+  - name: component_catalog
+    value: sidewalk_cmd_executor2
+ui_hints:
+  visibility: never

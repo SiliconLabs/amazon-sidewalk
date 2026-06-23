@@ -1,0 +1,117 @@
+/***************************************************************************//**
+ * @file sl_sidewalk_web_utils_gen.h
+ * @brief Generated content for web utils component, e.g. capability IDs.
+ * @version x.y.z
+ *******************************************************************************
+ * # License
+ * <b>Copyright 2026 Silicon Laboratories Inc. www.silabs.com</b>
+ *******************************************************************************
+ *
+ * SPDX-License-Identifier: Zlib
+ *
+ * The licensor of this software is Silicon Laboratories Inc.
+ *
+ * This software is provided 'as-is', without any express or implied
+ * warranty. In no event will the authors be held liable for any damages
+ * arising from the use of this software.
+ *
+ * Permission is granted to anyone to use this software for any purpose,
+ * including commercial applications, and to alter it and redistribute it
+ * freely, subject to the following restrictions:
+ *
+ * 1. The origin of this software must not be misrepresented; you must not
+ *    claim that you wrote the original software. If you use this software
+ *    in a product, an acknowledgment in the product documentation would be
+ *    appreciated but is not required.
+ * 2. Altered source versions must be plainly marked as such, and must not be
+ *    misrepresented as being the original software.
+ * 3. This notice may not be removed or altered from any source distribution.
+ *
+ ******************************************************************************/
+
+#ifndef SL_SIDEWALK_WEB_UTILS_GEN_H
+#define SL_SIDEWALK_WEB_UTILS_GEN_H
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+/*******************************************************************************
+ *****************************   TEMPLATED FILE   ******************************
+ ******************************************************************************/
+
+{# Toolchain may pass a single mapping, a plain string, or a list of exactly one contribution (e.g. [{name: ...}]). #}
+{%- set app_raw = sidewalk_web_utils_application -%}
+{%- if app_raw is string -%}
+  {%- set app = app_raw -%}
+{%- elif app_raw is mapping -%}
+  {%- set app = app_raw -%}
+{%- elif app_raw is sequence -%}
+  {%- set app = app_raw[0] -%}
+{%- else -%}
+  {%- set app = app_raw -%}
+{%- endif -%}
+{%- if app is string -%}
+  {%- set app_name = app -%}
+{%- elif app is mapping -%}
+  {%- set app_name = app.name|default(none) -%}
+{%- elif app.name is defined -%}
+  {%- set app_name = app.name -%}
+{%- else -%}
+  {%- set app_name = app -%}
+{%- endif -%}
+{# Some toolchains pass objects that are not Jinja mappings but stringify as "{name=value}" or "[{name=value}]". #}
+{%- if app_name is not none and app_name != '' -%}
+  {%- set _raw = app_name|string|trim -%}
+  {%- if _raw[:1] == '[' and _raw[-1:] == ']' -%}
+    {%- set _raw = _raw[1:-1]|trim -%}
+  {%- endif -%}
+  {%- if _raw[:1] == '{' and 'name=' in _raw -%}
+    {%- set app_name = _raw.split('name=', 1)[1].rstrip('}')|trim -%}
+  {%- else -%}
+    {%- set app_name = _raw -%}
+  {%- endif -%}
+{%- endif -%}
+{%- set sens = sidewalk_web_utils_sensor|default([]) -%}
+{%- if sens is mapping and sens.id is defined -%}
+  {%- set sens = [sens] -%}
+{%- endif -%}
+{%- set acts = sidewalk_web_utils_actuator|default([]) -%}
+{%- if acts is mapping and acts.id is defined -%}
+  {%- set acts = [acts] -%}
+{%- endif -%}
+
+#define SL_SIDEWALK_WEB_UTILS_APPLICATION_NAME "{{ app_name }}"
+
+{%- if sens|length + acts|length == 0 %}
+
+#define SL_SIDEWALK_WEB_UTILS_CAPABILITY_NUM 0
+#define SL_SIDEWALK_WEB_UTILS_SENSOR_NUM 0
+#define SL_SIDEWALK_WEB_UTILS_ACTUATOR_NUM 0
+
+{%- else %}
+
+#define SL_SIDEWALK_WEB_UTILS_CAPABILITY_NUM {{ sens|length + acts|length }}
+#define SL_SIDEWALK_WEB_UTILS_SENSOR_NUM {{ sens|length }}
+#define SL_SIDEWALK_WEB_UTILS_ACTUATOR_NUM {{ acts|length }}
+
+// Create capability ID enum (sensors first in contribution order, then actuators)
+typedef enum {
+{%- set idx = namespace(v=0) %}
+{%- for s in sens %}
+  SL_SIDEWALK_WEB_UTILS_C_{{ s.id }} = {{ idx.v }},
+  {%- set idx.v = idx.v + 1 %}
+{%- endfor %}
+{%- for a in acts %}
+  SL_SIDEWALK_WEB_UTILS_C_{{ a.id }} = {{ idx.v }},
+  {%- set idx.v = idx.v + 1 %}
+{%- endfor %}
+} sl_sidewalk_web_utils_capability_t;
+
+{%- endif %}
+
+#ifdef __cplusplus
+}
+#endif
+
+#endif // SL_SIDEWALK_WEB_UTILS_GEN_H

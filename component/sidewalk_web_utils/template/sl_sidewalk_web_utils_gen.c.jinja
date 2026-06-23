@@ -1,0 +1,181 @@
+/***************************************************************************//**
+ * @file sl_sidewalk_web_utils_gen.c
+ * @brief Generated content for web utils component, e.g. actuator commands.
+ * @version x.y.z
+ *******************************************************************************
+ * # License
+ * <b>Copyright 2026 Silicon Laboratories Inc. www.silabs.com</b>
+ *******************************************************************************
+ *
+ * SPDX-License-Identifier: Zlib
+ *
+ * The licensor of this software is Silicon Laboratories Inc.
+ *
+ * This software is provided 'as-is', without any express or implied
+ * warranty. In no event will the authors be held liable for any damages
+ * arising from the use of this software.
+ *
+ * Permission is granted to anyone to use this software for any purpose,
+ * including commercial applications, and to alter it and redistribute it
+ * freely, subject to the following restrictions:
+ *
+ * 1. The origin of this software must not be misrepresented; you must not
+ *    claim that you wrote the original software. If you use this software
+ *    in a product, an acknowledgment in the product documentation would be
+ *    appreciated but is not required.
+ * 2. Altered source versions must be plainly marked as such, and must not be
+ *    misrepresented as being the original software.
+ * 3. This notice may not be removed or altered from any source distribution.
+ *
+ ******************************************************************************/
+
+{%- if sidewalk_web_utils_application is not defined -%}
+  {{ raise("sidewalk_web_utils_application is mandatory: add a template_contribution with name sidewalk_web_utils_application and value.name (or a string value) for the web UI application id") }}
+{%- endif -%}
+{# Toolchain may pass a single mapping, a plain string, or a list of exactly one contribution (e.g. [{name: ...}]). #}
+{%- set app_raw = sidewalk_web_utils_application -%}
+{%- if app_raw is string -%}
+  {%- set app = app_raw -%}
+{%- elif app_raw is mapping -%}
+  {%- set app = app_raw -%}
+{%- elif app_raw is sequence -%}
+  {%- if app_raw|length != 1 -%}
+    {{ raise("sidewalk_web_utils_application: contribute exactly one application name; list form must have one element (got " ~ (app_raw|length|string) ~ "). Remove duplicate sidewalk_web_utils_application entries.") }}
+  {%- endif -%}
+  {%- set app = app_raw[0] -%}
+{%- else -%}
+  {%- set app = app_raw -%}
+{%- endif -%}
+{%- if app is string -%}
+  {%- set app_name = app -%}
+{%- elif app is mapping -%}
+  {%- set app_name = app.name|default(none) -%}
+{%- elif app.name is defined -%}
+  {%- set app_name = app.name -%}
+{%- else -%}
+  {%- set app_name = app -%}
+{%- endif -%}
+{# Some toolchains pass objects that are not Jinja mappings but stringify as "{name=value}" or "[{name=value}]". #}
+{%- if app_name is not none and app_name != '' -%}
+  {%- set _raw = app_name|string|trim -%}
+  {%- if _raw[:1] == '[' and _raw[-1:] == ']' -%}
+    {%- set _raw = _raw[1:-1]|trim -%}
+  {%- endif -%}
+  {%- if _raw[:1] == '{' and 'name=' in _raw -%}
+    {%- set app_name = _raw.split('name=', 1)[1].rstrip('}')|trim -%}
+  {%- else -%}
+    {%- set app_name = _raw -%}
+  {%- endif -%}
+{%- endif -%}
+{%- if app_name is none or app_name == '' -%}
+  {{ raise("sidewalk_web_utils_application: set value.name (or a string value) to the web UI application id, e.g. cloud_light") }}
+{%- endif -%}
+{%- set sens = sidewalk_web_utils_sensor|default([]) -%}
+{%- if sens is mapping and sens.id is defined -%}
+  {%- set sens = [sens] -%}
+{%- endif -%}
+{%- set acts = sidewalk_web_utils_actuator|default([]) -%}
+{%- if acts is mapping and acts.id is defined -%}
+  {%- set acts = [acts] -%}
+{%- endif -%}
+{# Whitelist: middle segment of SL_SIDEWALK_WEB_UTILS_C_<id>_DSC in sl_sidewalk_web_utils_types.h #}
+{%- set web_utils_allowed_sensor_ids = [
+  'BUTTON0_S_PRESS', 'BUTTON0_S_COUNTER', 'BUTTON0_M_PRESS', 'BUTTON0_M_COUNTER',
+  'BUTTON0_L_PRESS', 'BUTTON0_L_COUNTER', 'BUTTON1_S_PRESS', 'BUTTON1_S_COUNTER',
+  'BUTTON1_M_PRESS', 'BUTTON1_M_COUNTER', 'BUTTON1_L_PRESS', 'BUTTON1_L_COUNTER',
+  'CURRENT_LINK_REPORT', 'ROOM_TEMPERATURE', 'CORE_TEMPERATURE',
+  'ROOM_TEMPERATURE_INTERVAL', 'CORE_TEMPERATURE_INTERVAL',
+] -%}
+{%- set web_utils_allowed_actuator_ids = [
+  'LED0_SET', 'LED0_TOGGLE', 'LED1_SET', 'LED1_TOGGLE',
+  'LINK_SWITCH_TO_NEXT', 'DISPLAY_TEXT',
+] -%}
+{%- for s in sens -%}
+  {%- if not s.id -%}
+    {{ raise("sidewalk_web_utils_sensor entry missing id") }}
+  {%- elif s.id not in web_utils_allowed_sensor_ids -%}
+    {{ raise("\nsidewalk_web_utils_sensor: id must match a sensor capability (also refer to sl_sidewalk_web_utils_types.h).\nGot '" ~ (s.id|string) ~ "'\nAllowed:\n" ~ web_utils_allowed_sensor_ids|join("\n")) }}
+  {%- endif -%}
+{%- endfor -%}
+{%- for a in acts -%}
+  {%- if not a.id -%}
+    {{ raise("sidewalk_web_utils_actuator entry missing id") }}
+  {%- elif a.id not in web_utils_allowed_actuator_ids -%}
+    {{ raise("\nsidewalk_web_utils_actuator: id must match an actuator capability (also refer to sl_sidewalk_web_utils_types.h).\nGot '" ~ (a.id|string) ~ "'\nAllowed:\n" ~ web_utils_allowed_actuator_ids|join("\n")) }}
+  {%- endif -%}
+{%- endfor -%}
+
+{%- if sens|length + acts|length == 0 %}
+
+/*******************************************************************************
+ *****************************   TEMPLATED FILE   ******************************
+ ******************************************************************************/
+/* No web utils sensors or actuators configured (see sl_sidewalk_web_utils_gen.h). */
+
+{%- else %}
+
+#include <stdbool.h>
+#include "sl_component_catalog.h"
+{%- if acts|length > 0 %}
+#include "sl_sidewalk_cmd_executor2_types.h"
+{%- endif %}
+#include "sl_sidewalk_web_utils_types.h"
+
+/*******************************************************************************
+ *****************************   TEMPLATED FILE   ******************************
+ ******************************************************************************/
+
+// Capability ID strings (4-digit decimal; sensors then actuators; indices match sl_sidewalk_web_utils_capability_t)
+{%- set nid = namespace(v=0) %}
+{%- for s in sens %}
+#define SL_SIDEWALK_WEB_UTILS_C_{{ s.id }}_ID "{{ '%04d'|format(nid.v) }}"
+{%- set nid.v = nid.v + 1 %}
+{%- endfor %}
+{%- for a in acts %}
+#define SL_SIDEWALK_WEB_UTILS_C_{{ a.id }}_ID "{{ '%04d'|format(nid.v) }}"
+{%- set nid.v = nid.v + 1 %}
+{%- endfor -%}
+{% if acts|length > 0 %}
+
+// Command callback functions for actuators
+{%- for a in acts %}
+  {%- if a.callback is defined and a.callback %}
+extern void {{ a.callback }}(const char* cmd_arg);
+  {%- else %}
+extern void sl_sidewalk_web_utils_cmd_cb_{{ a.id|lower }}(const char* cmd_arg);
+  {%- endif %}
+{%- endfor %}
+{%- endif %}
+
+const sl_sidewalk_web_utils_capability_str_t sl_sidewalk_web_utils_capability_str[] = {
+{%- for s in sens %}
+  {
+    .id = SL_SIDEWALK_WEB_UTILS_C_{{ s.id }}_ID,
+    .dsc = SL_SIDEWALK_WEB_UTILS_C_{{ s.id }}_DSC
+  },
+{%- endfor %}
+{%- for a in acts %}
+  {
+    .id = SL_SIDEWALK_WEB_UTILS_C_{{ a.id }}_ID,
+    .dsc = SL_SIDEWALK_WEB_UTILS_C_{{ a.id }}_DSC
+  },
+{%- endfor %}
+};
+
+{%- if acts|length > 0 %}
+
+const sl_sidewalk_cmd_executor2_cmd_t sl_sidewalk_web_utils_cmd_tbl[] = {
+{%- for a in acts %}
+  {
+    .cmd = SL_SIDEWALK_WEB_UTILS_C_{{ a.id }}_ID,
+    {%- if a.callback is defined and a.callback %}
+    .cb = {{ a.callback }}
+    {%- else %}
+    .cb = sl_sidewalk_web_utils_cmd_cb_{{ a.id|lower }}
+    {%- endif %}
+  },
+{%- endfor %}
+};
+{%- endif %}
+
+{%- endif %}
