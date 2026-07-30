@@ -1,0 +1,3 @@
+# Sidewalk Software Components
+
+The Sidewalk Software Component Documentation provides a detailed overview of the modular building blocks that make up the Amazon Sidewalk SDK. It describes how each software component contributes to the overall system—ranging from radio drivers and board support packages to platform services and multiprotocol utilities. This documentation helps developers understand the roles, dependencies, and configuration of each component, enabling efficient adaptation of the SDK to custom hardware and application needs. Whether integrating a new transceiver or enabling multiprotocol operation, this reference serves as a guide to assembling and customizing a Sidewalk-enabled system.

@@ -1,0 +1,6 @@
+docSpaceConfigs:
+  - _docspace-sidewalk.yml
+docLeafConfigs:
+  - sld583-sidewalk-services-api/_docleaf-sld583-sidewalk-services-api.yml
+  - sld889-sidewalk-sw-components/_docleaf-sld889-sidewalk-sw-components.yml
+  - sld594-sidewalk-sample-applications/_docleaf-sld594-sidewalk-sample-applications.yml

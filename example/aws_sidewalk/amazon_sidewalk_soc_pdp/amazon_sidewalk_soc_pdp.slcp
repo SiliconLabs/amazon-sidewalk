@@ -1,0 +1,98 @@
+project_name: amazon_sidewalk_soc_pdp
+package: sidewalk_sample_app
+quality: evaluation
+label: Amazon Sidewalk - Production Device Provisioner (PDP)
+description: The PDP application is a tool used in production
+  to prosivion Amazon Sidewalk devices and leverage the Secure
+  Vault feature. The application is hosted in RAM. It is meant
+  to be used in conjunction with the Python Production scripts.
+category: Example|AWS IoT
+readme:
+  - path: ../../../documentation/example/amazon_sidewalk_soc_pdp/readme.md
+source:
+  - path: app_init.c
+  - path: app_process.c
+component:
+  - id: sidewalk_app_log
+  - id: device_init
+  - id: clock_manager
+  - id: sidewalk_pdp
+  - id: sidewalk_pdp_ram_linker
+  - id: sl_main
+  - id: iostream_rtt
+  - id: printf
+  - id: iostream_usart
+    instance:
+      - vcom
+    condition:
+      - device_has_usart
+  - id: sleeptimer
+  - id: memory_manager
+  - id: sl_string
+  - id: sidewalk_log_app_rtt
+  - id: sidewalk_log_pal_rtt
+  - id: sidewalk_log_stack_rtt
+define:
+  - name: SL_SID_PDP_RX_BUF_SIZE
+    value: '896'
+  - name: SL_SID_PDP_TX_BUF_SIZE
+    value: '256'
+  - name: SID_PAL_ASSERT_DISABLED
+configuration:
+  - name: SL_MBEDTLS_PSA_ASSUME_EXCLUSIVE_BUFFERS
+    value: 1
+  - name: APP_LOG_ENABLE
+    value: '0'
+  - name: SL_SID_LOG_APP_ENABLED
+    value: '0'
+  - name: SL_SID_LOG_PAL_ENABLED
+    value: '0'
+  - name: SID_PAL_LOG_ENABLED
+    value: '0'
+  - name: SL_STACK_SIZE
+    value: '1536'
+  - name: NVM3_DEFAULT_NVM_SIZE
+    value: '24576'
+  - name: SL_BOARD_ENABLE_VCOM
+    value: '1'
+    condition:
+      - iostream_usart
+  - name: SL_IOSTREAM_USART_VCOM_RESTRICT_ENERGY_MODE_TO_ALLOW_RECEPTION
+    value: '1'
+    condition:
+      - iostream_usart
+  - name: SL_IOSTREAM_USART_VCOM_FLOW_CONTROL_TYPE
+    value: usartHwFlowControlNone
+    condition:
+      - iostream_usart
+  - name: SL_IOSTREAM_USART_VCOM_RX_BUFFER_SIZE
+    value: '896'
+    condition:
+      - iostream_usart
+toolchain_settings:
+  - option: linkerfile
+    value: autogen/linkerfile_ram.ld
+    condition:
+      - sidewalk_pdp_ram_linker
+  - option: optimize
+    value: size
+tag:
+  - toolchain:gcc
+  - toolchain:llvm
+filter:
+  - name: Wireless Technology
+    value:
+      - Sidewalk
+      - Bluetooth
+  - name: Ecosystem
+    value:
+      - Amazon
+  - name: Device Type
+    value:
+      - SoC
+  - name: Project Difficulty
+    value:
+      - Advanced
+template_contribution:
+  - name: component_catalog
+    value: sidewalk_pdp

@@ -1,0 +1,283 @@
+id: sidewalk_pal
+label: Sidewalk PAL
+package: sidewalk
+description: Simple component to gather all of the sidewalk related
+  libraries and header files.
+category: Protocol
+quality: production
+metadata:
+  sbom:
+    license: Zlib AND LicenseRef-amazon-sidewalk-license
+root_path: component
+provides:
+  - name: sidewalk_pal
+  - name: sidewalk_base_component
+requires:
+  - name: sidewalk_log_pal
+  - name: sidewalk_log_app
+  - name: sidewalk_log_stack
+  - name: memory_manager
+  - name: gpio
+  - name: app_assert
+  - name: cmsis_core
+  - name: clock_manager_runtime
+  - name: sl_core
+  - name: freertos
+  - name: hal_system
+  - name: psa_its
+  - name: psa_crypto_ecdh
+  - name: psa_crypto_ecdsa
+  - name: psa_crypto_eddsa
+    condition:
+      - device_has_semailbox
+  - name: psa_crypto_hmac
+  - name: psa_crypto_cmac
+  - name: psa_crypto_gcm
+  - name: psa_crypto_ccm
+  - name: psa_crypto_cipher_ctr
+  - name: psa_crypto_sha256
+  - name: psa_crypto_sha512
+  - name: psa_crypto_ecc
+  - name: psa_crypto_ecc_curve25519
+  - name: psa_crypto_ecc_secp256r1
+  - name: psa_crypto_ecc_edwards25519
+    condition:
+      - device_has_semailbox
+  - name: sidewalk_ed25519
+    condition:
+      - device_generic_family_efr32xg27
+  - name: sleeptimer
+  - name: sidewalk_common
+  - name: component_catalog
+  - name: nvm3_lib
+  - name: nvm3_default
+recommends:
+  - id: sidewalk_subghz_sx1262
+  - id: sidewalk_log_app_rtt
+  - id: sidewalk_log_pal_rtt
+  - id: sidewalk_log_stack_rtt
+conflicts:
+  - name: sidewalk_pdp
+source:
+  - path: amazon/projects/sid/sal/silabs/sid_pal/serial_bus/sid_pal_serial_bus_spi.c
+    condition:
+      - spidrv
+      - sl_sidewalk_radio_external
+  - path: amazon/projects/sid/sal/silabs/sid_pal/gpio.c
+  - path: amazon/projects/sid/sal/silabs/sid_pal/assert.c
+  - path: amazon/projects/sid/sal/silabs/sid_pal/common.c
+  - path: amazon/projects/sid/sal/silabs/sid_pal/critical_region.c
+  - path: amazon/projects/sid/sal/silabs/sid_pal/delay.c
+  - path: amazon/projects/sid/sal/silabs/sid_pal/mfg_store.c
+  - path: amazon/projects/sid/sal/silabs/sid_pal/nvm3_manager.c
+  - path: amazon/projects/sid/sal/silabs/sid_pal/sid_pal_crypto_ifc.c
+  - path: amazon/projects/sid/sal/silabs/sid_pal/storage_kv.c
+  - path: amazon/projects/sid/sal/silabs/sid_pal/temperature.c
+  - path: amazon/projects/sid/sal/silabs/sid_pal/timer.c
+  - path: amazon/projects/sid/sal/silabs/sid_pal/uptime.c
+include:
+  - path: amazon/projects/sid/sal/common/public/sid_pal_ifc/uptime
+    file_list:
+      - path: sid_pal_uptime_ifc.h
+  - path: amazon/projects/sid/sal/common/public/sid_pal_ifc/timer
+    file_list:
+      - path: sid_pal_timer_ifc.h
+  - path: amazon/projects/sid/sal/common/public/sid_pal_ifc/temperature
+    file_list:
+      - path: sid_pal_temperature_ifc.h
+  - path: amazon/projects/sid/sal/common/public/sid_pal_ifc/swi
+    file_list:
+      - path: sid_pal_swi_ifc.h
+  - path: amazon/projects/sid/sal/common/public/sid_pal_ifc/storage_kv
+    file_list:
+      - path: sid_pal_storage_kv_internal_group_ids.h
+      - path: sid_pal_storage_kv_ifc.h
+  - path: amazon/projects/sid/sal/common/public/sid_pal_ifc/serial_client_ifc
+    file_list:
+      - path: sid_pal_serial_client_ifc.h
+  - path: amazon/projects/sid/sal/common/public/sid_pal_ifc/radio
+    file_list:
+      - path: sid_pal_radio_lora_defs.h
+      - path: sid_pal_radio_ifc.h
+      - path: sid_pal_radio_fsk_defs.h
+    condition:
+      - sl_sidewalk_radio_subghz
+  - path: amazon/projects/sid/sal/common/public/sid_pal_ifc/mfg_store
+    file_list:
+      - path: sid_pal_mfg_store_ifc.h
+  - path: amazon/projects/sid/sal/common/public/sid_pal_ifc/log
+    file_list:
+      - path: sid_pal_log_ifc.h
+  - path: amazon/projects/sid/sal/common/public/sid_pal_ifc/gpio
+    file_list:
+      - path: sid_pal_gpio_ifc.h
+  - path: amazon/projects/sid/sal/common/public/sid_pal_ifc/delay
+    file_list:
+      - path: sid_pal_delay_ifc.h
+  - path: amazon/projects/sid/sal/common/public/sid_pal_ifc/crypto
+    file_list:
+      - path: sid_pal_crypto_ifc.h
+  - path: amazon/projects/sid/sal/common/public/sid_pal_ifc/critical_region
+    file_list:
+      - path: sid_pal_critical_region_ifc.h
+  - path: amazon/projects/sid/sal/common/public/sid_pal_ifc/assert
+    file_list:
+      - path: sid_pal_assert_ifc.h
+  - path: amazon/projects/sid/sal/common/public/sid_pal_ifc/common
+    file_list:
+      - path: sid_pal_common_ifc.h
+  - path: amazon/projects/sid/sal/common/public/sid_pal_ifc/serial_bus_ifc
+    file_list:
+      - path: sid_pal_serial_bus_ifc.h
+  - path: amazon/projects/sid/sal/common/public/sid_ifc/sid_error
+    file_list:
+      - path: sid_error.h
+      - path: sall_app_error.h
+  - path: amazon/projects/sid/sal/common/public/sid_ifc/sid_900_cfg
+    file_list:
+      - path: sid_900_cfg.h
+  - path: amazon/projects/sid/sal/common/public/sid_ifc/sid_api
+    file_list:
+      - path: sid_api.h
+  - path: amazon/projects/sid/sal/common/public/sid_ifc/sid_ama_adapter_ifc
+    file_list:
+      - path: sid_ama_transport_ifc.h
+  - path: amazon/projects/sid/sal/common/public/sid_ifc/sdb_api
+    file_list:
+      - path: sdb_api.h
+  - path: amazon/projects/sid/sal/common/public/sid_ifc/sid_bulk_data_transfer_api
+    file_list:
+      - path: sid_bulk_data_transfer_api.h
+  - path: amazon/projects/sid/sal/common/public/sid_ifc/sid_sdk_version
+    file_list:
+      - path: sid_sdk_version.h
+  - path: amazon/projects/sid/sal/common/public/sid_ifc/sid_time_types
+    file_list:
+      - path: sid_time_types.h
+  - path: amazon/projects/sid/sal/common/public/sid_ifc/sid_device_information_api
+    file_list:
+      - path: sid_device_information.h
+  - path: amazon/projects/sid/sal/common/public/sid_ifc/sid_diag_log_cfg
+    file_list:
+      - path: sid_diag_log_cfg.h
+  - path: amazon/projects/sid/sal/common/public/sid_ifc/sid_time_sync_config
+    file_list:
+      - path: sid_time_sync_config.h
+  - path: amazon/projects/sid/sal/silabs/sid_pal/include/
+    file_list:
+      - path: gpio.h
+      - path: delay.h
+      - path: nvm3_manager.h
+  - path: amazon/projects/sid/sal/silabs/sid_pal/interfaces/timer_types
+    file_list:
+      - path: sid_pal_timer_types.h
+  - path: amazon/projects/sid/sal/silabs/sid_pal/interfaces/platform_init_types
+    file_list:
+      - path: sid_pal_platform_init_types.h
+  - path: amazon/projects/sid/sal/silabs/sid_pal/serial_bus/include
+    file_list:
+      - path: sid_pal_serial_bus_efr32_spi_config.h
+        condition:
+          - spidrv
+  - path: amazon/projects/sid/apps/sdk/silabs/efr32xg21/common/mfg_store_app_values/include/export
+    file_list:
+      - path: mfg_store_app_values.h
+  - path: amazon/projects/sid/sal/common/sid_time_ops/include
+    file_list:
+      - path: sid_time_ops.h
+  - path: amazon/projects/sid/sal/common/internal/sid_clock_ifc
+    file_list:
+      - path: sid_clock_ifc.h
+library:
+  - path: sidewalk_libs/sl_lib_ble_subghz_fsk_css.a
+    condition:
+      - sl_sidewalk_radio_ble
+      - sl_sidewalk_radio_subghz
+    unless:
+      - sidewalk_qualification_support
+      - sidewalk_dult
+      - sidewalk_location_cli
+  - path: sidewalk_libs/sl_lib_qualification_ble_subghz.a
+    condition:
+      - sidewalk_qualification_support
+      - sl_sidewalk_radio_ble
+      - sl_sidewalk_radio_subghz
+    unless:
+      - sidewalk_dult
+      - sidewalk_location_cli
+  - path: sidewalk_libs/sl_lib_ble.a
+    condition:
+      - sl_sidewalk_radio_ble
+    unless:
+      - sl_sidewalk_radio_subghz
+      - sidewalk_qualification_support
+      - sidewalk_dult
+      - sidewalk_location_cli
+  - path: sidewalk_libs/sl_lib_qualification_ble.a
+    condition:
+      - sl_sidewalk_radio_ble
+      - sidewalk_qualification_support
+    unless:
+      - sl_sidewalk_radio_subghz
+      - sidewalk_dult
+      - sidewalk_location_cli
+  - path: sidewalk_libs/sl_lib_subghz_fsk.a
+    condition:
+      - sl_sidewalk_radio_subghz_fsk
+    unless:
+      - sl_sidewalk_radio_ble
+      - sl_sidewalk_radio_subghz_css
+      - sidewalk_qualification_support
+      - sidewalk_dult
+      - sidewalk_location_cli
+  - path: sidewalk_libs/sl_lib_qualification_subghz_fsk.a
+    condition:
+      - sl_sidewalk_radio_subghz_fsk
+      - sidewalk_qualification_support
+    unless:
+      - sl_sidewalk_radio_subghz_css
+      - sl_sidewalk_radio_ble
+      - sidewalk_dult
+      - sidewalk_location_cli
+  - path: sidewalk_libs/sl_lib_subghz_fsk_css.a
+    condition:
+      - sl_sidewalk_radio_subghz_css
+      - sl_sidewalk_radio_subghz_fsk
+    unless:
+      - sl_sidewalk_radio_ble
+      - sidewalk_qualification_support
+      - sidewalk_dult
+      - sidewalk_location_cli
+  - path: sidewalk_libs/sl_lib_qualification_subghz_fsk_css.a
+    condition:
+      - sl_sidewalk_radio_subghz_css
+      - sl_sidewalk_radio_subghz_fsk
+      - sidewalk_qualification_support
+    unless:
+      - sl_sidewalk_radio_ble
+      - sidewalk_dult
+      - sidewalk_location_cli
+  - path: sidewalk_libs/sl_lib_ble_subghz_fsk_css_dult.a
+    condition:
+      - sidewalk_dult
+    unless:
+      - sidewalk_location_cli
+  - path: sidewalk_libs/sl_lib_ble_subghz_fsk_css_dult_location_full.a
+    condition:
+      - sidewalk_location_full
+  - path: sidewalk_libs/sl_lib_ble_subghz_fsk_css_location_ble.a
+    condition:
+      - sidewalk_location_cli
+      - sl_sidewalk_radio_ble
+      - sl_sidewalk_radio_subghz
+    unless:
+       - sidewalk_location_full
+  - path: sidewalk_libs/sl_lib_ble_location.a
+    condition:
+      - sidewalk_location_cli
+      - sl_sidewalk_radio_ble
+    unless:
+      - sidewalk_location_full
+      - sl_sidewalk_radio_subghz
+ui_hints:
+  visibility: never

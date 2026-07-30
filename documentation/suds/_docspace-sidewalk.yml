@@ -1,0 +1,12 @@
+objectType: docSpace
+id: amazon-sidewalk
+version: "2.9.1"
+curators:
+  - lucie.labadie@silabs.com
+  - adam.darnai@silabs.com
+title: "Amazon Sidewalk"
+menu:
+  items:
+    - docleaf://sidewalk-services-api/2.9.1
+    - docleaf://sidewalk-sw-components/2.9.1
+    - docleaf://sidewalk-sample-applications/2.9.1

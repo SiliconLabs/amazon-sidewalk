@@ -1,0 +1,13 @@
+objectType: docLeaf
+id: sidewalk-services-api
+access: public
+status: active
+version: "2.9.1"
+docSpaceParent: ../_docspace-sidewalk.yml
+authors:
+  - lucie.labadie@silabs.com
+  - adam.darnai@silabs.com
+contentType: doxygen
+title: "PAL API Reference"
+description: ""
+sourceDir: ../../doxygen/out_doxygen/xml

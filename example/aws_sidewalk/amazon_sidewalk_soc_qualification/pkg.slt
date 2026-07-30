@@ -1,0 +1,5 @@
+version="0"
+
+[dependency]
+sidewalk = {version = "2.9.1", installer = "conan", user = "silabs", prerelease = true}
+slc-cli = "~"

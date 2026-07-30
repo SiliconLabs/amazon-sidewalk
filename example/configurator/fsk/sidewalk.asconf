@@ -1,0 +1,28 @@
+{
+  "stackName": "SidewalkHelloNeighbor",
+  "stackTemplatePath": "config/sidewalk/CF_minimal_sidewalk.json",
+  "region": {
+    "value": "RADIO_REGION_NA",
+    "type": "SYMBOL"
+  },
+  "defaultLinkType": {
+    "value": "SL_SIDEWALK_LINK_FSK",
+    "type": "SYMBOL"
+  },
+  "bleSettings": {
+    "devicename": {
+      "value": "my_custom_sidewalk_device",
+      "type": "STR"
+    },
+    "outputPower": {
+      "value": 20,
+      "type": "INT"
+    }
+  },
+  "subGHzSettings": {
+    "outputPower": {
+      "value": 20,
+      "type": "INT"
+    }
+  }
+}

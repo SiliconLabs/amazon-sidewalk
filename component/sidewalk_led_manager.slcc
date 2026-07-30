@@ -1,0 +1,30 @@
+id: sidewalk_led_manager
+label: Sidewalk led manager
+package: sidewalk
+description: Provides Sidewalk led managing functionality
+category: Example
+quality: production
+metadata:
+  sbom:
+    license: Zlib
+root_path: component/sidewalk_led_manager
+provides:
+  - name: sidewalk_led_manager
+requires:
+  - name: sl_common
+  - name: simple_led
+  - name: sidewalk_log_pal
+  - name: led
+recommends:
+  - id: sidewalk_log_pal_rtt
+source:
+  - path: sl_sidewalk_led_manager.c
+include:
+  - path: .
+    file_list:
+      - path: sl_sidewalk_led_manager.h
+template_contribution:
+  - name: component_catalog
+    value: sidewalk_led_manager
+ui_hints:
+  visibility: never

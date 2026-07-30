@@ -1,0 +1,17 @@
+{
+    "Arn": "arn:aws:iotwireless:us-east-1:874911681611:DeviceProfile/94c47b3e-a512-4266-9796-f8a813c989ac",
+    "Name": "prototype_ailnscqqcy",
+    "Id": "94c47b3e-a512-4266-9796-f8a813c989ac",
+    "Sidewalk": {
+        "ApplicationServerPublicKey": "7ea56bcbf0b7e2a745c163a28d9f44844414ce8e6376c0697726f5a9ed964465",
+        "QualificationStatus": false,
+        "DakCertificateMetadata": [
+            {
+                "CertificateId": "413346495647324E5156454752322D50524F544F54595045",
+                "MaxAllowedSignature": 1000,
+                "FactorySupport": false,
+                "DeviceTypeId": "A3FIVG2NQVEGR2"
+            }
+        ]
+    }
+}

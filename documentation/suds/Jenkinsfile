@@ -1,0 +1,87 @@
+// see https://confluence.silabs.com/display/DocsDev/Jenkins+Process+Set+Up
+// see https://www.jenkins.io/doc/book/pipeline/shared-libraries/
+@Library('dsc-shared-library') _
+ 
+pipeline {
+    agent {label 'suds-cm-slave-spot'}
+    parameters {
+       string defaultValue: null, description: 'Provide a Release Ticket ID if you want to move to preview.', name: 'RELEASETICKET'
+    }
+    options {
+       timestamps()
+       buildDiscarder logRotator(artifactDaysToKeepStr: '', artifactNumToKeepStr: '', daysToKeepStr: '', numToKeepStr: '10')
+       timeout(time: 90, unit: "MINUTES")
+    }
+    environment {
+        PATH="${env.WORKSPACE}:${env.PATH}"
+    }
+    stages {
+        stage('set-up') {
+            steps {
+               script {
+                    dsc.installDoxygenLinux()
+                    dsc.installCLI()
+                    sh("apt update && apt install -y python3 python3-pip && python3 -m pip install pyyaml")
+               }
+            }
+        }
+        stage('build documentation') {
+            steps {
+                script {
+                    dir("documentation/suds") {
+                        sh("./build_suds.sh")
+                    }
+                }
+            }
+        }
+        stage('release to scratch') {
+            when {
+                not {
+                    expression {
+                        return params.RELEASETICKET
+                    }
+                }
+            }
+            steps {
+               script {
+                    dir("documentation/suds") {
+                        withCredentials([
+                            string(credentialsId: "suds-cm-production-CLI_TOKEN", variable: "dsc_token")
+                        ]) {
+                            withEnv(['NODE_TLS_REJECT_UNAUTHORIZED=0'])
+                            {
+                                sh("python3 dsc.py pushScratch --env production --release-file ./dsc_release.yml --dsc-token ${dsc_token}")
+                            }
+                        }
+                    }
+               }
+            }
+        }
+        stage('release ticket found, pushing to preview-env') {
+            when {
+                expression {
+                    return params.RELEASETICKET
+                }
+            }
+            steps {
+               script {
+                    dir("documentation/suds") {
+                        withCredentials([
+                            string(credentialsId: "suds-cm-production-CLI_TOKEN", variable: "dsc_token")
+                        ]) {
+                            withEnv(['NODE_TLS_REJECT_UNAUTHORIZED=0'])
+                            {
+                                sh("python3 dsc.py pushReleasePreview ${params.RELEASETICKET} --env production --release-file ./dsc_release.yml --dsc-token ${dsc_token}")
+                            }
+                        }
+                    }
+               }
+            }
+        }
+        stage('cleanup') {
+            steps {
+                echo 'Done'
+            }
+        }
+    }
+}

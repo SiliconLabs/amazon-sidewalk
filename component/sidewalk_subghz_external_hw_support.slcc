@@ -1,0 +1,117 @@
+id: sidewalk_subghz_external_hw_support
+label: Sidewalk external Sub-GHz hardware support
+package: sidewalk
+description: This component contains the hardware support for SX1262 and LR1110
+category: Protocol
+quality: production
+metadata:
+  sbom:
+    license: Zlib AND LicenseRef-amazon-sidewalk-license
+root_path: component
+requires:
+  - name: spidrv
+  - name: emlib_gpio_simple_init
+    condition:
+      - hardware_board_has_exp_11
+      - hardware_board_has_exp_12
+      - hardware_board_has_exp_13
+      - hardware_board_has_exp_14
+  - name: spidrv_core
+  - name: emlib_usart
+provides:
+  - name: sidewalk_subghz_external_hw_support
+recommends:
+  - id: spidrv
+    vendor: silabs
+    instance:
+      - exp
+  - id: emlib_gpio_simple_init
+    vendor: silabs
+    instance:
+      - exp_11
+      - exp_12
+      - exp_13
+      - exp_14
+config_file:
+  - path: sidewalk_radio_config/subghz/semtech/gpio_config/app_gpio_config.h
+    condition:
+      - emlib_gpio_simple_init
+    unless:
+      - sidewalk_kg100s
+  - path: sidewalk_radio_config/subghz/semtech/gpio_config/kg100s/app_gpio_config.h
+    condition:
+      - sidewalk_kg100s
+  # Add empty config file to soc projects
+  - path: sidewalk_radio_config/subghz/semtech/gpio_config/empty/app_gpio_config.h
+    unless:
+      - sidewalk_kg100s
+      - emlib_gpio_simple_init
+template_file:
+  - path: sidewalk_radio_config/subghz/semtech/gpio_config/app_gpio_config.c.jinja
+template_contribution:
+  - name: component_catalog
+    value: sidewalk
+  - name: semtech_pinout
+    value:
+      id: SL_PIN_BUSY
+      pin: SL_BUSY_PIN
+      port: SL_BUSY_PORT
+  - name: semtech_pinout
+    value:
+      id: SL_PIN_ANTSW
+      pin: SL_ANTSW_PIN
+      port: SL_ANTSW_PORT
+    condition:
+      - sidewalk_subghz_sx1262
+  - name: semtech_pinout
+    value:
+      id: SL_PIN_DIO
+      pin: SL_DIO_PIN
+      port: SL_DIO_PORT
+  - name: semtech_pinout
+    value:
+      id: SL_PIN_NRESET
+      pin: SL_NRESET_PIN
+      port: SL_NRESET_PORT
+  - name: semtech_pinout
+    value:
+      id: SL_PIN_NSS
+      pin: SL_SX_CS_PIN
+      port: SL_SX_CS_PORT
+  - name: semtech_pinout
+    condition:
+      - sidewalk_kg100s
+    value:
+      id: SL_PIN_KG100S_BAND_SEL
+      pin: SL_PIN_BAND_SEL_PIN
+      port: SL_PIN_BAND_SEL_PORT
+  - name: semtech_pinout
+    condition:
+      - sidewalk_location_full
+    value:
+      id: SL_PIN_GNSS_LNA
+      pin: SL_GNSS_LNA_PIN
+      port: SL_GNSS_LNA_PORT
+  - name: semtech_pinout
+    condition:
+      - sidewalk_location_full
+    value:
+      id: SL_PIN_LED_RX
+      pin: SL_LED_RX_PIN
+      port: SL_LED_RX_PORT
+  - name: semtech_pinout
+    condition:
+      - sidewalk_location_full
+    value:
+      id: SL_PIN_LED_TX
+      pin: SL_LED_TX_PIN
+      port: SL_LED_TX_PORT
+  - name: semtech_pinout
+    condition:
+      - sidewalk_location_full
+    value:
+      id: SL_PIN_LED_SNIFFING
+      pin: SL_LED_SNIFFING_PIN
+      port: SL_LED_SNIFFING_PORT
+ui_hints:
+  visibility: never

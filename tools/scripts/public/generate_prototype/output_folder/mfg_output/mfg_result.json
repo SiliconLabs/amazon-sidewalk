@@ -1,0 +1,34 @@
+{
+    "sessionID": "",
+    "generatorResult": 0,
+    "generatorResultMessage": "",
+    "logs": [],
+    "nvm3Info": {
+        "nvm3Version": "1.0.0.0",
+        "mfgKeyOffset": "0xa9000",
+        "smsnKey": "0xa9004"
+    },
+    "generatedProfiles": [
+        {
+            "profileID": "94c47b3e-a512-4266-9796-f8a813c989ac",
+            "dir": "autogen/mfg_output/DeviceProfile_94c47b3e-a512-4266-9796-f8a813c989ac",
+            "devices": [
+                {
+                    "deviceName": "silabs_sidewalk_device",
+                    "deviceID": "9b7520d6-0bb5-4a7e-8d0b-3feb9d873ccb",
+                    "dir": "autogen/mfg_output/DeviceProfile_94c47b3e-a512-4266-9796-f8a813c989ac/WirelessDevice_9b7520d6-0bb5-4a7e-8d0b-3feb9d873ccb",
+                    "smsn": "CA28CCB79E94CC6ADE7340467B25FA36166B8281FA36F03B771AE971BCE2F015",
+                    "id": "9b7520d6-0bb5-4a7e-8d0b-3feb9d873ccb",
+                    "destination": "CFSDestination",
+                    "arn": "arn:aws:iotwireless:us-east-1:874911681611:WirelessDevice/9b7520d6-0bb5-4a7e-8d0b-3feb9d873ccb",
+                    "part": null,
+                    "family": "",
+                    "mfgRange": {
+                        "startAddress": null,
+                        "offset": "0x6000"
+                    }
+                }
+            ]
+        }
+    ]
+}

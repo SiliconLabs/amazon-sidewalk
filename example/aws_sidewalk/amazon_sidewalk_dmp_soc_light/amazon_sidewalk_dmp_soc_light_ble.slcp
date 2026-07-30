@@ -1,0 +1,241 @@
+project_name: amazon_sidewalk_dmp_soc_light
+package: sidewalk_sample_app
+quality: production
+label: Amazon Sidewalk - SoC Dynamic Multiprotocol Light (BLE)
+description: This is a Dynamic Multiprotocol reference application
+  demonstrating a light bulb that can be switched via Bluetooth.
+  Can be tested with the EFR Connect mobile app. Simultaneously
+  this sample application leverages the Amazon Sidewalk protocol
+  to connect to the cloud using BLE radio layer. The application
+  connects to AWS and send or receive messages on button push.
+category: Example|AWS IoT
+source:
+  - path: app_init.c
+  - path: app_process.c
+  - path: app_cli.c
+  - path: app_bluetooth.c
+include:
+  - path: .
+    file_list:
+      - path: app_init.h
+      - path: app_process.h
+      - path: app_bluetooth.h
+component:
+  - id: sidewalk_pal
+  - id: sidewalk_ble
+  - id: sidewalk_dmp_ble_support
+  - id: sidewalk_common
+  - id: sidewalk_app_log
+  - id: sidewalk_nvm3_handler
+  - id: sidewalk_app_msg
+  - id: sidewalk_led_manager
+  - id: sidewalk_log_app_rtt
+  - id: sidewalk_log_pal_rtt
+  - id: sidewalk_log_stack_rtt
+  - id: sidewalk_utils
+  - id: sidewalk_assistant
+  - id: app_button_press
+    package: platform_core
+  - id: iostream_rtt
+  - id: printf
+  - id: sl_main
+  - id: simple_button
+    instance:
+      - btn0
+  - id: simple_button
+    instance:
+      - btn1
+    condition:
+      - sl_sidewalk_family_supports_2_btns
+  - id: simple_led
+    instance:
+      - led0
+    condition:
+      - sl_sidewalk_family_supports_2_btns
+  - id: simple_led
+    instance:
+      - led1
+  - id: cli
+    instance:
+      - inst
+  - id: device_init
+  - id: iostream_stdlib_config
+  - id: sleeptimer
+  - id: app_assert
+  - id: freertos
+  - id: freertos_heap_4
+  - id: rail_lib_multiprotocol
+  - id: memory_manager
+  - id: clock_manager
+requires:
+  - name: gatt_configuration
+    condition:
+      - device_supports_bluetooth
+define:
+  - name: SL_SIDEWALK_DMP_BLE_SUPPORTED
+  - name: MAIN_TASK_STACK_SIZE
+    value: (5376 / sizeof(configSTACK_DEPTH_TYPE))
+configuration:
+  - name: SL_MBEDTLS_PSA_ASSUME_EXCLUSIVE_BUFFERS
+    value: 1
+  - name: SL_CLOCK_MANAGER_LFRCO_PRECISION
+    value: 1
+    condition:
+      - hardware_board
+    unless:
+      - hardware_board_has_lfxo
+  - name: SL_SIDEWALK_COMMON_DEFAULT_LINK_TYPE
+    value: SL_SIDEWALK_LINK_BLE
+  - name: SL_SID_LOG_APP_ENABLED
+    value: 1
+  - name: SL_SID_LOG_PAL_ENABLED
+    value: 1
+  - name: SID_PAL_LOG_ENABLED
+    value: 1
+  - name: SL_BOARD_ENABLE_VCOM
+    value: 0
+    condition:
+      - iostream_usart
+  - name: SL_IOSTREAM_USART_VCOM_RESTRICT_ENERGY_MODE_TO_ALLOW_RECEPTION
+    value: 0
+    condition:
+      - iostream_usart
+  - name: SL_IOSTREAM_USART_VCOM_FLOW_CONTROL_TYPE
+    value: usartHwFlowControlNone
+    condition:
+      - iostream_usart
+  - name: SL_CLI_INST_IOSTREAM_HANDLE
+    value: sl_iostream_rtt_handle
+  - name: configTOTAL_HEAP_SIZE
+    value: 16384
+  - name: SL_STACK_SIZE
+    value: 2048
+  - name: NVM3_DEFAULT_NVM_SIZE
+    value: 24576
+  - name: SL_MAIN_START_TASK_STACK_SIZE_BYTES
+    value: 2048
+  - name: SL_BT_RTOS_LINK_LAYER_TASK_STACK_SIZE
+    value: 1000
+  - name: SL_BT_RTOS_HOST_STACK_TASK_STACK_SIZE
+    value: 2000
+  - name: SL_BT_RTOS_EVENT_HANDLER_STACK_SIZE
+    value: 2240
+  - name: configTIMER_TASK_STACK_DEPTH
+    value: 1024
+  - name: APP_LOG_AUTO_NL
+    value: 1
+  - name: SL_BT_CONFIG_MIN_TX_POWER
+    value: (-260)
+  - name: SL_BT_CONFIG_MAX_TX_POWER
+    value: (100)
+  - name: APP_LOG_LEVEL_DEBUG_PREFIX
+    value: '"<D>"'
+  - name: APP_LOG_LEVEL_INFO_PREFIX
+    value: '"<I>"'
+  - name: APP_LOG_LEVEL_WARNING_PREFIX
+    value: '"<W>"'
+  - name: APP_LOG_LEVEL_ERROR_PREFIX
+    value: '"<E>"'
+  - name: APP_LOG_LEVEL_CRITICAL_PREFIX
+    value: '"<C>"'
+  - name: SL_BT_CONFIG_USER_ADVERTISERS
+    value: 2
+  - name: configUSE_MALLOC_FAILED_HOOK
+    value: 1
+  - name: configCHECK_FOR_STACK_OVERFLOW
+    value: 2
+readme:
+  - path: ../../../documentation/example/amazon_sidewalk_dmp_soc_light/readme.md
+ui_hints:
+  highlight:
+    - path: config/sidewalk/sidewalk.asconf
+      condition:
+        - sidewalk_assistant
+    - path: config/btconf/gatt_configuration.btconf
+    - path: readme.md
+      focus: true
+config_file:
+  - path: ../../../tools/cloudformation/public/CF_minimal_sidewalk.json
+    directory: sidewalk
+  - path: ../../configurator/ble/sidewalk.asconf
+    directory: sidewalk
+  - path: ../../mfg.runconf
+    directory: sidewalk
+  - override:
+      component: gatt_configuration
+      file_id: gatt_configuration_file_id
+    path: gatt_configuration.btconf
+    directory: btconf
+tag:
+  - toolchain:gcc
+  - toolchain:llvm
+filter:
+  - name: Wireless Technology
+    value:
+      - Sidewalk
+      - Bluetooth
+  - name: Ecosystem
+    value:
+      - Amazon
+  - name: Device Type
+    value:
+      - SoC
+  - name: Project Difficulty
+    value:
+      - Beginner
+template_contribution:
+  - name: bluetooth_on_event
+    value:
+      include: ble_adapter.h
+      function: sl_ble_adapter_on_event
+  - name: event_handler
+    value:
+      event: kernel_start
+      include: ble_adapter.h
+      handler: sl_ble_adapter_on_kernel_start
+  - name: cli_command
+    value:
+      name: send
+      handler: cli_send
+      help: Updates counter value and sends it to the cloud
+  - name: cli_command
+    value:
+      name: reset
+      handler: cli_reset
+      argument:
+        - type: uint32
+          help: Duration in milliseconds (0 for immediate)
+        - type: uint8
+          help: 'Reset type (1: device software reset, 2: factory
+            reset)'
+      help: Device software reset or factory reset
+  - name: cli_command
+    value:
+      name: get_time
+      handler: cli_get_time
+      help: Gets current time
+  - name: cli_command
+    value:
+      name: get_mtu
+      handler: cli_get_mtu
+      argument:
+        - type: uint8
+          help: 'Link type (1: BLE, 2: FSK, 4: CSS)'
+      help: Gets MTU of the specified link
+  - name: cli_command
+    value:
+      name: toggle_led
+      handler: cli_toggle_led
+      help: Toggle LED0
+  - name: cli_command
+    value:
+      name: ble_start_stop
+      handler: cli_ble_start_stop
+      help: Enable/Disable BLE stack
+  - name: cli_command
+    value:
+      name: bleconnect
+      handler: cli_ble_connect
+      help: Before sending uplink with BLE link to sidewalk network,
+        you first need to connect to the network. Connection will
+        timeout after 30sec of inactivity.

@@ -1,0 +1,34 @@
+{
+    "Type": "Sidewalk",
+    "Name": "silabs_sidewalk_device",
+    "DestinationName": "CFSDestination",
+    "Id": "9b7520d6-0bb5-4a7e-8d0b-3feb9d873ccb",
+    "Arn": "arn:aws:iotwireless:us-east-1:874911681611:WirelessDevice/9b7520d6-0bb5-4a7e-8d0b-3feb9d873ccb",
+    "Sidewalk": {
+        "SidewalkManufacturingSn": "CA28CCB79E94CC6ADE7340467B25FA36166B8281FA36F03B771AE971BCE2F015",
+        "DeviceCertificates": [
+            {
+                "SigningAlg": "Ed25519",
+                "Value": "yijMt56UzGrec0BGeyX6NhZrgoH6NvA7dxrpcbzi8BWKnoP5iAA275G1lBUBFdpiMPCCtBFlmPjeJ3uKEc03MmJ24R7bZ/esKgtMeA6xhPwnkev0gXA4pl2w26x+J3L2eP1MDIRix8Cm+sVilpI1l24oEBo0xRQ/V/Q7oDGQqA3CWQDypQO6MSZV7/YPKO0nye10w551uVJ87xK9ArVIaSCdn5DCt54IuyXfMxQimsAbSYs2P3naKm317ExsTLCtI+/hgHAfwz0w37eX6GEOXjATL6JCmxssspzIAwYzh+FVpewAxcMAeGJxVFd1ZWjKha9Ck9nj1UuUJPQBnKyLgHYRznlxQW0BOpVuXnqkwzNk6K9oP4H82DhwGPfw4tJsh1U8bws5SVrTijx4NQg11BmyEYc3PaaUvtiLb0xV7di3jzDUND4gDwKMAHwbdJhcDZggoRKOb8SCB8cE3IA+lD1kF0eZBdZ5SKlMXvw0QnLh2xtTMreNFA5zajdSbTNo8aHX5vIcqF/YmCYogV8ydcnTCMSb6VWnlZrVJJ5HKeXM3o3T4TsxuP54ug51AAADGz+gFBeX/ZNN8VJwnsNfgzj4me1HgVJdUo4W9kvx9cr2jHWkC3Oj/bdBTh1+yBjOC53yHlQK/l1GHrEWiWPPnE434LRxnWkwr8EHD4oieJxC8fkIxkQfj+gHhU79Z+oAAYAAAzsnf9SDIZPoDXF0TdC9POqTgld0oXDl2XPaVD4CvvLearrOSlFv+lsNbC4rgZn23MtIBM/7YQmJwmQ+FXRup6Tkubg1hpz04J/09dxg8UiZmntHiUr1GfkTOFMYqRB+Aw=="
+            },
+            {
+                "SigningAlg": "P256r1",
+                "Value": "yijMt56UzGrec0BGeyX6NhZrgoH6NvA7dxrpcbzi8BULLokAiHdtGL0uaYEOnLoSzgWzvNDNGrUJkB9VbAzh/uaVkduryfjfo/kuU05KyGew0F8IVqOiL/mH5EZT/3iioVfAD9nfTDNJz0Bkq1LlvuKxzFIKYHFMFewB9E820LR+OIvEHSJfGfSJofS9zSp7C2O/IY4fJEkouVzIQ9sPB8FZAPJ+hPBd4BMo+KMNRfgBhD7qi08cJf7+3hL0jAy5oc1/PR9y59kexiA95hjKd7EmYVqCOMKjVuW/VesAQsa0mOK33CtOgELxyVbutoBT21ZVTBpT9yaBoJDbdxasEnK1qwAeUygp0w09gsmq3mgxQtGYSvuzxZvJCnyfDrGd9KAQ8sTDAHhZe+xUGiDXIxHxRt7Gf3ovahwy07zUD4gh/K1RwzoK8K1J/7dZmpMLZVd2vzXBA+2F8bBKfYB0I9GFEHbSTaa6FMXoYGg23B5//IubWw4/FQyhdX77Mn7Uvr7kWKzHjojlhaYNwjMtevV4zvlla5Po6DzxB4fu97z7cjked84p9AKLAHxp9CFuenZO02o5KFG2StfLkyxl5hZoTzlkS8g8bxwlrDntt0Gh4vBxZtQQHwAikDOGTqsoQSozjI+7029ntGoajpD1q5kbcoQs0NTdzpqE4Vms6pxRTgLMDdODbmiuKC/238B+PtWbAavL23YsHm9Myjpxy1vslGvfqSRjj3lhjHUAAALPsP34BS6EzJO5AsS5pC7QTpjBtAbLN9SdXOT9w4H1x8Nkp0ujLxWRN37IEy0V9DrPK2w1g74uqWPfUPnSBjtvM55JnQpmm23WQNvHa1Vr6zmWDjzjHpcNirPbzXyBlKEhkX4xylaSMnm4UrVXtAMaAJ/csC4HPTKr3dazdvEkhwGAAAIFByCjSp/5WHc4AhsyjMvKCsZQiKgiI8ECwjfXBaSZdY4zYsRlO3FC428H1atrFChFCZT0Bqt5LPXD38bMSB+vAUJiP8XqiEdXeqf2mYMJ5ykoDpwkve/cUQfPpjzFQlQfvwjBwiJDANKkOKoNT3bUGz+/f/pyTE+xMRdIUBZ1Bw=="
+            }
+        ],
+        "PrivateKeys": [
+            {
+                "SigningAlg": "Ed25519",
+                "Value": "1fac6ed395efa7fa5fa25e9827fb77c8d90101be259c002e7a1e0b263b66ee88"
+            },
+            {
+                "SigningAlg": "P256r1",
+                "Value": "788d6316a9f563c2b4e0ef0dfd7917cb8e01760a03405649ecd4ef62b5d2b4cd"
+            }
+        ],
+        "DeviceProfileId": "94c47b3e-a512-4266-9796-f8a813c989ac",
+        "CertificateId": "413346495647324E5156454752322D50524F544F54595045",
+        "Status": "PROVISIONED"
+    },
+    "Positioning": "Disabled"
+}

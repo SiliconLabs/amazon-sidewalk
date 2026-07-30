@@ -1,0 +1,16 @@
+id: sidewalk
+label: Sidewalk
+description: Sidewalk extension for Gecko SDK Suite
+version: 2.9.1
+documentation:
+  - docset: sidewalk
+    version: 2.9.1
+upgrade_manifest:
+  - path: sidewalk.slcu
+component_path:
+  - path: component
+  - path: component/overridden_gsdk_components/app/common/component
+  - path: component/sidewalk_log/component
+  - path: component/dummy
+supplier: Silicon Laboratories Inc.
+vendor: silabs

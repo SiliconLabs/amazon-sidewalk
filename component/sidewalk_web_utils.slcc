@@ -1,0 +1,32 @@
+id: sidewalk_web_utils
+label: Sidewalk Web Utilities
+package: sidewalk
+description: Defines the protocol for applications using the SiLabs web UI and
+  provide an API to use it.
+category: Example
+quality: evaluation
+metadata:
+  sbom:
+    license: Zlib
+root_path: component/sidewalk_web_utils
+provides:
+  - name: sidewalk_web_utils
+requires:
+  - name: sidewalk_log_app
+recommends:
+  - id: sidewalk_log_app_rtt
+source:
+  - path: sl_sidewalk_web_utils.c
+include:
+  - path: .
+    file_list:
+      - path: sl_sidewalk_web_utils.h
+      - path: sl_sidewalk_web_utils_types.h
+template_file:
+  - path: template/sl_sidewalk_web_utils_gen.c.jinja
+  - path: template/sl_sidewalk_web_utils_gen.h.jinja
+template_contribution:
+  - name: component_catalog
+    value: sidewalk_web_utils
+ui_hints:
+  visibility: never
