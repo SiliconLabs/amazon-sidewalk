@@ -45,6 +45,7 @@
 #include <sid_pal_crypto_ifc.h>
 #include <sid_pal_mfg_store_ifc.h>
 #include <string.h>
+#include <stddef.h>
 #include "sl_string.h"
 #include "sl_sidewalk_pdp_on_dev_cert_gen.h"
 
@@ -92,6 +93,7 @@ sl_sid_pdp_status_t sl_sid_pdp_on_dev_cert_gen_gen_smsn(const uint8_t * const in
   (void)out_size;
 
   sid_error_t sid_ret;
+  uint8_t len_fields_size = offsetof(sl_sid_pdp_on_dev_cert_gen_gen_smsn_req_t, dev_type);
 
   if (in == NULL || in_len < SL_SID_PDP_ON_DEV_CERT_GEN_MIN_GEN_SMSN_REQ_LEN) {
     return SL_SID_PDP_STATUS_ERR_IN_ARGS_NOT_VALID;
@@ -102,9 +104,9 @@ sl_sid_pdp_status_t sl_sid_pdp_on_dev_cert_gen_gen_smsn(const uint8_t * const in
   }
 
   sl_sid_pdp_on_dev_cert_gen_gen_smsn_req_t req = *(sl_sid_pdp_on_dev_cert_gen_gen_smsn_req_t *)in;
-  req.dev_type = &in[8];
-  req.dsn = &in[8 + req.dev_type_len];
-  req.apid = &in[8 + req.dev_type_len + req.dsn_len];
+  req.dev_type = &in[len_fields_size];
+  req.dsn = &in[len_fields_size + req.dev_type_len];
+  req.apid = &in[len_fields_size + req.dev_type_len + req.dsn_len];
 
   // Note on device-type. It gets transformed into "Amazon-id" which is <device-type>-PRODUCTION
   uint16_t dev_type_total_len = req.dev_type_len + (uint16_t)sl_strlen(SL_SID_PDP_CERT_DEV_TYPE_SUFFIX) + 1;
