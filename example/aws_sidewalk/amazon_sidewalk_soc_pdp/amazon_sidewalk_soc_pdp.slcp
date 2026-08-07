@@ -14,7 +14,7 @@ source:
   - path: app_process.c
 sdk_extension:
   - id: sidewalk
-    version: 2.7.0
+    version: 2.7.1
 component:
   - id: app_log
     from: sidewalk

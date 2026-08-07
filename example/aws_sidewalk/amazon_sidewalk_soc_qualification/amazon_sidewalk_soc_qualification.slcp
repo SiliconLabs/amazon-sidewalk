@@ -9,7 +9,7 @@ description: The SoC Qualification example is a command-line interface
 category: Example|AWS IoT
 sdk_extension:
   - id: sidewalk
-    version: 2.7.0
+    version: 2.7.1
 source:
   - path: app_properties.c
   - path: app_main.c

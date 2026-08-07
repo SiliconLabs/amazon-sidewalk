@@ -11,7 +11,7 @@ description: This is a Dynamic Multiprotocol reference application
 category: Example|AWS IoT
 sdk_extension:
   - id: sidewalk
-    version: 2.7.0
+    version: 2.7.1
 source:
   - path: ../app_init.c
   - path: ../app_process.c

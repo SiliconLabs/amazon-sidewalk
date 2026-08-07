@@ -1,7 +1,7 @@
 id: sidewalk
 label: Sidewalk
 description: Sidewalk extension for Simplicity SDK Suite
-version: 2.7.0
+version: 2.7.1
 sdk:
   id: simplicity_sdk
   version: 2025.6.2
