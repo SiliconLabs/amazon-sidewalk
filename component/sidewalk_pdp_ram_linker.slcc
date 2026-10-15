@@ -1,0 +1,19 @@
+id: sidewalk_pdp_ram_linker
+label: Sidewalk linker pdp
+description: RAM linker script for PDP
+package: sidewalk
+category: PDP
+quality: evaluation
+metadata:
+  sbom:
+    license: Zlib
+root_path: component
+provides:
+  - name: sidewalk_pdp_ram_linker
+template_file:
+  - path: sidewalk_pdp/s2/linkerfile_ram.ld.jinja
+    condition:
+      - device_series_2
+  - path: sidewalk_pdp/s30/linkerfile_ram.ld.jinja
+    condition:
+      - device_series_3

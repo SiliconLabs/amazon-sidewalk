@@ -1,0 +1,13 @@
+id: sidewalk_app_button_press
+label: Sidewalk button press
+package: sidewalk
+description: Pull in the app_button_press from GSDK. The component has backward compatibility purpose.
+category: Utility
+quality: production
+metadata:
+  sbom:
+    license: Zlib
+provides:
+  - name: sidewalk_app_button_press
+requires:
+  - name: app_button_press

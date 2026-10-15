@@ -1,0 +1,109 @@
+id: sidewalk_ota_dfu
+label: Sidewalk OTA DFU
+package: sidewalk
+description: Provides Sidewalk Over-the-Air (OTA) Device Firmware
+  Upgrade (DFU) functionality
+category: Protocol
+quality: evaluation
+metadata:
+  sbom:
+    license: Zlib
+root_path: component/sidewalk_ota_dfu
+requires:
+  - name: sidewalk_pal_btl_ifc
+  - name: sidewalk_log_pal
+  - name: sidewalk_pal
+recommends:
+  - id: sidewalk_log_pal_rtt
+provides:
+  - name: sidewalk_ota_dfu
+source:
+  - path: sl_sidewalk_ota_dfu.c
+include:
+  - path: .
+    file_list:
+      - path: sl_sidewalk_ota_dfu.h
+define:
+  - name: SL_SIDEWALK_OTA_DFU_PRESENT
+    condition:
+      - sl_sidewalk_radio_ble
+    unless:
+      - device_family_efr32sg28
+  - name: SL_SIDEWALK_ERASE_FLASH_ON_INIT
+    condition:
+      - sl_sidewalk_radio_ble
+    unless:
+      - device_family_efr32sg28
+template_contribution:
+  - name: component_catalog
+    value: sidewalk_ota_dfu
+  - name: cli_group
+    condition:
+      - sl_sidewalk_radio_ble
+    unless:
+      - device_family_efr32sg28
+    value:
+      name: ota_dfu
+      help: Over-the-Air Device Firmware Upgrade commands
+      group: sidewalk
+  - name: cli_command
+    condition:
+      - sl_sidewalk_radio_ble
+    unless:
+      - device_family_efr32sg28
+    value:
+      name: init
+      handler: cli_ota_dfu_init
+      help: Initialize Sidewalk OTA DFU service.
+      group: ota_dfu
+  - name: cli_command
+    condition:
+      - sl_sidewalk_radio_ble
+    unless:
+      - device_family_efr32sg28
+    value:
+      name: deinit
+      handler: cli_ota_dfu_deinit
+      help: Deinitialize Sidewalk OTA DFU service.
+      group: ota_dfu
+  - name: cli_command
+    condition:
+      - sl_sidewalk_radio_ble
+    unless:
+      - device_family_efr32sg28
+    value:
+      name: cancel
+      handler: cli_ota_dfu_cancel
+      help: Cancel the ongoing Sidewalk OTA DFU process.
+      group: ota_dfu
+  - name: cli_command
+    condition:
+      - sl_sidewalk_radio_ble
+    unless:
+      - device_family_efr32sg28
+    value:
+      name: stat
+      handler: cli_ota_dfu_stat
+      help: Stats for the ongoing Sidewalk OTA DFU process.
+      group: ota_dfu
+  - name: cli_command
+    condition:
+      - sl_sidewalk_radio_ble
+    unless:
+      - device_family_efr32sg28
+    value:
+      name: param
+      handler: cli_ota_dfu_param
+      help: Parameters of the ongoing Sidewalk OTA DFU process.
+      group: ota_dfu
+  - name: cli_command
+    condition:
+      - sl_sidewalk_radio_ble
+    unless:
+      - device_family_efr32sg28
+    value:
+      name: min_scratch_buf_size
+      handler: cli_ota_dfu_min_scratch_buf_size
+      help: Minimum scratch buffer size list based on supported
+        Sidewalk OTA DFU service block sizes.
+      group: ota_dfu

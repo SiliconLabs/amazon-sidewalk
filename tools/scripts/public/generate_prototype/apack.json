@@ -1,0 +1,15 @@
+{
+  "id": "sidewalkAssistant",
+  "label": "Sidewalk Assistant",
+  "featureLevel": 2,
+  "requiredFeatureLevel": "apack.core:4",
+  "uc.triggerExtension": "runconf",
+  "function": {
+    "uc_generate": {
+      "cmd": "$(python) generate_prototype.py --input ${contentFolder} --output ${generationOutput}"
+    },
+    "uc_upgrade": {
+      "cmd": "$(python) generateEmptyUpgradeResult.py -r ${results}"
+    }
+  }
+}

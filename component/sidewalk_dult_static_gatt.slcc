@@ -1,0 +1,18 @@
+id: sidewalk_dult_static_gatt
+label: Sidewalk static GATT
+category: Example|AWS IoT
+quality: production
+description: This component implements DULT Static GATT
+package: sidewalk
+metadata:
+  sbom:
+    license: MSLA
+root_path: component/amazon/projects/sid/sal/silabs/sid_pal/dult
+provides:
+  - name: sidewalk_dult_static_gatt
+  - name: sidewalk_dult_gatt
+requires:
+  - name: sidewalk_dult
+config_file:
+  - path: config/gatt_service_dult.xml
+    directory: btconf

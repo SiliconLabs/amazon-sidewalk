@@ -1,0 +1,67 @@
+id: sidewalk_application_tab
+label: Sidewalk Assistant Application Tab
+package: sidewalk
+description: Provides support for Sidewalk Assistant Application and Communication Tab
+category: Example
+quality: production
+metadata:
+  sbom:
+    license: Zlib
+root_path: component/sidewalk_assistant
+requires:
+  - name: sidewalk_assistant
+provides:
+  - name: sidewalk_application_tab
+template_file:
+  - path: app_page.restriction.jinja
+template_contribution:
+  - name: sid_assistant_links
+    value: SL_SIDEWALK_LINK_BLE
+    condition:
+      - sl_sidewalk_radio_ble
+  - name: sid_assistant_links
+    value: SL_SIDEWALK_LINK_FSK
+    condition:
+      - sl_sidewalk_radio_subghz_fsk
+  - name: sid_assistant_links
+    value: SL_SIDEWALK_LINK_CSS
+    condition:
+      - sl_sidewalk_radio_subghz_css
+  - name: sid_assistant_regions
+    value:
+      region: RADIO_REGION_NA
+      short_region: NA
+      subghz_power: 20
+      ble_power: 20
+    condition:
+      - sl_sidewalk_supports_915mhz
+#  - name: sid_assistant_regions
+#    value:
+#      region: RADIO_REGION_EU
+#      short_region: EU
+#      subghz_power: 14
+#      ble_power: 10
+#    condition:
+#      - sl_sidewalk_supports_868mhz
+  - name: sid_assistant_regions
+    value:
+      region: RADIO_REGION_NA
+      short_region: NA
+      subghz_power: 20
+      ble_power: 20
+    condition:
+      - sl_sidewalk_radio_ble
+    unless:
+      - sl_sidewalk_supports_915mhz
+#      - sl_sidewalk_supports_868mhz
+#  - name: sid_assistant_regions
+#    value:
+#      region: RADIO_REGION_EU
+#      short_region: EU
+#      subghz_power: 14
+#      ble_power: 10
+#    condition:
+#      - sl_sidewalk_radio_ble
+#    unless:
+#      - sl_sidewalk_supports_915mhz
+#      - sl_sidewalk_supports_868mhz

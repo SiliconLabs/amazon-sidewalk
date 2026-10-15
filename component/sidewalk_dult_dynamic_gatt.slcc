@@ -1,0 +1,20 @@
+id: sidewalk_dult_dynamic_gatt
+label: Sidewalk dynamic GATT
+category: Example|AWS IoT
+quality: production
+description: This component implements DULT Dynamic GATT
+package: sidewalk
+metadata:
+  sbom:
+    license: MSLA
+root_path: component/sidewalk_dult
+provides:
+  - name: sidewalk_dult_dynamic_gatt
+  - name: sidewalk_dult_gatt
+requires:
+  - name: bluetooth_feature_dynamic_gattdb
+  - name: bluetooth_gatt_database
+  - name: sidewalk_dult
+define:
+  - name: SL_DULT_CONFIG_DYNAMIC_GATT
+    value: 1

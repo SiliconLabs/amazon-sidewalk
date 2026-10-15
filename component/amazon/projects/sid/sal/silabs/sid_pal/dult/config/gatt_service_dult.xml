@@ -1,0 +1,13 @@
+<gatt>
+  <!--DULT-->
+  <service advertise="false" name="DULT" requirement="mandatory" type="primary" uuid="15190001-12F4-C226-88ED-2AC5579F2A85">
+    <informativeText/>
+
+    <!--Non-owner-->
+    <characteristic id="dult_non_owner" name="DULT Non-Owner" uuid="8E0C0001-1D68-FB92-BF61-48377421680E">
+      <informativeText/>
+      <value length="4" type="user" variable_length="false"/>
+      <properties read="true" read_requirement="optional" write="true" write_requirement="optional" indicate="true"/>
+    </characteristic>
+  </service>
+</gatt>

@@ -1,0 +1,39 @@
+id: sidewalk_display
+label: Sidewalk display
+package: sidewalk
+description: Provides Sidewalk display functions
+category: Example
+quality: production
+metadata:
+  sbom:
+    license: Zlib
+root_path: component/sidewalk_display
+source:
+  - path: sl_sidewalk_display.c
+include:
+  - path: .
+    file_list:
+      - path: sl_sidewalk_display.h
+      - path: sl_sidewalk_display_types.h
+config_file:
+  - path: config/sl_sidewalk_display_config.h
+provides:
+  - name: sidewalk_display
+requires:
+  - name: board_control
+  - name: glib
+  - name: dmd_memlcd
+  - name: sidewalk_utils
+  - name: gpio
+  - name: freertos
+  - name: sidewalk_qr_code
+template_contribution:
+  - name: component_catalog
+    value: sidewalk_display
+  - name: event_handler
+    value:
+      event: service_init
+      include: sl_sidewalk_display.h
+      handler: sl_sidewalk_display_init
+ui_hints:
+  visibility: never

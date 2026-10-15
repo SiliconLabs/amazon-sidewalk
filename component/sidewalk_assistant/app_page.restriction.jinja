@@ -1,0 +1,36 @@
+{%- set regions = sid_assistant_regions or [] -%}
+[
+    {
+        "name": "region",
+        "arguments": {
+            "id": 0,
+            "enabled": [
+                {%- if regions %}
+                "{{ regions | map(attribute='region') | join('",\n                "') }}"
+                {%- endif %}
+            ],
+            "maxSubGHzOutputPower": {
+                {%- for entry in regions %}
+                "{{ entry.short_region }}": "{{ entry.subghz_power }}"{%- if not loop.last %},{% endif %}
+                {%- endfor %}
+            },
+            "maxBleOutputPower": {
+                {%- for entry in regions %}
+                "{{ entry.short_region }}": "{{ entry.ble_power }}"{%- if not loop.last %},{% endif %}
+                {%- endfor %}
+            }
+        }
+    },
+    {
+        "name": "linkType",
+        "arguments": {
+            "id": 0,
+            "enabled": [
+                {%- if sid_assistant_links %}
+                "{{ sid_assistant_links | join('",\n                "') }}"
+                {%- endif %}
+            ],
+            "default": "SL_SIDEWALK_LINK_BLE"
+        }
+    }
+]

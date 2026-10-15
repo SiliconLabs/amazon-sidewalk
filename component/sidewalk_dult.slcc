@@ -1,0 +1,67 @@
+id: sidewalk_dult
+label: Sidewalk DULT
+quality: production
+description: This component implements IETF Detecting Unwanted Location Trackers
+category: Example|AWS IoT
+package: sidewalk
+metadata:
+  sbom:
+    license: MSLA
+root_path: component/amazon/projects/sid/sal/
+provides:
+  - name: sidewalk_dult
+requires:
+  - name: sidewalk_pal
+  - name: sidewalk_dult_gatt
+  - name: sleeptimer
+  - name: app_rta
+  - name: status
+  - name: enum
+  - name: bgapi_protocol
+  - name: bluetooth_stack
+  - name: bluetooth_feature_connection
+define:
+  - name: SID_SDK_INTERNAL_CONFIG_ENABLE_DULT_QA
+recommends:
+  - id: sidewalk_dult_static_gatt
+source:
+  - path: silabs/sid_pal/dult/source/sl_dult.c
+  - path: silabs/sid_pal/dult/source/sl_dult_id_read_state.c
+  - path: silabs/sid_pal/dult/source/sl_dult_non_owner.c
+  - path: silabs/sid_pal/dult/source/sl_dult_adv.c
+  - path: silabs/sid_pal/dult/source/sl_dult_near_owner_state.c
+  - path: silabs/sid_pal/dult/source/sl_dult_motion_detection.c
+  - path: silabs/sid_pal/dult/source/sl_dult_sound.c
+  - path: silabs/sid_pal/dult/source/sli_dult_adaptation.c
+  - path: silabs/sid_pal/dult/sid_pal_dult.c
+include:
+  - path: silabs/sid_pal/dult/include
+    file_list:
+      - path: sl_dult.h
+      - path: sli_dult.h
+      - path: sli_dult_adaptation.h
+  - path: common/sid_network_address/include
+    file_list:
+      - path: sid_network_address.h
+  - path: common/public/sid_pal_ifc/dult
+    file_list:
+      - path: sid_pal_dult_ifc.h
+  - path: common/public/sid_ifc/sid_detect_unwanted_location_tracker_api
+    file_list:
+      - path: sid_detect_unwanted_location_tracker.h
+config_file:
+  - path: silabs/sid_pal/dult/config/sl_dult_config.h
+template_contribution:
+  - name: bluetooth_on_event
+    value:
+      include: sli_dult.h
+      function: sli_bt_dult_on_event
+    priority: 0
+  - name: app_rta_init
+    value:
+      include: sli_dult_adaptation.h
+      handler: sli_dult_adaptation_init
+  - name: bluetooth_connections
+    value:
+      name: sidewalk_dult_bluetooth_connection
+      count: 1

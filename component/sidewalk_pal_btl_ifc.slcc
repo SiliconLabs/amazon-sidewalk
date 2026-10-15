@@ -1,0 +1,29 @@
+id: sidewalk_pal_btl_ifc
+label: Sidewalk PAL bootloader interface
+package: sidewalk
+description: Provides bootloader interface peripheral abstraction
+  functions to sidewalk applications
+category: Protocol
+quality: evaluation
+metadata:
+  sbom:
+    license: Zlib
+root_path: component/sidewalk_pal_btl_ifc
+requires:
+  - name: bootloader_interface
+  - name: bootloader_app_properties
+  - name: sidewalk_log_pal
+  - name: sidewalk_pal
+recommends:
+  - id: sidewalk_log_pal_rtt
+provides:
+  - name: sidewalk_pal_btl_ifc
+source:
+  - path: sl_sidewalk_pal_btl_ifc.c
+include:
+  - path: .
+    file_list:
+      - path: sl_sidewalk_pal_btl_ifc.h
+template_contribution:
+  - name: component_catalog
+    value: sidewalk_pal_btl_ifc

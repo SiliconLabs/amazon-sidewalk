@@ -1,0 +1,15 @@
+{
+    "id": "sid_app_config",
+    "label": "Adapter Pack Configurator for Sidewalk Application",
+    "featureLevel": 2,
+    "requiredFeatureLevel": "apack.core:4",
+    "uc.triggerExtension": "runconf",
+    "function": {
+      "uc_generate": {
+        "cmd": "$(python) app_configurator.py -in ${contentFolder} -out ${generationOutput}"
+      },
+      "uc_upgrade": {
+        "cmd": "$(python) generateEmptyUpgradeResult.py -r ${results}"
+      }
+    }
+  }

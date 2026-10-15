@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<contentItems xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://www.silabs.com/ss/ContentItem.ecore">
+  <contentItemData name="" label="Developing with Amazon Sidewalk" itemURI="https://docs.silabs.com/amazon-sidewalk/latest/sidewalk-start/index.html" category="Quick Start Guides" priority="10">
+    <description>Overview of developing applications with the Silicon Labs integrated solution for Amazon Sidewalk, including links to the developer journey, out-of-the-box demo, getting started, and developer's guide. </description>
+    <property key="core.category" value="Quick Start Guides"/>
+    <property key="core.priority" value="10"/>
+    <property key="core.partCompatibility" value=".*efr32[bm]g24b.*f[17].* .*efr32zg28b312f1024im48 .*kg100s.*"/>
+    <property key="core.boardCompatibility" value=".*"/>
+  </contentItemData>
+  <contentItemData name="" label="Amazon Sidewalk Out-of-the-Box Demo" itemURI="https://docs.silabs.com/amazon-sidewalk/latest/sidewalk-demo/index.html" category="Quick Start Guides" priority="10">
+    <description>Instructions for running the Silicon Labs Pro Kit out-of-the-box Amazon Sidewalk demonstration, including kit preparation and network availability. </description>
+    <property key="core.category" value="Quick Start Guides"/>
+    <property key="core.priority" value="10"/>
+    <property key="core.partCompatibility" value=".*efr32[bm]g24b.*f[17].* .*efr32zg28b312f1024im48 .*kg100s.*"/>
+    <property key="core.boardCompatibility" value=".*"/>
+  </contentItemData>
+  <contentItemData name="" label="Getting Started with Amazon Sidewalk" itemURI="https://docs.silabs.com/amazon-sidewalk/latest/sidewalk-getting-started/index.html" category="Quick Start Guides" priority="10">
+    <description>Getting started with Amazon Sidewalk development in Simplicity Studio, covering prerequisites, creating and compiling applications, provisioning devices, interacting with the cloud, and the Sidewalk Assistant. </description>
+    <property key="core.category" value="Quick Start Guides"/>
+    <property key="core.priority" value="10"/>
+    <property key="core.partCompatibility" value=".*efr32[bm]g24b.*f[17].* .*efr32zg28b312f1024im48 .*kg100s.*"/>
+    <property key="core.boardCompatibility" value=".*"/>
+  </contentItemData>
+  <contentItemData name="" label="Amazon Sidewalk Protocol Overview" itemURI="https://docs.silabs.com/amazon-sidewalk/latest/sidewalk-protocol-overview/index.html" category="User's Guides" priority="40">
+    <description>Background on the Amazon Sidewalk protocol, including important elements of the specification relevant to Silicon Labs endpoint development. </description>
+    <property key="core.category" value="User's Guides"/>
+    <property key="core.priority" value="40"/>
+    <property key="core.partCompatibility" value=".*efr32[bm]g24b.*f[17].* .*efr32zg28b312f1024im48 .*kg100s.*"/>
+    <property key="core.boardCompatibility" value=".*"/>
+  </contentItemData>
+  <contentItemData name="" label="Amazon Sidewalk Developer's Guide" itemURI="https://docs.silabs.com/amazon-sidewalk/latest/sidewalk-developers-guide/index.html" category="User's Guides" priority="20">
+    <description>Resources to support Amazon Sidewalk application development with the Silicon Labs SDK, covering important aspects of the development effort. </description>
+    <property key="core.category" value="User's Guides"/>
+    <property key="core.priority" value="20"/>
+    <property key="core.partCompatibility" value=".*efr32[bm]g24b.*f[17].* .*efr32zg28b312f1024im48 .*kg100s.*"/>
+    <property key="core.boardCompatibility" value=".*"/>
+  </contentItemData>
+  <contentItemData name="" label="Amazon Sidewalk Software Components" itemURI="https://docs.silabs.com/amazon-sidewalk/latest/sidewalk-sw-components/index.html" category="User's Guides" priority="40">
+    <description>Describes Silicon Labs Amazon Sidewalk software components available in the SDK. </description>
+    <property key="core.category" value="User's Guides"/>
+    <property key="core.priority" value="40"/>
+    <property key="core.partCompatibility" value=".*efr32[bm]g24b.*f[17].* .*efr32zg28b312f1024im48 .*kg100s.*"/>
+    <property key="core.boardCompatibility" value=".*"/>
+  </contentItemData>
+  <contentItemData name="" label="Amazon Sidewalk Sample Applications" itemURI="https://docs.silabs.com/amazon-sidewalk/latest/sidewalk-sample-applications/index.html" category="User's Guides" priority="40">
+    <description>Describes the Amazon Sidewalk sample applications included with the Silicon Labs SDK. </description>
+    <property key="core.category" value="User's Guides"/>
+    <property key="core.priority" value="40"/>
+    <property key="core.partCompatibility" value=".*efr32[bm]g24b.*f[17].* .*efr32zg28b312f1024im48 .*kg100s.*"/>
+    <property key="core.boardCompatibility" value=".*"/>
+  </contentItemData>
+  <contentItemData name="" label="Amazon Sidewalk Platform Resources" itemURI="https://docs.silabs.com/amazon-sidewalk/latest/sidewalk-platform-resources-overview/index.html" category="User's Guides" priority="50">
+    <description>Overview of platform resources relevant to Amazon Sidewalk development on Silicon Labs hardware. </description>
+    <property key="core.category" value="User's Guides"/>
+    <property key="core.priority" value="50"/>
+    <property key="core.partCompatibility" value=".*efr32[bm]g24b.*f[17].* .*efr32zg28b312f1024im48 .*kg100s.*"/>
+    <property key="core.boardCompatibility" value=".*"/>
+  </contentItemData>
+  <contentItemData name="" label="Manufacture an Amazon Sidewalk Product" itemURI="https://docs.silabs.com/amazon-sidewalk/latest/sidewalk-manufacture-product/index.html" category="User's Guides" priority="40">
+    <description>Guidance for manufacturing Amazon Sidewalk products with Silicon Labs devices, including on-device certificate generation and production flows. </description>
+    <property key="core.category" value="User's Guides"/>
+    <property key="core.priority" value="40"/>
+    <property key="core.partCompatibility" value=".*efr32[bm]g24b.*f[17].* .*efr32zg28b312f1024im48 .*kg100s.*"/>
+    <property key="core.boardCompatibility" value=".*"/>
+  </contentItemData>
+  <contentItemData name="" label="Amazon Sidewalk PAL API Reference" itemURI="https://docs.silabs.com/amazon-sidewalk/latest/sidewalk-services-api/index.html" category="Reference Manuals" priority="30">
+    <description>Contains the Platform Abstraction Layer (PAL) API reference for the Silicon Labs Amazon Sidewalk SDK. </description>
+    <property key="core.category" value="Reference Manuals"/>
+    <property key="core.priority" value="30"/>
+    <property key="core.partCompatibility" value=".*efr32[bm]g24b.*f[17].* .*efr32zg28b312f1024im48 .*kg100s.*"/>
+    <property key="core.boardCompatibility" value=".*"/>
+  </contentItemData>
+  <contentItemData name="" label="Amazon Sidewalk SDK Release Notes" itemURI="https://docs.silabs.com/amazon-sidewalk/latest/sisdk-amz-sidewalk-release-notes/index.html" category="Release Notes" priority="1">
+    <description>Lists compatibility requirements and sources for software components in the development environment. Discusses the latest changes to the Silicon Labs Amazon Sidewalk SDK, including added, deleted, and deprecated features or APIs, and reviews fixed and known issues. </description>
+    <property key="core.category" value="Release Notes"/>
+    <property key="core.priority" value="1"/>
+    <property key="core.partCompatibility" value=".*efr32[bm]g24b.*f[17].* .*efr32zg28b312f1024im48 .*kg100s.*"/>
+    <property key="core.boardCompatibility" value=".*"/>
+  </contentItemData>
+</contentItems>
